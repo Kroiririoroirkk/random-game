@@ -1,0 +1,47 @@
+body {
+  background-color: purple;
+}
+
+h1 {
+  color: white;
+  font: 32pt sans-serif;
+}
+
+p {
+  color: white;
+  font: 12pt sans-serif;
+}
+
+a {
+  color: pink;
+}
+
+div {
+  font: 12pt sans-serif;
+}
+
+#sidebar {
+  background-color: pink;
+  height: 100%;
+  width: 30%;
+  float: left;
+  border: 5px black;
+  padding: 5px;
+}
+
+.bokemon {
+  margin: 5px;
+}
+
+.bokemon:hover {
+  color: white;
+}
+
+#info {
+  background-color: pink;
+  height: 100%;
+  width: 65%;
+  float: right;
+  border: 5px black;
+  padding: 5px;
+}

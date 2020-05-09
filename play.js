@@ -17,6 +17,7 @@ class Game {
     this.pressedKeys = new Set();
     this.playerObj = null;
     this.gameObjs = [];
+    this.registerKeyListeners();
   }
 
   makeCanvas() {
@@ -31,7 +32,7 @@ class Game {
     return ctx;
   }
 
-  registerKeyListener() {
+  registerKeyListeners() {
     addEventListener('keydown', e => this.pressedKeys.add(e.keyCode), false);
     addEventListener('keyup', e => this.pressedKeys.delete(e.keyCode), false);
   }
@@ -103,9 +104,7 @@ function startGame() {
     ws.send(username);
   };
 
-  var game = new Game(ws);
-  game.registerKeyListener();
-  main(game);
+  main(new Game(ws));
 }
 
 // ----------- GAME LOGIC -----------
