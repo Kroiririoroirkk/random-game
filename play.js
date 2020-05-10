@@ -16,16 +16,16 @@ const PLAYER_SPEED = 20;
 var game;
 
 class Game {
-  constructor(ws) {
+  constructor(ws, username) {
     this.ws = ws;
-    this.canvasCtx = this.makeCanvas();
+    this.canvasCtx = this.makePage(username);
     this.pressedKeys = new Set();
     this.playerObj = null;
     this.gameObjs = [];
     this.registerKeyListeners();
   }
 
-  makeCanvas() {
+  makePage(username) {
     let canvas = document.createElement("canvas");
     let ctx = canvas.getContext("2d");
     canvas.innerHTML = "Oops! Something went wrong. Your browser might not support this game.";
@@ -33,6 +33,9 @@ class Game {
     canvas.height = HEIGHT;
     document.body.innerHTML = "";
     document.body.style.backgroundColor = "white";
+    let usernameDisplay = document.createElement("P");
+    usernameDisplay.innerText = "Your username is: " + username;
+    document.body.appendChild(usernameDisplay);
     document.body.appendChild(canvas);
     return ctx;
   }
@@ -140,7 +143,7 @@ function startGame() {
     ws.send(username);
   };
   ws.onmessage = handleWSMessage;
-  game = new Game(ws);
+  game = new Game(ws, username);
   main();
 }
 
