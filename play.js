@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 // ----------- CONSTANTS -----------
 const KEY_LEFT = 37;
@@ -10,7 +10,7 @@ const WIDTH = 512;
 const HEIGHT = 480;
 
 const BLOCK_WIDTH = 16;
-const PLAYER_SPEED = 10;
+const PLAYER_SPEED = 20;
 
 // ----------- GAME -----------
 var game;
@@ -26,13 +26,13 @@ class Game {
   }
 
   makeCanvas() {
-    let canvas = document.createElement('canvas');
-    let ctx = canvas.getContext('2d');
-    canvas.innerHTML = 'Oops! Something went wrong. Your browser might not support this game.';
+    let canvas = document.createElement("canvas");
+    let ctx = canvas.getContext("2d");
+    canvas.innerHTML = "Oops! Something went wrong. Your browser might not support this game.";
     canvas.width = WIDTH;
     canvas.height = HEIGHT;
-    document.body.innerHTML = '';
-    document.body.style.backgroundColor = 'white';
+    document.body.innerHTML = "";
+    document.body.style.backgroundColor = "white";
     document.body.appendChild(canvas);
     return ctx;
   }
@@ -79,8 +79,8 @@ class Entity {
 
   render() {
     const ctx = game.canvasCtx;
-    ctx.strokeStyle = 'rgb(50, 50, 50)';
-    ctx.fillStyle = 'rgb(50, 50, 50)';
+    ctx.strokeStyle = "rgb(50, 50, 50)";
+    ctx.fillStyle = "rgb(50, 50, 50)";
     ctx.beginPath();
     let relPos = this.pos.relToPlayer();
     ctx.arc(relPos.x, relPos.y, BLOCK_WIDTH/2, 0, 2*Math.PI);
@@ -90,6 +90,10 @@ class Entity {
 
   move(offset) {
     this.pos = this.pos.add(offset);
+  }
+
+  moveTo(pos) {
+    this.pos = pos;
   }
 }
 
@@ -101,8 +105,8 @@ class Player extends Entity {
 
   render() {
     const ctx = game.canvasCtx;
-    ctx.strokeStyle = 'rgb(255, 0, 0)';
-    ctx.fillStyle = 'rgb(255, 0, 0)';
+    ctx.strokeStyle = "rgb(255, 0, 0)";
+    ctx.fillStyle = "rgb(255, 0, 0)";
     ctx.beginPath();
     ctx.arc(WIDTH/2, HEIGHT/2, BLOCK_WIDTH/2, 0, 2*Math.PI);
     ctx.stroke();
@@ -118,8 +122,8 @@ class Grass extends Entity {
 
   render() {
     const ctx = game.canvasCtx;
-    ctx.strokeStyle = 'rgb(0, 0, 0)';
-    ctx.fillStyle = 'rgb(0, 255, 0)';
+    ctx.strokeStyle = "rgb(0, 0, 0)";
+    ctx.fillStyle = "rgb(0, 255, 0)";
     ctx.beginPath();
     let relPos = this.pos.relToPlayer();
     ctx.rect(relPos.x, relPos.y, BLOCK_WIDTH, BLOCK_WIDTH);
@@ -130,7 +134,7 @@ class Grass extends Entity {
 
 // ----------- ENTRY POINT -----------
 function startGame() {
-  let username = document.getElementById('username').value;
+  let username = document.getElementById("username").value;
   let ws = new WebSocket("wss://bokemon.kroiririoroirkk.repl.co");
   ws.onopen = function(e) {
     ws.send(username);
@@ -142,27 +146,28 @@ function startGame() {
 
 // ----------- GAME LOGIC -----------
 function handleWSMessage(e) {
-  console.log(e);
-  if (e.data.startsWith('world|')) {
-    let msg        = e.data.slice('world|'.length),
-        parts      = msg.split('|'),
-        spawnCoord = parts[0],
-        spawnX     = parseInt(spawnCoord.split(',')[0]),
-        spawnY     = parseInt(spawnCoord.split(',')[1]),
-        origin     = new Vec(spawnX * BLOCK_WIDTH + BLOCK_WIDTH/2, spawnY * BLOCK_WIDTH + BLOCK_WIDTH/2),
-        map        = parts.slice(1);
+  if (e.data.startsWith("world|")) {
+    let parts  = e.data.split("|"),
+        spawnX = parseInt(parts[1]),
+        spawnY = parseInt(parts[2]),
+        origin = new Vec(spawnX * BLOCK_WIDTH + BLOCK_WIDTH/2, spawnY * BLOCK_WIDTH + BLOCK_WIDTH/2),
+        map    = parts.slice(3);
     game.clearGameObjs();
     for (let j = 0; j < map.length; j++) {
       for (let i = 0; i < map[j].length; i++) {
         switch(map[j][i]) {
-          case 'g':
+          case "g":
             let pos = new Vec(i * BLOCK_WIDTH, j * BLOCK_WIDTH);
             pos = pos.relativeTo(origin);
             game.addGameObj(new Grass(pos));
         }
       }
     }
-    console.log(game.gameObjs);
+  } else if (e.data.startsWith("movedto|")) {
+    let parts = e.data.split("|"),
+        newX  = parseInt(parts[1]),
+        newY  = parseInt(parts[2]);
+    game.playerObj.moveTo(new Vec(newX, newY));
   }
 }
 
@@ -172,16 +177,20 @@ function initialize() {
 
 function update(dt) {
   if (game.pressedKeys.has(KEY_LEFT)) {
-    game.playerObj.move(new Vec(-PLAYER_SPEED/dt, 0));
+    game.ws.send("move|l");
+    game.playerObj.move(new Vec(-PLAYER_SPEED*dt, 0));
   }
   if (game.pressedKeys.has(KEY_UP)) {
-    game.playerObj.move(new Vec(0, -PLAYER_SPEED/dt));
+    game.ws.send("move|u");
+    game.playerObj.move(new Vec(0, -PLAYER_SPEED*dt));
   }
   if (game.pressedKeys.has(KEY_RIGHT)) {
-    game.playerObj.move(new Vec(PLAYER_SPEED/dt, 0));
+    game.ws.send("move|r");
+    game.playerObj.move(new Vec(PLAYER_SPEED*dt, 0));
   }
   if (game.pressedKeys.has(KEY_DOWN)) {
-    game.playerObj.move(new Vec(0, PLAYER_SPEED/dt));
+    game.ws.send("move|d");
+    game.playerObj.move(new Vec(0, PLAYER_SPEED*dt));
   }
 }
 
@@ -193,7 +202,7 @@ function render() {
   if (game.playerObj) {
     game.playerObj.render();
   }
-};
+}
 
 function main() {
   let w = window;
@@ -202,7 +211,7 @@ function main() {
   initialize();
   let gameLoop = function(then) {
     return function(now) {
-      update(now - then);
+      update((now - then)/1000);
       render();
       requestAnimationFrame(gameLoop(now));
     };
