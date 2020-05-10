@@ -99,7 +99,7 @@ class Player extends Entity {
 // ----------- ENTRY POINT -----------
 function startGame() {
   var username = document.getElementById('username').value;
-  var ws = new WebSocket("ws://bokemon.kroiririoroirkk.repl.co");
+  var ws = new WebSocket("wss://bokemon.kroiririoroirkk.repl.co");
   ws.onopen = function(e) {
     ws.send(username);
   };
