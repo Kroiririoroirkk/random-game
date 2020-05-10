@@ -1,3 +1,7 @@
+html, body {
+  height: 95%;
+}
+
 body {
   background-color: purple;
 }
@@ -20,13 +24,17 @@ div {
   font: 12pt sans-serif;
 }
 
-#sidebar {
+#sidebar, #info {
   background-color: pink;
-  height: 100%;
-  width: 30%;
-  float: left;
+  height: 65%;
   border: 5px black;
   padding: 5px;
+  overflow-y: auto;
+}
+
+#sidebar {
+  width: 30%;
+  float: left;
 }
 
 .bokemon {
@@ -38,10 +46,6 @@ div {
 }
 
 #info {
-  background-color: pink;
-  height: 100%;
   width: 65%;
   float: right;
-  border: 5px black;
-  padding: 5px;
 }
