@@ -8,7 +8,8 @@ import websockets
 WSPORT = 8080
 
 BLOCK_WIDTH = 16
-PLAYER_SPEED = 20 #Pixels per second
+PLAYER_SPEED = 30 #Pixels per second
+MAX_MOVE_DT = 0.1
 
 class Game:
   def __init__(self):
@@ -61,7 +62,7 @@ class Entity:
 class Player(Entity):
   def __init__(self, pos, world_num):
     super().__init__(pos)
-    self.time_since_last_move = None
+    self.time_since_last_move = 0
     self.world_num = world_num
 
 class Grass(Entity):
@@ -70,19 +71,19 @@ class Grass(Entity):
 
 STARTING_WORLD_TEXT = ("16|8|"
                 "gggggggggggggggggggggggggggggggg|"
-                "ggggggggggggggggggggggg gggggggg|"
-                "gggggggggggggggggggggggggggggggg|"
-                "gggggggggggg ggggggggggggggggggg|"
                 "gggggggggggggggggggggggggggggggg|"
                 "gggggggggggggggggggggggggggggggg|"
-                "ggggggggggggggggg gggggggggggggg|"
+                "gggggggggggggggggggggggggggggggg|"
+                "gggggg gggg ggggg       gggggggg|"
+                "gggggg gggg gggggggg ggggggggggg|"
+                "gggggg gggg gggggggg ggggggggggg|"
+                "gggggg      gggggggg ggggggggggg|"
+                "gggggg gggg gggggggg ggggggggggg|"
+                "gggggg gggg gggggggg ggggggggggg|"
+                "gggggg gggg ggggg       gggggggg|"
                 "gggggggggggggggggggggggggggggggg|"
                 "gggggggggggggggggggggggggggggggg|"
-                "gggggggg ggggggggggggggggggggggg|"
-                "ggggggggggggggggggggggg gggggggg|"
                 "gggggggggggggggggggggggggggggggg|"
-                "gggggggggggggggggggggggggggggggg|"
-                "ggggggggggggggggggg gggggggggggg|"
                 "gggggggggggggggggggggggggggggggg|"
                 "gggggggggggggggggggggggggggggggg")
 
@@ -106,16 +107,14 @@ def load_world(w):
         game_objs.append(Grass(pos))
   return World(game_objs, origin)
 
-STARTING_WORLD = load_world(STARTING_WORLD_TEXT)
-
 class Worlds(Enum):
   STARTING_WORLD_NUM = 1
 
 def get_world(w):
   worlds = {
-    Worlds.STARTING_WORLD_NUM: STARTING_WORLD
+    Worlds.STARTING_WORLD_NUM: STARTING_WORLD_TEXT
   }
-  return worlds.get(w)
+  return load_world(worlds.get(w))
 
 async def send_world(ws, world_text):
   await ws.send('world|' + world_text)
@@ -139,9 +138,7 @@ async def parseMessage(message, username, ws):
     if dirVec:
       player = game.get_player(username)
       now = time.time()
-      if (player.time_since_last_move is None):
-        player.time_since_last_move = now
-      dt = now - player.time_since_last_move
+      dt = min(now - player.time_since_last_move, MAX_MOVE_DT)
       player.time_since_last_move = now
       move_dist = PLAYER_SPEED * dt
       offset = dirVec * move_dist
