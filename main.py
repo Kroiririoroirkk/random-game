@@ -3,14 +3,20 @@ from signal import signal, SIGINT
 from sys import exit
 import websockets
 
-WSPORT = 8765
+WSPORT = 8080
 
-async def echo(websocket, path):
-  async for message in websocket:
-    print(message)
-    await websocket.send(message)
+myFirstWorld = ("world|"
+                "2,1|"
+                "ggggg|"
+                "ggggg|"
+                "ggggg")
 
-start_server = websockets.serve(echo, 'localhost', WSPORT)
+async def run(ws, path):
+  username = await ws.recv()
+  print('New user: ' + username)
+  await ws.send(myFirstWorld)
+
+start_server = websockets.serve(run, '0.0.0.0', WSPORT)
 
 def cleanup(sig, frame):
   print('Exiting...')
@@ -22,3 +28,4 @@ print('WebSocket server starting! Press CTRL-C to exit.')
 loop = asyncio.get_event_loop()
 loop.run_until_complete(start_server)
 loop.run_forever()
+

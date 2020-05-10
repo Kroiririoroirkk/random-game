@@ -9,7 +9,12 @@ const KEY_DOWN = 40;
 const WIDTH = 512;
 const HEIGHT = 480;
 
+const BLOCK_WIDTH = 16;
+const PLAYER_SPEED = 10;
+
 // ----------- GAME -----------
+var game;
+
 class Game {
   constructor(ws) {
     this.ws = ws;
@@ -21,8 +26,8 @@ class Game {
   }
 
   makeCanvas() {
-    var canvas = document.createElement('canvas');
-    var ctx = canvas.getContext('2d');
+    let canvas = document.createElement('canvas');
+    let ctx = canvas.getContext('2d');
     canvas.innerHTML = 'Oops! Something went wrong. Your browser might not support this game.';
     canvas.width = WIDTH;
     canvas.height = HEIGHT;
@@ -37,11 +42,16 @@ class Game {
     addEventListener('keyup', e => this.pressedKeys.delete(e.keyCode), false);
   }
 
+  clearGameObjs() {
+    this.gameObjs = [];
+  }
+
   addGameObj(obj) {
     this.gameObjs.push(obj);
   }
 }
 
+// ----------- VEC -----------
 class Vec {
   constructor(x, y) {
     this.x = x;
@@ -50,6 +60,10 @@ class Vec {
 
   relativeTo(p) {
     return new Vec(this.x - p.x, this.y - p.y);
+  }
+
+  relToPlayer() {
+    return this.relativeTo(game.playerObj.pos).add(new Vec(WIDTH/2, HEIGHT/2));
   }
 
   add(p) {
@@ -63,13 +77,13 @@ class Entity {
     this.pos = pos;
   }
 
-  render(game) {
+  render() {
     const ctx = game.canvasCtx;
     ctx.strokeStyle = 'rgb(50, 50, 50)';
     ctx.fillStyle = 'rgb(50, 50, 50)';
     ctx.beginPath();
-    var relPos = this.pos.relativeTo(game.playerObj.pos);
-    ctx.arc(relPos.x, relPos.y, 16, 0, 2*Math.PI);
+    let relPos = this.pos.relToPlayer();
+    ctx.arc(relPos.x, relPos.y, BLOCK_WIDTH/2, 0, 2*Math.PI);
     ctx.stroke();
     ctx.fill();
   }
@@ -85,12 +99,30 @@ class Player extends Entity {
     super(pos);
   }
 
-  render(game) {
+  render() {
     const ctx = game.canvasCtx;
     ctx.strokeStyle = 'rgb(255, 0, 0)';
     ctx.fillStyle = 'rgb(255, 0, 0)';
     ctx.beginPath();
-    ctx.arc(WIDTH/2, HEIGHT/2, 16, 0, 2*Math.PI);
+    ctx.arc(WIDTH/2, HEIGHT/2, BLOCK_WIDTH/2, 0, 2*Math.PI);
+    ctx.stroke();
+    ctx.fill();
+  }
+}
+
+// ----------- GRASS -----------
+class Grass extends Entity {
+  constructor(pos) {
+    super(pos);
+  }
+
+  render() {
+    const ctx = game.canvasCtx;
+    ctx.strokeStyle = 'rgb(0, 0, 0)';
+    ctx.fillStyle = 'rgb(0, 255, 0)';
+    ctx.beginPath();
+    let relPos = this.pos.relToPlayer();
+    ctx.rect(relPos.x, relPos.y, BLOCK_WIDTH, BLOCK_WIDTH);
     ctx.stroke();
     ctx.fill();
   }
@@ -98,57 +130,80 @@ class Player extends Entity {
 
 // ----------- ENTRY POINT -----------
 function startGame() {
-  var username = document.getElementById('username').value;
-  var ws = new WebSocket("wss://bokemon.kroiririoroirkk.repl.co");
+  let username = document.getElementById('username').value;
+  let ws = new WebSocket("wss://bokemon.kroiririoroirkk.repl.co");
   ws.onopen = function(e) {
     ws.send(username);
   };
-
-  main(new Game(ws));
+  ws.onmessage = handleWSMessage;
+  game = new Game(ws);
+  main();
 }
 
 // ----------- GAME LOGIC -----------
-function initialize(game) {
-  game.playerObj = new Player(new Vec(0, 0));
-  //Arbitrary test objects
-  game.addGameObj(new Entity(new Vec(50, 50)));
-  game.addGameObj(new Entity(new Vec(-40, 100)));
+function handleWSMessage(e) {
+  console.log(e);
+  if (e.data.startsWith('world|')) {
+    let msg        = e.data.slice('world|'.length),
+        parts      = msg.split('|'),
+        spawnCoord = parts[0],
+        spawnX     = parseInt(spawnCoord.split(',')[0]),
+        spawnY     = parseInt(spawnCoord.split(',')[1]),
+        origin     = new Vec(spawnX * BLOCK_WIDTH + BLOCK_WIDTH/2, spawnY * BLOCK_WIDTH + BLOCK_WIDTH/2),
+        map        = parts.slice(1);
+    game.clearGameObjs();
+    for (let j = 0; j < map.length; j++) {
+      for (let i = 0; i < map[j].length; i++) {
+        switch(map[j][i]) {
+          case 'g':
+            let pos = new Vec(i * BLOCK_WIDTH, j * BLOCK_WIDTH);
+            pos = pos.relativeTo(origin);
+            game.addGameObj(new Grass(pos));
+        }
+      }
+    }
+    console.log(game.gameObjs);
+  }
 }
 
-function update(game, dt) {
+function initialize() {
+  game.playerObj = new Player(new Vec(0, 0));
+}
+
+function update(dt) {
   if (game.pressedKeys.has(KEY_LEFT)) {
-    game.playerObj.move(new Vec(-10/dt, 0));
+    game.playerObj.move(new Vec(-PLAYER_SPEED/dt, 0));
   }
   if (game.pressedKeys.has(KEY_UP)) {
-    game.playerObj.move(new Vec(0, -10/dt));
+    game.playerObj.move(new Vec(0, -PLAYER_SPEED/dt));
   }
   if (game.pressedKeys.has(KEY_RIGHT)) {
-    game.playerObj.move(new Vec(10/dt, 0));
+    game.playerObj.move(new Vec(PLAYER_SPEED/dt, 0));
   }
   if (game.pressedKeys.has(KEY_DOWN)) {
-    game.playerObj.move(new Vec(0, 10/dt));
+    game.playerObj.move(new Vec(0, PLAYER_SPEED/dt));
   }
 }
 
-function render(game) {
+function render() {
   game.canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
-  if (game.playerObj) {
-    game.playerObj.render(game);
-  }
   for (const obj of game.gameObjs) {
-    obj.render(game);
+    obj.render();
+  }
+  if (game.playerObj) {
+    game.playerObj.render();
   }
 };
 
-function main(game) {
-  var w = window;
-  var requestAnimationFrame = w.requestAnimationFrame || w.webkitRequestAnimationFrame || w.msRequestAnimationFrame || w.mozRequestAnimationFrame;
+function main() {
+  let w = window;
+  let requestAnimationFrame = w.requestAnimationFrame || w.webkitRequestAnimationFrame || w.msRequestAnimationFrame || w.mozRequestAnimationFrame;
 
-  initialize(game);
-  var gameLoop = function(then) {
+  initialize();
+  let gameLoop = function(then) {
     return function(now) {
-      update(game, now - then);
-      render(game);
+      update(now - then);
+      render();
       requestAnimationFrame(gameLoop(now));
     };
   };
