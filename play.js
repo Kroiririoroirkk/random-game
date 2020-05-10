@@ -8,9 +8,6 @@ const KEY_DOWN = 40;
 
 const BLOCK_WIDTH = 16;
 
-const WIDTH = 32*BLOCK_WIDTH;
-const HEIGHT = 32*BLOCK_WIDTH;
-
 const PLAYER_SPEED = 48;
 
 // ----------- GAME -----------
@@ -23,20 +20,18 @@ class Game {
     this.pressedKeys = new Set();
     this.playerObj = null;
     this.gameObjs = [];
+    this.username = username;
     this.registerKeyListeners();
   }
 
-  makePage(username) {
+  makePage() {
     let canvas = document.createElement("canvas");
     let ctx = canvas.getContext("2d");
     canvas.innerHTML = "Oops! Something went wrong. Your browser might not support this game.";
-    canvas.width = WIDTH;
-    canvas.height = HEIGHT;
+    canvas.width = document.body.clientWidth;
+    canvas.height = document.body.clientHeight;
     document.body.innerHTML = "";
     document.body.style.backgroundColor = "white";
-    let usernameDisplay = document.createElement("P");
-    usernameDisplay.innerText = "Your username is: " + username;
-    document.body.appendChild(usernameDisplay);
     document.body.appendChild(canvas);
     return ctx;
   }
@@ -67,7 +62,7 @@ class Vec {
   }
 
   relToPlayer() {
-    return this.relativeTo(game.playerObj.pos).add(new Vec(WIDTH/2, HEIGHT/2));
+    return this.relativeTo(game.playerObj.pos).add(new Vec(game.canvasCtx.canvas.width/2, game.canvasCtx.canvas.height/2));
   }
 
   add(p) {
@@ -109,7 +104,7 @@ class Player extends Entity {
     const ctx = game.canvasCtx;
     ctx.beginPath();
     ctx.fillStyle = "rgb(255, 0, 0)";
-    ctx.arc(WIDTH/2, HEIGHT/2, BLOCK_WIDTH/2, 0, 2*Math.PI);
+    ctx.arc(ctx.canvas.width/2, ctx.canvas.height/2, BLOCK_WIDTH/2, 0, 2*Math.PI);
     ctx.fill();
   }
 }
@@ -214,14 +209,32 @@ function update(dt) {
 }
 
 function render() {
-  game.canvasCtx.fillStyle = "black";
-  game.canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+  let ctx = game.canvasCtx;
+
+  let width  = document.body.clientWidth,
+      height = document.body.clientHeight;
+  if (ctx.canvas.width != width) {
+    ctx.canvas.width = width;
+  }
+  if (ctx.canvas.height != height) {
+    ctx.canvas.height = height;
+  }
+
+  ctx.fillStyle = "rgb(0, 0, 0)";
+  ctx.fillRect(0, 0, width, height);
   for (const obj of game.gameObjs) {
     obj.render();
   }
   if (game.playerObj) {
     game.playerObj.render();
   }
+
+  let text = "Your username is " + game.username + ".";
+  ctx.fillStyle = "rgb(80, 0, 80)";
+  ctx.fillRect(0, 0, ctx.measureText(text).width + 20, 30);
+  ctx.fillStyle = "rgb(255, 255, 255)";
+  ctx.font = "20px san-serif";
+  ctx.fillText(text, 10, 20);
 }
 
 function main() {
