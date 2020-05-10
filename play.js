@@ -34,6 +34,7 @@ class Game {
     canvas.height = document.body.clientHeight;
     document.body.innerHTML = "";
     document.body.style.backgroundColor = "white";
+    document.body.style.overflow = "hidden";
     document.body.appendChild(canvas);
     return ctx;
   }
