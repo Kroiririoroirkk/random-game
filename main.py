@@ -8,7 +8,7 @@ import websockets
 WSPORT = 8080
 
 BLOCK_WIDTH = 16
-PLAYER_SPEED = 30 #Pixels per second
+PLAYER_SPEED = 48 #Pixels per second
 MAX_MOVE_DT = 0.1
 
 class Game:
@@ -45,10 +45,10 @@ class Vec:
 
 def vec_from_dir(d):
   key = {
-    'l': Vec(-1,0),
-    'r': Vec(1,0),
-    'u': Vec(0,-1),
-    'd': Vec(0,1)
+    "l": Vec(-1,0),
+    "r": Vec(1,0),
+    "u": Vec(0,-1),
+    "d": Vec(0,1)
   }
   return key.get(d)
 
@@ -69,23 +69,43 @@ class Grass(Entity):
   def __init__(self, pos):
     super().__init__(pos)
 
-STARTING_WORLD_TEXT = ("16|8|"
+class WildGrass(Entity):
+  def __init__(self, pos):
+    super().__init__(pos)
+
+STARTING_WORLD_TEXT = ("16|16|"
+                "        gggggggggggggggg        |"
+                "     gggggggggggggggggggggg     |"
+                "   gggggggggggggggggggggggggg   |"
+                "  gggggggggggggggggggggggggggg  |"
+                "  gggggggggggggggggggggggggggg  |"
+                " gggggggggggggggggggggggggggggg |"
+                " gggggggggggggggggggggggggggggg |"
                 "gggggggggggggggggggggggggggggggg|"
                 "gggggggggggggggggggggggggggggggg|"
                 "gggggggggggggggggggggggggggggggg|"
                 "gggggggggggggggggggggggggggggggg|"
-                "gggggg gggg ggggg       gggggggg|"
-                "gggggg gggg gggggggg ggggggggggg|"
-                "gggggg gggg gggggggg ggggggggggg|"
-                "gggggg      gggggggg ggggggggggg|"
-                "gggggg gggg gggggggg ggggggggggg|"
-                "gggggg gggg gggggggg ggggggggggg|"
-                "gggggg gggg ggggg       gggggggg|"
+                "gggggggggggggggggggggggggggggggg|"
+                "gggggggGggggGgggggGGGGGGGggggggg|"
+                "gggggggGggggGggggggggGgggggggggg|"
+                "gggggggGggggGggggggggGgggggggggg|"
+                "gggggggGGGGGGggggggggGgggggggggg|"
+                "gggggggGggggGggggggggGgggggggggg|"
+                "gggggggGggggGggggggggGgggggggggg|"
+                "gggggggGggggGgggggGGGGGGGggggggg|"
                 "gggggggggggggggggggggggggggggggg|"
                 "gggggggggggggggggggggggggggggggg|"
                 "gggggggggggggggggggggggggggggggg|"
                 "gggggggggggggggggggggggggggggggg|"
-                "gggggggggggggggggggggggggggggggg")
+                "gggggggggggggggggggggggggggggggg|"
+                "gggggggggggggggggggggggggggggggg|"
+                " gggggggggggggggggggggggggggggg |"
+                " gggggggggggggggggggggggggggggg |"
+                "  gggggggggggggggggggggggggggg  |"
+                "  gggggggggggggggggggggggggggg  |"
+                "   gggggggggggggggggggggggggg   |"
+                "     gggggggggggggggggggggg     |"
+                "        gggggggggggggggg        ")
 
 class World:
   def __init__(self, gameObjs, spawnPos):
@@ -101,10 +121,12 @@ def load_world(w):
   game_objs = []
   for j, line in enumerate(world_map):
     for i, char in enumerate(line):
+      pos = Vec(i * BLOCK_WIDTH, j * BLOCK_WIDTH)
+      pos = pos.relative_to(origin)
       if (char == "g"):
-        pos = Vec(i * BLOCK_WIDTH, j * BLOCK_WIDTH)
-        pos = pos.relative_to(origin)
         game_objs.append(Grass(pos))
+      elif (char == "G"):
+        game_objs.append(WildGrass(pos))
   return World(game_objs, origin)
 
 class Worlds(Enum):
@@ -117,22 +139,22 @@ def get_world(w):
   return load_world(worlds.get(w))
 
 async def send_world(ws, world_text):
-  await ws.send('world|' + world_text)
+  await ws.send("world|" + world_text)
 
 async def send_moved_to(ws, pos):
-  await ws.send(f'movedto|{pos.x}|{pos.y}') 
+  await ws.send(f"movedto|{pos.x}|{pos.y}") 
 
 async def run(ws, path):
   username = await ws.recv()
-  print('New user: ' + username)
+  print("New user: " + username)
   game.set_player(username, Player(Vec(0,0), Worlds.STARTING_WORLD_NUM))
   await send_world(ws, STARTING_WORLD_TEXT)
   async for message in ws:
     await parseMessage(message, username, ws)
 
 async def parseMessage(message, username, ws):
-  if message.startswith('move|'):
-    parts = message.split('|')
+  if message.startswith("move|"):
+    parts = message.split("|")
     direction = parts[1]
     dirVec = vec_from_dir(direction)
     if dirVec:
@@ -145,15 +167,15 @@ async def parseMessage(message, username, ws):
       newPos = game.move_player(username, offset)
       await send_moved_to(ws, newPos)
 
-start_server = websockets.serve(run, '0.0.0.0', WSPORT)
+start_server = websockets.serve(run, "0.0.0.0", WSPORT)
 
 def cleanup(sig, frame):
-  print('Exiting...')
+  print("Exiting...")
   exit(0)
 
 signal(SIGINT, cleanup)
 
-print('WebSocket server starting! Press CTRL-C to exit.')
+print("WebSocket server starting! Press CTRL-C to exit.")
 loop = asyncio.get_event_loop()
 loop.run_until_complete(start_server)
 loop.run_forever()

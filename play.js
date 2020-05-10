@@ -6,11 +6,12 @@ const KEY_UP = 38;
 const KEY_RIGHT = 39;
 const KEY_DOWN = 40;
 
-const WIDTH = 512;
-const HEIGHT = 480;
-
 const BLOCK_WIDTH = 16;
-const PLAYER_SPEED = 20;
+
+const WIDTH = 32*BLOCK_WIDTH;
+const HEIGHT = 32*BLOCK_WIDTH;
+
+const PLAYER_SPEED = 48;
 
 // ----------- GAME -----------
 var game;
@@ -41,8 +42,8 @@ class Game {
   }
 
   registerKeyListeners() {
-    addEventListener('keydown', e => this.pressedKeys.add(e.keyCode), false);
-    addEventListener('keyup', e => this.pressedKeys.delete(e.keyCode), false);
+    addEventListener("keydown", e => this.pressedKeys.add(e.keyCode), false);
+    addEventListener("keyup", e => this.pressedKeys.delete(e.keyCode), false);
   }
 
   clearGameObjs() {
@@ -82,12 +83,10 @@ class Entity {
 
   render() {
     const ctx = game.canvasCtx;
-    ctx.strokeStyle = "rgb(50, 50, 50)";
-    ctx.fillStyle = "rgb(50, 50, 50)";
     ctx.beginPath();
+    ctx.fillStyle = "rgb(50, 50, 50)";
     let relPos = this.pos.relToPlayer();
     ctx.arc(relPos.x, relPos.y, BLOCK_WIDTH/2, 0, 2*Math.PI);
-    ctx.stroke();
     ctx.fill();
   }
 
@@ -108,11 +107,9 @@ class Player extends Entity {
 
   render() {
     const ctx = game.canvasCtx;
-    ctx.strokeStyle = "rgb(255, 0, 0)";
-    ctx.fillStyle = "rgb(255, 0, 0)";
     ctx.beginPath();
+    ctx.fillStyle = "rgb(255, 0, 0)";
     ctx.arc(WIDTH/2, HEIGHT/2, BLOCK_WIDTH/2, 0, 2*Math.PI);
-    ctx.stroke();
     ctx.fill();
   }
 }
@@ -124,14 +121,29 @@ class Grass extends Entity {
   }
 
   render() {
-    const ctx = game.canvasCtx;
-    ctx.strokeStyle = "rgb(0, 0, 0)";
+    let ctx = game.canvasCtx;
     ctx.fillStyle = "rgb(0, 255, 0)";
-    ctx.beginPath();
+    ctx.strokeStyle = "rgb(0, 0, 0)";
+    ctx.lineWidth = 1;
     let relPos = this.pos.relToPlayer();
-    ctx.rect(relPos.x, relPos.y, BLOCK_WIDTH, BLOCK_WIDTH);
-    ctx.stroke();
-    ctx.fill();
+    ctx.fillRect(relPos.x, relPos.y, BLOCK_WIDTH, BLOCK_WIDTH);
+    ctx.strokeRect(relPos.x, relPos.y, BLOCK_WIDTH, BLOCK_WIDTH);
+  }
+}
+
+class WildGrass extends Entity {
+  constructor(pos) {
+    super(pos);
+  }
+
+  render() {
+    let ctx = game.canvasCtx;
+    ctx.fillStyle = "rgb(0, 180, 0)";
+    ctx.strokeStyle = "rgb(0, 0, 0)";
+    ctx.lineWidth = 1;
+    let relPos = this.pos.relToPlayer();
+    ctx.fillRect(relPos.x, relPos.y, BLOCK_WIDTH, BLOCK_WIDTH);
+    ctx.strokeRect(relPos.x, relPos.y, BLOCK_WIDTH, BLOCK_WIDTH);
   }
 }
 
@@ -158,11 +170,15 @@ function handleWSMessage(e) {
     game.clearGameObjs();
     for (let j = 0; j < map.length; j++) {
       for (let i = 0; i < map[j].length; i++) {
+        let pos = new Vec(i * BLOCK_WIDTH, j * BLOCK_WIDTH);
+        pos = pos.relativeTo(origin);
         switch(map[j][i]) {
           case "g":
-            let pos = new Vec(i * BLOCK_WIDTH, j * BLOCK_WIDTH);
-            pos = pos.relativeTo(origin);
             game.addGameObj(new Grass(pos));
+            break;
+          case "G":
+            game.addGameObj(new WildGrass(pos));
+            break;
         }
       }
     }
@@ -198,7 +214,8 @@ function update(dt) {
 }
 
 function render() {
-  game.canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
+  game.canvasCtx.fillStyle = "black";
+  game.canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
   for (const obj of game.gameObjs) {
     obj.render();
   }
