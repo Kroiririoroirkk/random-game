@@ -160,7 +160,7 @@ async def parseMessage(message, username, ws):
       multiplier = SPEED_MULTIPLIER
     parts = message.split("|")
     direction = parts[1]
-    dirVec = sum([vec_from_dir(char) for char in direction])
+    dirVec = sum([vec_from_dir(char) for char in direction], start=Vec(0,0))
     if dirVec:
       player = game.get_player(username)
       now = time.time()
