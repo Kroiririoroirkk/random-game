@@ -9,6 +9,7 @@ WSPORT = 8080
 
 BLOCK_WIDTH = 16
 PLAYER_SPEED = 48 #Pixels per second
+SPEED_MULTIPLIER = 2
 MAX_MOVE_DT = 0.1
 
 class Game:
@@ -153,16 +154,19 @@ async def run(ws, path):
     await parseMessage(message, username, ws)
 
 async def parseMessage(message, username, ws):
-  if message.startswith("move|"):
+  if message.startswith("move|") or message.startswith("fastmove|"):
+    multiplier = 1
+    if message.startswith("fastmove|"):
+      multiplier = SPEED_MULTIPLIER
     parts = message.split("|")
     direction = parts[1]
-    dirVec = vec_from_dir(direction)
+    dirVec = sum([vec_from_dir(char) for char in direction])
     if dirVec:
       player = game.get_player(username)
       now = time.time()
       dt = min(now - player.time_since_last_move, MAX_MOVE_DT)
       player.time_since_last_move = now
-      move_dist = PLAYER_SPEED * dt
+      move_dist = PLAYER_SPEED * dt * multiplier
       offset = dirVec * move_dist
       newPos = game.move_player(username, offset)
       await send_moved_to(ws, newPos)

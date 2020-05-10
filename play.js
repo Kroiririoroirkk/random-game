@@ -1,6 +1,7 @@
 "use strict";
 
 // ----------- CONSTANTS -----------
+const SHIFT = 16;
 const KEY_LEFT = 37;
 const KEY_UP = 38;
 const KEY_RIGHT = 39;
@@ -9,6 +10,7 @@ const KEY_DOWN = 40;
 const BLOCK_WIDTH = 16;
 
 const PLAYER_SPEED = 48;
+const SPEED_MULTIPLIER = 2;
 
 // ----------- GAME -----------
 var game;
@@ -156,6 +158,7 @@ function startGame() {
 
 // ----------- GAME LOGIC -----------
 function handleWSMessage(e) {
+  console.log(e)
   if (e.data.startsWith("world|")) {
     let parts  = e.data.split("|"),
         spawnX = parseInt(parts[1]),
@@ -190,21 +193,35 @@ function initialize() {
 }
 
 function update(dt) {
+  let moveStr = "",
+      multiplier = 1,
+      fastmove = false;
+  if (game.pressedKeys.has(SHIFT)) {
+    multiplier = SPEED_MULTIPLIER;
+    fastmove = true;
+  }
   if (game.pressedKeys.has(KEY_LEFT)) {
-    game.ws.send("move|l");
-    game.playerObj.move(new Vec(-PLAYER_SPEED*dt, 0));
+    moveStr += "l";
+    game.playerObj.move(new Vec(-PLAYER_SPEED*dt*multiplier, 0));
   }
   if (game.pressedKeys.has(KEY_UP)) {
-    game.ws.send("move|u");
-    game.playerObj.move(new Vec(0, -PLAYER_SPEED*dt));
+    moveStr += "u";
+    game.playerObj.move(new Vec(0, -PLAYER_SPEED*dt*multiplier));
   }
   if (game.pressedKeys.has(KEY_RIGHT)) {
-    game.ws.send("move|r");
-    game.playerObj.move(new Vec(PLAYER_SPEED*dt, 0));
+    moveStr += "r";
+    game.playerObj.move(new Vec(PLAYER_SPEED*dt*multiplier, 0));
   }
   if (game.pressedKeys.has(KEY_DOWN)) {
-    game.ws.send("move|d");
-    game.playerObj.move(new Vec(0, PLAYER_SPEED*dt));
+    moveStr += "d";
+    game.playerObj.move(new Vec(0, PLAYER_SPEED*dt*multiplier));
+  }
+  if (moveStr) {
+    if (fastmove) {
+      game.ws.send("fastmove|" + moveStr);
+    } else {
+      game.ws.send("move|" + moveStr);
+    }
   }
 }
 
