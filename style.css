@@ -4,11 +4,11 @@ body {
 
 div {
   width: 50%;
-  margin: 20% auto;
-  padding: 10%;
+  margin: 10% auto;
+  padding: 5%;
   border: 1px solid black;
-  border-radius: 75px;
+  border-radius: 50px;
   background-color: pink;
   color: purple;
-  font: 28px sans-serif;
+  font: 20px sans-serif;
 }
