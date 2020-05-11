@@ -113,19 +113,21 @@ class Player extends Entity {
 }
 
 // ----------- GRASS -----------
+function drawRect(ctx, pos, fillStyle) {
+  ctx.fillStyle = fillStyle;
+  ctx.strokeStyle = "rgb(0, 0, 0)";
+  ctx.lineWidth = 1;
+  ctx.fillRect(pos.x - BLOCK_WIDTH/2, pos.y - BLOCK_WIDTH/2, BLOCK_WIDTH, BLOCK_WIDTH);
+  ctx.strokeRect(pos.x - BLOCK_WIDTH/2, pos.y - BLOCK_WIDTH/2, BLOCK_WIDTH, BLOCK_WIDTH);
+}
+
 class Grass extends Entity {
   constructor(pos) {
     super(pos);
   }
 
   render() {
-    let ctx = game.canvasCtx;
-    ctx.fillStyle = "rgb(0, 255, 0)";
-    ctx.strokeStyle = "rgb(0, 0, 0)";
-    ctx.lineWidth = 1;
-    let relPos = this.pos.relToPlayer();
-    ctx.fillRect(relPos.x, relPos.y, BLOCK_WIDTH, BLOCK_WIDTH);
-    ctx.strokeRect(relPos.x, relPos.y, BLOCK_WIDTH, BLOCK_WIDTH);
+    drawRect(game.canvasCtx, this.pos.relToPlayer(), "rgb(0, 255, 0)");
   }
 }
 
@@ -135,13 +137,17 @@ class WildGrass extends Entity {
   }
 
   render() {
-    let ctx = game.canvasCtx;
-    ctx.fillStyle = "rgb(0, 180, 0)";
-    ctx.strokeStyle = "rgb(0, 0, 0)";
-    ctx.lineWidth = 1;
-    let relPos = this.pos.relToPlayer();
-    ctx.fillRect(relPos.x, relPos.y, BLOCK_WIDTH, BLOCK_WIDTH);
-    ctx.strokeRect(relPos.x, relPos.y, BLOCK_WIDTH, BLOCK_WIDTH);
+    drawRect(game.canvasCtx, this.pos.relToPlayer(), "rgb(0, 180, 0)");
+  }
+}
+
+class Wall extends Entity {
+  constructor(pos) {
+    super(pos);
+  }
+
+  render() {
+    drawRect(game.canvasCtx, this.pos.relToPlayer(), "rgb(210, 105, 30)");
   }
 }
 
@@ -177,6 +183,9 @@ function handleWSMessage(e) {
             break;
           case "G":
             game.addGameObj(new WildGrass(pos));
+            break;
+          case "w":
+            game.addGameObj(new Wall(pos));
             break;
         }
       }

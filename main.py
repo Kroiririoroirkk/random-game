@@ -22,12 +22,6 @@ class Game:
   def set_player(self, username, player):
     self.player_objs[username] = player
 
-  def move_player(self, username, offset):
-    p = self.get_player(username)
-    p.move(offset)
-    self.set_player(username, p)
-    return p.pos
-
 game = Game()
 
 class Vec:
@@ -41,6 +35,9 @@ class Vec:
   def __add__(self, p):
     return Vec(self.x + p.x, self.y + p.y)
 
+  def __sub__(self, p):
+    return Vec(self.x - p.x, self.y - p.y)
+
   def __mul__(self, scalar):
     return Vec(self.x * scalar, self.y * scalar)
 
@@ -53,12 +50,39 @@ def vec_from_dir(d):
   }
   return key.get(d)
 
+class BoundingBox:
+  def __init__(self, v1, v2):
+    self.v1 = v1
+    self.v2 = v2
+
+  def get_left(self):
+    return self.v1.x
+
+  def get_top(self):
+    return self.v1.y
+
+  def get_right(self):
+    return self.v2.x
+
+  def get_bottom(self):
+    return self.v2.y
+
+  def is_touching(self, bbox):
+    return not (bbox.get_left()   > self.get_right() or
+                bbox.get_right()  < self.get_left() or
+                bbox.get_top()    > self.get_bottom() or
+                bbox.get_bottom() < self.get_top())
+
 class Entity:
   def __init__(self, pos):
     self.pos = pos
 
   def move(self, offset):
     self.pos += offset
+
+  def get_bounding_box(self):
+    halfBlock = Vec(BLOCK_WIDTH/2, BLOCK_WIDTH/2)
+    return BoundingBox(self.pos - halfBlock, self.pos + halfBlock)
 
 class Player(Entity):
   def __init__(self, pos, world_num):
@@ -74,44 +98,53 @@ class WildGrass(Entity):
   def __init__(self, pos):
     super().__init__(pos)
 
-STARTING_WORLD_TEXT = ("16|16|"
-                "        gggggggggggggggg        |"
-                "     gggggggggggggggggggggg     |"
-                "   gggggggggggggggggggggggggg   |"
-                "  gggggggggggggggggggggggggggg  |"
-                "  gggggggggggggggggggggggggggg  |"
-                " gggggggggggggggggggggggggggggg |"
-                " gggggggggggggggggggggggggggggg |"
-                "gggggggggggggggggggggggggggggggg|"
-                "gggggggggggggggggggggggggggggggg|"
-                "gggggggggggggggggggggggggggggggg|"
-                "gggggggggggggggggggggggggggggggg|"
-                "gggggggggggggggggggggggggggggggg|"
-                "gggggggGggggGgggggGGGGGGGggggggg|"
-                "gggggggGggggGggggggggGgggggggggg|"
-                "gggggggGggggGggggggggGgggggggggg|"
-                "gggggggGGGGGGggggggggGgggggggggg|"
-                "gggggggGggggGggggggggGgggggggggg|"
-                "gggggggGggggGggggggggGgggggggggg|"
-                "gggggggGggggGgggggGGGGGGGggggggg|"
-                "gggggggggggggggggggggggggggggggg|"
-                "gggggggggggggggggggggggggggggggg|"
-                "gggggggggggggggggggggggggggggggg|"
-                "gggggggggggggggggggggggggggggggg|"
-                "gggggggggggggggggggggggggggggggg|"
-                "gggggggggggggggggggggggggggggggg|"
-                " gggggggggggggggggggggggggggggg |"
-                " gggggggggggggggggggggggggggggg |"
-                "  gggggggggggggggggggggggggggg  |"
-                "  gggggggggggggggggggggggggggg  |"
-                "   gggggggggggggggggggggggggg   |"
-                "     gggggggggggggggggggggg     |"
-                "        gggggggggggggggg        ")
+class Wall(Entity):
+  def __init__(self, pos):
+    super().__init__(pos)
+
+STARTING_WORLD_TEXT = ("18|18|"
+              "        wwwwwwwwwwwwwwwwwwww        |"
+              "      wwwwwwwwwwwwwwwwwwwwwwww      |"
+              "   wwwwwwggggggggggggggggggwwwwww   |"
+              "  wwwwggggggggggggggggggggggggwwww  |"
+              " wwwggggggggggggggggggggggggggggwww |"
+              " wwggggggggggggggggggggggggggggggww |"
+              "wwwggggggggggggggggggggggggggggggwww|"
+              "wwggggggggggggggggggggggggggggggggww|"
+              "wwggggggggggggggggggggggggggggggggww|"
+              "wwggggggggggggggggggggggggggggggggww|"
+              "wwggggggggggggggggggggggggggggggggww|"
+              "wwggggggggggggggggggggggggggggggggww|"
+              "wwggggggggggggggggggggggggggggggggww|"
+              "wwggggggggggggggggggggggggggggggggww|"
+              "wwgggggggGggggGgggggGGGGGGGgggggggww|"
+              "wwgggggggGggggGggggggggGggggggggggww|"
+              "wwgggggggGggggGggggggggGggggggggggww|"
+              "wwgggggggGGGGGGggggggggGggggggggggww|"
+              "wwgggggggGggggGggggggggGggggggggggww|"
+              "wwgggggggGggggGggggggggGggggggggggww|"
+              "wwgggggggGggggGgggggGGGGGGGgggggggww|"
+              "wwggggggggggggggggggggggggggggggggww|"
+              "wwggggggggggggggggggggggggggggggggww|"
+              "wwggggggggggggggggggggggggggggggggww|"
+              "wwggggggggggggggggggggggggggggggggww|"
+              "wwggggggggggggggggggggggggggggggggww|"
+              "wwggggggggggggggggggggggggggggggggww|"
+              "wwggggggggggggggggggggggggggggggggww|"
+              "wwggggggggggggggggggggggggggggggggww|"
+              "wwwggggggggggggggggggggggggggggggwww|"
+              " wwggggggggggggggggggggggggggggggww |"
+              " wwwggggggggggggggggggggggggggggwww |"
+              "  wwwwggggggggggggggggggggggggwwww  |"
+              "   wwwwwwggggggggggggggggggwwwwww   |"
+              "      wwwwwwwwwwwwwwwwwwwwwwww      |"
+              "        wwwwwwwwwwwwwwwwwwww        ")
 
 class World:
-  def __init__(self, gameObjs, spawnPos):
-    self.gameObjs = gameObjs
-    self.spawnPos = spawnPos
+  def __init__(self, game_objs, wall_objs, spawn_pos):
+    self.game_objs = game_objs
+    self.wall_objs = wall_objs
+    self.spawn_pos = spawn_pos
 
 def load_world(w):
   parts = w.split("|")
@@ -120,6 +153,7 @@ def load_world(w):
   origin = Vec(spawnX * BLOCK_WIDTH + BLOCK_WIDTH/2, spawnY * BLOCK_WIDTH + BLOCK_WIDTH/2)
   world_map = parts[2:]
   game_objs = []
+  wall_objs = []
   for j, line in enumerate(world_map):
     for i, char in enumerate(line):
       pos = Vec(i * BLOCK_WIDTH, j * BLOCK_WIDTH)
@@ -128,16 +162,19 @@ def load_world(w):
         game_objs.append(Grass(pos))
       elif (char == "G"):
         game_objs.append(WildGrass(pos))
-  return World(game_objs, origin)
+      elif (char == "w"):
+        wall_objs.append(Wall(pos))
+  return World(game_objs, wall_objs, origin)
 
 class Worlds(Enum):
   STARTING_WORLD_NUM = 1
 
+STARTING_WORLD = load_world(STARTING_WORLD_TEXT)
 def get_world(w):
   worlds = {
-    Worlds.STARTING_WORLD_NUM: STARTING_WORLD_TEXT
+    Worlds.STARTING_WORLD_NUM: STARTING_WORLD
   }
-  return load_world(worlds.get(w))
+  return worlds.get(w)
 
 async def send_world(ws, world_text):
   await ws.send("world|" + world_text)
@@ -166,10 +203,17 @@ async def parseMessage(message, username, ws):
       now = time.time()
       dt = min(now - player.time_since_last_move, MAX_MOVE_DT)
       player.time_since_last_move = now
-      move_dist = PLAYER_SPEED * dt * multiplier
-      offset = dirVec * move_dist
-      newPos = game.move_player(username, offset)
-      await send_moved_to(ws, newPos)
+      offset = dirVec * (PLAYER_SPEED * dt * multiplier)
+      player.pos += offset
+      canMove = True
+      for wall_obj in get_world(player.world_num).wall_objs:
+        if wall_obj.get_bounding_box().is_touching(player.get_bounding_box()):
+          canMove = False
+      if canMove:
+        game.set_player(username, player)
+      else:
+        player.pos -= offset
+      await send_moved_to(ws, player.pos)
 
 start_server = websockets.serve(run, "0.0.0.0", WSPORT)
 
