@@ -107,7 +107,7 @@ class Player extends Entity {
     const ctx = game.canvasCtx;
     ctx.beginPath();
     ctx.fillStyle = "rgb(255, 0, 0)";
-    ctx.arc(ctx.canvas.width/2, ctx.canvas.height/2, BLOCK_WIDTH/2, 0, 2*Math.PI);
+    ctx.arc(ctx.canvas.width/2, ctx.canvas.height/2, 0.8*BLOCK_WIDTH/2, 0, 2*Math.PI);
     ctx.fill();
   }
 }
@@ -151,6 +151,16 @@ class Wall extends Entity {
   }
 }
 
+class Portal extends Entity {
+  constructor(pos) {
+    super(pos);
+  }
+
+  render() {
+    drawRect(game.canvasCtx, this.pos.relToPlayer(), "rgb(0, 0, 0)");
+  }
+}
+
 // ----------- ENTRY POINT -----------
 function startGame() {
   let username = document.getElementById("username").value;
@@ -185,6 +195,9 @@ function handleWSMessage(e) {
             break;
           case "w":
             game.addGameObj(new Wall(pos));
+            break;
+          case "p":
+            game.addGameObj(new Portal(pos));
             break;
         }
       }

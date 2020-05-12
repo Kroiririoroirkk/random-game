@@ -12,6 +12,7 @@ BLOCK_WIDTH = 16
 PLAYER_SPEED = 48 #Pixels per second
 SPEED_MULTIPLIER = 2
 MAX_MOVE_DT = 0.1
+PORTAL_RECOVER_TIME = 1
 
 class Game:
   def __init__(self):
@@ -46,8 +47,7 @@ class Vec:
     return math.dist((self.x, self.y), (p.x, p.y))
 
   def blocks_to_px(self):
-    return Vec(self.x*BLOCK_WIDTH+BLOCK_WIDTH/2,
-               self.y*BLOCK_WIDTH+BLOCK_WIDTH/2)
+    return self * BLOCK_WIDTH
 
 def vec_from_dir(d):
   key = {
@@ -169,6 +169,15 @@ class BoundingBox:
                 bbox.get_top_b()    > self.get_bottom_b() or
                 bbox.get_bottom_b() < self.get_top_b())
 
+  def get_center(self):
+    return (self.v1 + self.v2)*0.5
+
+  def scale(self, k):
+    c = self.get_center()
+    return BoundingBox(
+      Vec(c.x - k*self.get_width()/2, c.y - k*self.get_height()/2),
+      Vec(c.x + k*self.get_width()/2, c.y + k*self.get_width()/2))
+
 class Entity:
   def __init__(self, pos):
     self.pos = pos
@@ -180,11 +189,18 @@ class Entity:
     halfBlock = Vec(BLOCK_WIDTH/2, BLOCK_WIDTH/2)
     return BoundingBox(self.pos - halfBlock, self.pos + halfBlock)
 
+  def is_touching(self, e):
+    return self.get_bounding_box().is_touching(e.get_bounding_box())
+
 class Player(Entity):
-  def __init__(self, pos, world_num):
-    super().__init__(pos)
-    self.time_since_last_move = 0
-    self.world_num = world_num
+  def __init__(self):
+    super().__init__(None)
+    self.time_of_last_move = 0
+    self.world_id = None
+    self.time_of_last_portal = 0
+
+  def get_bounding_box(self):
+    return super().get_bounding_box().scale(0.8)
 
 class Grass(Entity):
   def __init__(self, pos):
@@ -224,19 +240,31 @@ class Wall(Entity):
         and path_nw.start.y >= bbox.get_bottom_b()):
       player.pos.y = bbox.get_bottom_b() + offset
 
+class PortalDest:
+  def __init__(self, w_id, spawn_num):
+    self.w_id = w_id
+    self.spawn_num = spawn_num
+
+class Portal(Entity):
+  def __init__(self, pos, dest):
+    super().__init__(pos)
+    self.dest = dest
+
 class World:
-  def __init__(self, num, text, game_objs, wall_objs, spawn_posits):
-    self.num = num
+  def __init__(self, w_id, text, game_objs, wall_objs, portal_objs, spawn_posits):
+    self.w_id = w_id
     self.text = text
     self.game_objs = game_objs
     self.wall_objs = wall_objs
+    self.portal_objs = portal_objs
     self.spawn_posits = spawn_posits
 
 class WorldData:
-  def __init__(self, w_id, text, spawn_posits):
+  def __init__(self, w_id, text, spawn_posits, linked_dests):
     self.w_id = w_id
     self.text = text
     self.spawn_posits = spawn_posits
+    self.linked_dests = linked_dests
 
 worlds = {}
 
@@ -244,16 +272,20 @@ def load_world(w):
   world_map = w.text.split("|")
   game_objs = []
   wall_objs = []
+  portal_objs = []
+  linked_dests = w.linked_dests
   for j, line in enumerate(world_map):
     for i, char in enumerate(line):
       pos = Vec(i * BLOCK_WIDTH, j * BLOCK_WIDTH)
-      if (char == "g"):
+      if char == "g":
         game_objs.append(Grass(pos))
-      elif (char == "G"):
+      elif char == "G":
         game_objs.append(WildGrass(pos))
-      elif (char == "w"):
+      elif char == "w":
         wall_objs.append(Wall(pos))
-  world_obj = World(w.w_id, w.text, game_objs, wall_objs, w.spawn_posits)
+      elif char == "p":
+        portal_objs.append(Portal(pos, linked_dests.pop(0)))
+  world_obj = World(w.w_id, w.text, game_objs, wall_objs, portal_objs, w.spawn_posits)
   worlds[w.w_id] = world_obj
   return world_obj
 
@@ -292,14 +324,18 @@ STARTING_WORLD_DATA = WorldData("starting_world",
   " wwwggggggggggggggggggggggggggggwww |"
   "  wwwwggggggggggggggggggggggggwwww  |"
   "   wwwwwwggggggggggggggggggwwwwww   |"
-  "      wwwwwwwwwwwwwwwwwwwwwwww      |"
+  "      wwwwwwwwwwwwpwwwwwwwwwww      |"
   "        wwwwwwwwwwwwwwwwwwww        ",
-    [Vec(18,18).blocks_to_px()])
+  [Vec(18,18).blocks_to_px(),
+   Vec(18,34).blocks_to_px()],
+  [PortalDest("second_world", 0)])
 SECOND_WORLD_DATA = WorldData("second_world",
-  "wwww"
-  "wggw"
+  "wwww|"
+  "wgpw|"
+  "wGgw|"
   "wwww",
-    [Vec(2,1).blocks_to_px()])
+  [Vec(2,1).blocks_to_px()],
+  [PortalDest("starting_world", 1)])
 
 STARTING_WORLD = load_world(STARTING_WORLD_DATA)
 SECOND_WORLD = load_world(SECOND_WORLD_DATA)
@@ -308,7 +344,9 @@ def get_world(w):
   return worlds.get(w)
 
 async def set_and_send_world(ws, username, world, spawn_number):
-  p = Player(world.spawn_posits[spawn_number], world.num)
+  p = game.get_player(username)
+  p.world_id = world.w_id
+  p.pos = world.spawn_posits[spawn_number]
   game.set_player(username, p)
   await send_world(ws, world.text, world.spawn_posits[spawn_number])
 
@@ -321,6 +359,7 @@ async def send_moved_to(ws, pos):
 async def run(ws, path):
   username = await ws.recv()
   print("New user: " + username)
+  game.set_player(username, Player())
   await set_and_send_world(ws, username, STARTING_WORLD, 0)
   async for message in ws:
     await parseMessage(message, username, ws)
@@ -336,20 +375,28 @@ async def parseMessage(message, username, ws):
     if dirVec:
       player = game.get_player(username)
       now = time.monotonic()
-      dt = min(now - player.time_since_last_move, MAX_MOVE_DT)
-      player.time_since_last_move = now
+      dt = min(now - player.time_of_last_move, MAX_MOVE_DT)
+      player.time_of_last_move = now
       offset = dirVec * (PLAYER_SPEED * dt * multiplier)
       startingPos = player.pos
       player.pos += offset
+      world = get_world(player.world_id)
       bumped_wall_objs = [
-        wall_obj for wall_obj in
-          get_world(player.world_num).wall_objs
-          if wall_obj.get_bounding_box().is_touching(player.get_bounding_box())]
+        wall_obj for wall_obj in world.wall_objs
+        if wall_obj.is_touching(player)]
       bumped_wall_objs.sort(key = lambda wall_obj:
         wall_obj.pos.dist_to(player.pos))
       for wall_obj in bumped_wall_objs:
         wall_obj.block_movement(player,
           LineSegment(startingPos, player.pos))
+      for portal_obj in world.portal_objs:
+        if (portal_obj.is_touching(player)
+            and now - player.time_of_last_portal > PORTAL_RECOVER_TIME):
+          player.time_of_last_portal = now
+          w = get_world(portal_obj.dest.w_id)
+          spawn_num = portal_obj.dest.spawn_num
+          await set_and_send_world(ws, username, w, spawn_num)
+          break
       game.set_player(username, player)
       await send_moved_to(ws, player.pos)
 
