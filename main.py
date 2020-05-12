@@ -86,7 +86,6 @@ class LineSegment:
       m = other.slope()
       b = other.intercept()
       intersect_y = m*self.start.x+b
-      print(intersect_y, self.start.y, self.end.y, other.start.y, other.end.y)
       return (is_between(intersect_y, self.start.y, self.end.y)
         and is_between(intersect_y, other.end.y, other.start.y))
     if other.start.x == other.end.x:
@@ -102,7 +101,6 @@ class LineSegment:
     if m1 == m2:
       return b1 == b2
     intersect_x = (b2-b1)/(m1-m2)
-    print(intersect_x, self.start.x, self.end.x, other.start.x, other.end.x)
     return (is_between(intersect_x, self.start.x, self.end.x)
       and is_between(intersect_x, other.start.x, other.end.x))
 
