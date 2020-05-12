@@ -45,6 +45,10 @@ class Vec:
   def dist_to(self, p):
     return math.dist((self.x, self.y), (p.x, p.y))
 
+  def blocks_to_px(self):
+    return Vec(self.x*BLOCK_WIDTH+BLOCK_WIDTH/2,
+               self.y*BLOCK_WIDTH+BLOCK_WIDTH/2)
+
 def vec_from_dir(d):
   key = {
     "l": Vec(-1,0),
@@ -220,82 +224,96 @@ class Wall(Entity):
         and path_nw.start.y >= bbox.get_bottom_b()):
       player.pos.y = bbox.get_bottom_b() + offset
 
-STARTING_WORLD_TEXT = ("18|18|"
-              "        wwwwwwwwwwwwwwwwwwww        |"
-              "      wwwwwwwwwwwwwwwwwwwwwwww      |"
-              "   wwwwwwggggggggggggggggggwwwwww   |"
-              "  wwwwggggggggggggggggggggggggwwww  |"
-              " wwwggggggggggggggggggggggggggggwww |"
-              " wwggggggggggggggggggggggggggggggww |"
-              "wwwggggggggggggggggggggggggggggggwww|"
-              "wwggggggggggggggggggggggggggggggggww|"
-              "wwggggggggggggggggggggggggggggggggww|"
-              "wwggggggggggggggggggggggggggggggggww|"
-              "wwggggggggggggggggggggggggggggggggww|"
-              "wwggggggggggggggggggggggggggggggggww|"
-              "wwggggggggggggggggggggggggggggggggww|"
-              "wwggggggggggggggggggggggggggggggggww|"
-              "wwgggggggGggggGgggggGGGGGGGgggggggww|"
-              "wwgggggggGggggGggggggggGggggggggggww|"
-              "wwgggggggGggggGggggggggGggggggggggww|"
-              "wwgggggggGGGGGGggggggggGggggggggggww|"
-              "wwgggggggGggggGggggggggGggggggggggww|"
-              "wwgggggggGggggGggggggggGggggggggggww|"
-              "wwgggggggGggggGgggggGGGGGGGgggggggww|"
-              "wwggggggggggggggggggggggggggggggggww|"
-              "wwggggggggggggggggggggggggggggggggww|"
-              "wwggggggggggggggggggggggggggggggggww|"
-              "wwggggggggggggggggggggggggggggggggww|"
-              "wwggggggggggggggggggggggggggggggggww|"
-              "wwggggggggggggggggggggggggggggggggww|"
-              "wwggggggggggggggggggggggggggggggggww|"
-              "wwggggggggggggggggggggggggggggggggww|"
-              "wwwggggggggggggggggggggggggggggggwww|"
-              " wwggggggggggggggggggggggggggggggww |"
-              " wwwggggggggggggggggggggggggggggwww |"
-              "  wwwwggggggggggggggggggggggggwwww  |"
-              "   wwwwwwggggggggggggggggggwwwwww   |"
-              "      wwwwwwwwwwwwwwwwwwwwwwww      |"
-              "        wwwwwwwwwwwwwwwwwwww        ")
-
 class World:
-  def __init__(self, game_objs, wall_objs, spawn_pos):
+  def __init__(self, num, text, game_objs, wall_objs, spawn_posits):
+    self.num = num
+    self.text = text
     self.game_objs = game_objs
     self.wall_objs = wall_objs
-    self.spawn_pos = spawn_pos
+    self.spawn_posits = spawn_posits
+
+class WorldData:
+  def __init__(self, w_id, text, spawn_posits):
+    self.w_id = w_id
+    self.text = text
+    self.spawn_posits = spawn_posits
+
+worlds = {}
 
 def load_world(w):
-  parts = w.split("|")
-  spawnX = int(parts[0])
-  spawnY = int(parts[1])
-  origin = Vec(spawnX * BLOCK_WIDTH + BLOCK_WIDTH/2, spawnY * BLOCK_WIDTH + BLOCK_WIDTH/2)
-  world_map = parts[2:]
+  world_map = w.text.split("|")
   game_objs = []
   wall_objs = []
   for j, line in enumerate(world_map):
     for i, char in enumerate(line):
       pos = Vec(i * BLOCK_WIDTH, j * BLOCK_WIDTH)
-      pos = pos.relative_to(origin)
       if (char == "g"):
         game_objs.append(Grass(pos))
       elif (char == "G"):
         game_objs.append(WildGrass(pos))
       elif (char == "w"):
         wall_objs.append(Wall(pos))
-  return World(game_objs, wall_objs, origin)
+  world_obj = World(w.w_id, w.text, game_objs, wall_objs, w.spawn_posits)
+  worlds[w.w_id] = world_obj
+  return world_obj
 
-class Worlds(Enum):
-  STARTING_WORLD_NUM = 1
+STARTING_WORLD_DATA = WorldData("starting_world",
+  "        wwwwwwwwwwwwwwwwwwww        |"
+  "      wwwwwwwwwwwwwwwwwwwwwwww      |"
+  "   wwwwwwggggggggggggggggggwwwwww   |"
+  "  wwwwggggggggggggggggggggggggwwww  |"
+  " wwwggggggggggggggggggggggggggggwww |"
+  " wwggggggggggggggggggggggggggggggww |"
+  "wwwggggggggggggggggggggggggggggggwww|"
+  "wwggggggggggggggggggggggggggggggggww|"
+  "wwggggggggggggggggggggggggggggggggww|"
+  "wwggggggggggggggggggggggggggggggggww|"
+  "wwggggggggggggggggggggggggggggggggww|"
+  "wwggggggggggggggggggggggggggggggggww|"
+  "wwggggggggggggggggggggggggggggggggww|"
+  "wwggggggggggggggggggggggggggggggggww|"
+  "wwgggggggGggggGgggggGGGGGGGgggggggww|"
+  "wwgggggggGggggGggggggggGggggggggggww|"
+  "wwgggggggGggggGggggggggGggggggggggww|"
+  "wwgggggggGGGGGGggggggggGggggggggggww|"
+  "wwgggggggGggggGggggggggGggggggggggww|"
+  "wwgggggggGggggGggggggggGggggggggggww|"
+  "wwgggggggGggggGgggggGGGGGGGgggggggww|"
+  "wwggggggggggggggggggggggggggggggggww|"
+  "wwggggggggggggggggggggggggggggggggww|"
+  "wwggggggggggggggggggggggggggggggggww|"
+  "wwggggggggggggggggggggggggggggggggww|"
+  "wwggggggggggggggggggggggggggggggggww|"
+  "wwggggggggggggggggggggggggggggggggww|"
+  "wwggggggggggggggggggggggggggggggggww|"
+  "wwggggggggggggggggggggggggggggggggww|"
+  "wwwggggggggggggggggggggggggggggggwww|"
+  " wwggggggggggggggggggggggggggggggww |"
+  " wwwggggggggggggggggggggggggggggwww |"
+  "  wwwwggggggggggggggggggggggggwwww  |"
+  "   wwwwwwggggggggggggggggggwwwwww   |"
+  "      wwwwwwwwwwwwwwwwwwwwwwww      |"
+  "        wwwwwwwwwwwwwwwwwwww        ",
+    [Vec(18,18).blocks_to_px()])
+SECOND_WORLD_DATA = WorldData("second_world",
+  "wwww"
+  "wggw"
+  "wwww",
+    [Vec(2,1).blocks_to_px()])
 
-STARTING_WORLD = load_world(STARTING_WORLD_TEXT)
+STARTING_WORLD = load_world(STARTING_WORLD_DATA)
+SECOND_WORLD = load_world(SECOND_WORLD_DATA)
+
 def get_world(w):
-  worlds = {
-    Worlds.STARTING_WORLD_NUM: STARTING_WORLD
-  }
   return worlds.get(w)
 
-async def send_world(ws, world_text):
-  await ws.send("world|" + world_text)
+async def set_and_send_world(ws, username, world, spawn_number):
+  p = Player(world.spawn_posits[spawn_number], world.num)
+  game.set_player(username, p)
+  await send_world(ws, world.text, world.spawn_posits[spawn_number])
+
+async def send_world(ws, world_text, spawn_pos):
+  await ws.send(f"world|{spawn_pos.x}|{spawn_pos.y}|{world_text}")
 
 async def send_moved_to(ws, pos):
   await ws.send(f"movedto|{pos.x}|{pos.y}") 
@@ -303,8 +321,7 @@ async def send_moved_to(ws, pos):
 async def run(ws, path):
   username = await ws.recv()
   print("New user: " + username)
-  game.set_player(username, Player(Vec(0,0), Worlds.STARTING_WORLD_NUM))
-  await send_world(ws, STARTING_WORLD_TEXT)
+  await set_and_send_world(ws, username, STARTING_WORLD, 0)
   async for message in ws:
     await parseMessage(message, username, ws)
 

@@ -170,13 +170,12 @@ function handleWSMessage(e) {
     let parts  = e.data.split("|"),
         spawnX = parseInt(parts[1]),
         spawnY = parseInt(parts[2]),
-        origin = new Vec(spawnX * BLOCK_WIDTH + BLOCK_WIDTH/2, spawnY * BLOCK_WIDTH + BLOCK_WIDTH/2),
+        origin = new Vec(spawnX, spawnY),
         map    = parts.slice(3);
     game.clearGameObjs();
     for (let j = 0; j < map.length; j++) {
       for (let i = 0; i < map[j].length; i++) {
         let pos = new Vec(i * BLOCK_WIDTH, j * BLOCK_WIDTH);
-        pos = pos.relativeTo(origin);
         switch(map[j][i]) {
           case "g":
             game.addGameObj(new Grass(pos));
@@ -190,16 +189,17 @@ function handleWSMessage(e) {
         }
       }
     }
+    if (game.playerObj) {
+      game.playerObj.pos = origin;
+    } else {
+      game.playerObj = new Player(origin);
+    }
   } else if (e.data.startsWith("movedto|")) {
     let parts = e.data.split("|"),
         newX  = parseInt(parts[1]),
         newY  = parseInt(parts[2]);
     game.playerObj.moveTo(new Vec(newX, newY));
   }
-}
-
-function initialize() {
-  game.playerObj = new Player(new Vec(0, 0));
 }
 
 function update(dt) {
@@ -268,7 +268,6 @@ function main() {
   let w = window;
   let requestAnimationFrame = w.requestAnimationFrame || w.webkitRequestAnimationFrame || w.msRequestAnimationFrame || w.mozRequestAnimationFrame;
 
-  initialize();
   let gameLoop = function(then) {
     return function(now) {
       update((now - then)/1000);
