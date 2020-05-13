@@ -2,6 +2,7 @@
 
 // ----------- CONSTANTS -----------
 const SHIFT = 16;
+const SPACE = 32;
 const KEY_LEFT = 37;
 const KEY_UP = 38;
 const KEY_RIGHT = 39;
@@ -112,7 +113,7 @@ class Player extends Entity {
   }
 }
 
-// ----------- GRASS -----------
+// ----------- ENTITIES -----------
 function drawRect(ctx, pos, fillStyle) {
   ctx.fillStyle = fillStyle;
   ctx.strokeStyle = "rgb(0, 0, 0)";
@@ -161,6 +162,16 @@ class Portal extends Entity {
   }
 }
 
+class Sign extends Entity {
+  constructor(pos) {
+    super(pos);
+  }
+
+  render() {
+    drawRect(game.canvasCtx, this.pos.relToPlayer(), "rgb(255, 255, 0)");
+  }
+}
+
 // ----------- ENTRY POINT -----------
 function startGame() {
   let username = document.getElementById("username").value;
@@ -199,6 +210,9 @@ function handleWSMessage(e) {
           case "p":
             game.addGameObj(new Portal(pos));
             break;
+          case "s":
+            game.addGameObj(new Sign(pos));
+            break;s
         }
       }
     }
@@ -212,6 +226,12 @@ function handleWSMessage(e) {
         newX  = parseInt(parts[1]),
         newY  = parseInt(parts[2]);
     game.playerObj.moveTo(new Vec(newX, newY));
+  } else if (e.data.startsWith("signtext|")) {
+    let parts = e.data.split("|"),
+        signX = parseInt(parts[1]),
+        signY = parseInt(parts[2]),
+        text  = parts[3];
+    alert(`Sign at x: ${signX}, y: ${signY} says: ${text}`);
   }
 }
 
@@ -245,6 +265,10 @@ function update(dt) {
     } else {
       game.ws.send("move|" + moveStr);
     }
+  }
+  if (game.pressedKeys.has(SPACE)) {
+    game.ws.send("interact");
+    game.pressedKeys.delete(SPACE);
   }
 }
 

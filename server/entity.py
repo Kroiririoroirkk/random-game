@@ -15,6 +15,9 @@ class Entity:
   def is_touching(self, e):
     return self.get_bounding_box().is_touching(e.get_bounding_box())
 
+class EntityMetadata:
+  pass
+
 class Player(Entity):
   def __init__(self):
     super().__init__(None)
@@ -62,7 +65,7 @@ class Wall(Entity):
         and path_nw.start.y >= bbox.get_bottom_b()):
       player.pos.y = bbox.get_bottom_b() + offset
 
-class PortalDest:
+class PortalDest(EntityMetadata):
   def __init__(self, w_id, spawn_num):
     self.w_id = w_id
     self.spawn_num = spawn_num
@@ -72,4 +75,13 @@ class Portal(Entity):
     super().__init__(pos)
     self.dest = dest
     self.immune_players = set()
+
+class SignText(EntityMetadata):
+  def __init__(self, text):
+    self.text = text
+
+class Sign(Entity):
+  def __init__(self, pos, text):
+    super().__init__(pos)
+    self.text = text
 

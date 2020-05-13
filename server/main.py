@@ -26,6 +26,9 @@ async def send_world(ws, world_text, spawn_pos):
 async def send_moved_to(ws, pos):
   await ws.send(f"movedto|{pos.x}|{pos.y}") 
 
+async def send_sign(ws, sign):
+  await ws.send(f"signtext|{sign.pos.x}|{sign.pos.y}|{sign.text}")
+
 async def run(ws, path):
   username = await ws.recv()
   p = game.get_player(username)
@@ -79,6 +82,11 @@ async def parseMessage(message, username, ws):
           portal_obj.immune_players.discard(username)
       game.set_player(username, player)
       await send_moved_to(ws, player.pos)
+  elif message.startswith("interact"):
+    player = game.get_player(username)
+    for sign_obj in worlds.get(player.world_id).sign_objs:
+      if sign_obj.is_touching(player):
+        await send_sign(ws, sign_obj)
 
 start_server = websockets.serve(run, "0.0.0.0", WSPORT)
 

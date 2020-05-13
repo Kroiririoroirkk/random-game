@@ -5,27 +5,29 @@ import entity
 worlds = {}
 
 class World:
-  def __init__(self, w_id, text, game_objs, wall_objs, portal_objs, spawn_posits):
+  def __init__(self, w_id, text, game_objs, wall_objs, portal_objs, sign_objs, spawn_posits):
     self.w_id = w_id
     self.text = text
     self.game_objs = game_objs
     self.wall_objs = wall_objs
     self.portal_objs = portal_objs
+    self.sign_objs = sign_objs
     self.spawn_posits = spawn_posits
 
 class WorldData:
-  def __init__(self, w_id, text, spawn_posits, linked_dests):
+  def __init__(self, w_id, text, spawn_posits, entity_metadata):
     self.w_id = w_id
     self.text = text
     self.spawn_posits = spawn_posits
-    self.linked_dests = linked_dests
+    self.entity_metadata = entity_metadata
 
 def load_world(w):
   world_map = w.text.split("|")
   game_objs = []
   wall_objs = []
   portal_objs = []
-  linked_dests = w.linked_dests
+  sign_objs = []
+  entity_metadata = w.entity_metadata
   for j, line in enumerate(world_map):
     for i, char in enumerate(line):
       pos = Vec(i * BLOCK_WIDTH, j * BLOCK_WIDTH)
@@ -36,8 +38,10 @@ def load_world(w):
       elif char == "w":
         wall_objs.append(entity.Wall(pos))
       elif char == "p":
-        portal_objs.append(entity.Portal(pos, linked_dests.pop(0)))
-  world_obj = World(w.w_id, w.text, game_objs, wall_objs, portal_objs, w.spawn_posits)
+        portal_objs.append(entity.Portal(pos, entity_metadata.pop(0)))
+      elif char == "s":
+        sign_objs.append(entity.Sign(pos, entity_metadata.pop(0).text))
+  world_obj = World(w.w_id, w.text, game_objs, wall_objs, portal_objs, sign_objs, w.spawn_posits)
   worlds[w.w_id] = world_obj
   return world_obj
 
@@ -62,7 +66,7 @@ STARTING_WORLD_DATA = WorldData("starting_world",
   "wwgggggggGGGGGGggggggggGggggggggggww|"
   "wpgggggggGggggGggggggggGggggggggggww|"
   "wwgggggggGggggGggggggggGggggggggggww|"
-  "wwgggggggGggggGgggggGGGGGGGgggggggww|"
+  "wwgggggggGggggGgggggGGGGGGGggssgggww|"
   "wwggggggggggggggggggggggggggggggggww|"
   "wwggggggggggggggggggggggggggggggggww|"
   "wwggggggggggggggggggggggggggggggggww|"
@@ -75,13 +79,16 @@ STARTING_WORLD_DATA = WorldData("starting_world",
   " wwggggggggggggggggggggggggggggggww |"
   " wwwggggggggggggggggggggggggggggwww |"
   "  wwwwggggggggggggggggggggggggwwww  |"
-  "   wwwwwwggggggggggggggggggwwwwww   |"
+  "   wwwwwwggggggggsgggggggggwwwwww   |"
   "      wwwwwwwwwwwwpwwwwwwwwwww      |"
   "        wwwwwwwwwwwwwwwwwwww        ",
-  [Vec(18,34).blocks_to_px(),
-   Vec(18,18).blocks_to_px(),
+  [Vec(18,18).blocks_to_px(),
+   Vec(18,34).blocks_to_px(),
    Vec(1,18).blocks_to_px()],
   [entity.PortalDest("second_world", 0),
+   entity.SignText("Hello,"),
+   entity.SignText("World!"),
+   entity.SignText("Enter the portal!"),
    entity.PortalDest("second_world", 1)])
 SECOND_WORLD_DATA = WorldData("second_world",
   "wwww|"
