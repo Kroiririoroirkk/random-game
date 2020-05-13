@@ -28,9 +28,14 @@ async def send_moved_to(ws, pos):
 
 async def run(ws, path):
   username = await ws.recv()
-  print("New user: " + username)
-  game.set_player(username, entity.Player())
-  await set_and_send_world(ws, username, worlds.get("starting_world"), 0)
+  p = game.get_player(username)
+  if p:
+    print("Returning user: " + username)
+    await send_world(ws, worlds.get(p.world_id).text, p.pos)
+  else:
+    print("New user: " + username)
+    game.set_player(username, entity.Player())
+    await set_and_send_world(ws, username, worlds.get("starting_world"), 0)
   async for message in ws:
     await parseMessage(message, username, ws)
 
