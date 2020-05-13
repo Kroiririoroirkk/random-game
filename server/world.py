@@ -60,7 +60,7 @@ STARTING_WORLD_DATA = WorldData("starting_world",
   "wwgggggggGggggGggggggggGggggggggggww|"
   "wwgggggggGggggGggggggggGggggggggggww|"
   "wwgggggggGGGGGGggggggggGggggggggggww|"
-  "wwgggggggGggggGggggggggGggggggggggww|"
+  "wpgggggggGggggGggggggggGggggggggggww|"
   "wwgggggggGggggGggggggggGggggggggggww|"
   "wwgggggggGggggGgggggGGGGGGGgggggggww|"
   "wwggggggggggggggggggggggggggggggggww|"
@@ -78,16 +78,20 @@ STARTING_WORLD_DATA = WorldData("starting_world",
   "   wwwwwwggggggggggggggggggwwwwww   |"
   "      wwwwwwwwwwwwpwwwwwwwwwww      |"
   "        wwwwwwwwwwwwwwwwwwww        ",
-  [Vec(18,18).blocks_to_px(),
-   Vec(18,34).blocks_to_px()],
-  [entity.PortalDest("second_world", 0)])
+  [Vec(18,34).blocks_to_px(),
+   Vec(18,18).blocks_to_px(),
+   Vec(1,18).blocks_to_px()],
+  [entity.PortalDest("second_world", 0),
+   entity.PortalDest("second_world", 1)])
 SECOND_WORLD_DATA = WorldData("second_world",
   "wwww|"
   "wgpw|"
-  "wGgw|"
+  "wpGw|"
   "wwww",
-  [Vec(2,1).blocks_to_px()],
-  [entity.PortalDest("starting_world", 1)])
+  [Vec(1,2).blocks_to_px(),
+   Vec(2,1).blocks_to_px()],
+  [entity.PortalDest("starting_world", 1),
+   entity.PortalDest("starting_world", 2)])
 
 STARTING_WORLD = load_world(STARTING_WORLD_DATA)
 SECOND_WORLD = load_world(SECOND_WORLD_DATA)
