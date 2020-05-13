@@ -164,7 +164,7 @@ class Portal extends Entity {
 // ----------- ENTRY POINT -----------
 function startGame() {
   let username = document.getElementById("username").value;
-  let ws = new WebSocket("wss://bokemon.kroiririoroirkk.repl.co");
+  let ws = new WebSocket("wss://terrekin.kroiririoroirkk.repl.co");
   ws.onopen = function(e) {
     ws.send(username);
   };
