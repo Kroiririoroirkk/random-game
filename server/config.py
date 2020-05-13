@@ -13,6 +13,3 @@ SPEED_MULTIPLIER = 2
 #Multiple move messages need to be within MAX_MOVE_DT seconds in order to be considered a single move
 MAX_MOVE_DT = 0.1
 
-#Amount of seconds the player needs to spend after going through a portal before they can go through another portal
-PORTAL_RECOVER_TIME = 1
-

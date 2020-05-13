@@ -20,7 +20,6 @@ class Player(Entity):
     super().__init__(None)
     self.time_of_last_move = 0
     self.world_id = None
-    self.time_of_last_portal = 0
 
   def get_bounding_box(self):
     return super().get_bounding_box().scale(7/8)
@@ -72,4 +71,5 @@ class Portal(Entity):
   def __init__(self, pos, dest):
     super().__init__(pos)
     self.dest = dest
+    self.immune_players = set()
 

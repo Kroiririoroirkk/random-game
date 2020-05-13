@@ -4,7 +4,7 @@ from sys import exit
 import time
 import websockets
 
-from config import MAX_MOVE_DT, PLAYER_SPEED, PORTAL_RECOVER_TIME, SPEED_MULTIPLIER, WSPORT
+from config import MAX_MOVE_DT, PLAYER_SPEED, SPEED_MULTIPLIER, WSPORT
 import entity
 import game
 from geometry import LineSegment, Vec
@@ -60,13 +60,17 @@ async def parseMessage(message, username, ws):
         wall_obj.block_movement(player,
           LineSegment(startingPos, player.pos))
       for portal_obj in world.portal_objs:
-        if (portal_obj.is_touching(player)
-            and now - player.time_of_last_portal > PORTAL_RECOVER_TIME):
-          player.time_of_last_portal = now
-          w = worlds.get(portal_obj.dest.w_id)
-          spawn_num = portal_obj.dest.spawn_num
-          await set_and_send_world(ws, username, w, spawn_num)
-          break
+        if portal_obj.is_touching(player):
+          if username not in portal_obj.immune_players:
+            w = worlds.get(portal_obj.dest.w_id)
+            spawn_num = portal_obj.dest.spawn_num
+            await set_and_send_world(ws, username, w, spawn_num)
+            for dest_portal in w.portal_objs:
+              if dest_portal.is_touching(player):
+                dest_portal.immune_players.add(username)
+            break
+        else:
+          portal_obj.immune_players.discard(username)
       game.set_player(username, player)
       await send_moved_to(ws, player.pos)
 
