@@ -4,7 +4,7 @@ from sys import exit
 import time
 import websockets
 
-from config import MAX_MOVE_DT, PLAYER_SPEED, SPEED_MULTIPLIER, WSPORT
+from config import BLOCK_WIDTH, MAX_MOVE_DT, PLAYER_SPEED, SPEED_MULTIPLIER, WSPORT
 import entity
 import game
 from geometry import LineSegment, Vec
