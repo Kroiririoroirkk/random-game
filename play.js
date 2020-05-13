@@ -107,7 +107,7 @@ class Player extends Entity {
     const ctx = game.canvasCtx;
     ctx.beginPath();
     ctx.fillStyle = "rgb(255, 0, 0)";
-    ctx.arc(ctx.canvas.width/2, ctx.canvas.height/2, 0.8*BLOCK_WIDTH/2, 0, 2*Math.PI);
+    ctx.arc(ctx.canvas.width/2, ctx.canvas.height/2, 7/8*BLOCK_WIDTH/2, 0, 2*Math.PI);
     ctx.fill();
   }
 }

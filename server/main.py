@@ -200,7 +200,7 @@ class Player(Entity):
     self.time_of_last_portal = 0
 
   def get_bounding_box(self):
-    return super().get_bounding_box().scale(0.8)
+    return super().get_bounding_box().scale(7/8)
 
 class Grass(Entity):
   def __init__(self, pos):
