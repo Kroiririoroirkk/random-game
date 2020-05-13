@@ -53,7 +53,8 @@ async def parseMessage(message, username, ws):
       world = worlds.get(player.world_id)
       bumped_wall_objs = [
         wall_obj for wall_obj in world.wall_objs
-        if wall_obj.is_touching(player)]
+        if (wall_obj.pos.dist_to(player.pos) < BLOCK_WIDTH*2
+          and wall_obj.is_touching(player))]
       bumped_wall_objs.sort(key = lambda wall_obj:
         wall_obj.pos.dist_to(player.pos))
       for wall_obj in bumped_wall_objs:
