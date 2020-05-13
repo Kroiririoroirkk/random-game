@@ -212,7 +212,7 @@ function handleWSMessage(e) {
             break;
           case "s":
             game.addGameObj(new Sign(pos));
-            break;s
+            break;
         }
       }
     }
