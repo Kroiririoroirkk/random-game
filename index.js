@@ -14,6 +14,31 @@ const BLOCK_WIDTH = 16;
 const PLAYER_SPEED = 48;
 const SPEED_MULTIPLIER = 2;
 
+// ----------- IMAGES -----------
+var images = Object.create(null);
+
+const LOADING = "LOADING";
+
+function loadImage(filename) {
+  const image = new Image();
+  image.onload = function(){images[filename] = image;};
+  image.src = 'img/' + filename;
+  images[filename] = LOADING;
+}
+
+function getImage(filename) {
+  if (filename in images) {
+    if (images[filename] === LOADING) {
+      return null;
+    } else {
+      return images[filename];
+    }
+  } else {
+    loadImage(filename);
+    return null;
+  }
+}
+
 // ----------- GAME -----------
 var game;
 
@@ -110,14 +135,19 @@ class Player extends Entity {
   }
 
   render() {
-    const width = BLOCK_WIDTH*7/8,
-          ctx = game.canvasCtx,
+    const ctx = game.canvasCtx,
           startingX = Math.floor(ctx.canvas.width/2),
-          startingY = Math.floor(ctx.canvas.height/2);
-    ctx.fillStyle = "rgb(0, 0, 0)";
-    ctx.fillRect(startingX, startingY, width, width);
-    ctx.fillStyle = "rgb(255, 0, 0)";
-    ctx.fillRect(startingX+1, startingY+1, width-2, width-2);
+          startingY = Math.floor(ctx.canvas.height/2),
+          img = getImage("char-down-still.png");
+    if (img) {
+      ctx.drawImage(img, startingX, startingY);
+    } else {
+      const width = BLOCK_WIDTH*7/8;
+      ctx.fillStyle = "rgb(0, 0, 0)";
+      ctx.fillRect(startingX, startingY, width, width);
+      ctx.fillStyle = "rgb(255, 0, 0)";
+      ctx.fillRect(startingX+1, startingY+1, width-2, width-2);
+    }
   }
 }
 
