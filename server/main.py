@@ -80,6 +80,7 @@ async def parseMessage(message, username, ws):
             w = worlds.get(portal_obj.dest.w_id)
             spawn_num = portal_obj.dest.spawn_num
             await set_and_send_world(ws, username, w, spawn_num)
+            await send_players(ws, username, portal_obj.dest.w_id)
             for dest_portal in w.portal_objs:
               if dest_portal.is_touching(player):
                 dest_portal.immune_players.add(username)
