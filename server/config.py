@@ -2,13 +2,13 @@
 WSPORT = 8080
 
 #Width and height of one in-game block, in pixels
-BLOCK_WIDTH = 16
+BLOCK_WIDTH = 32
 
 #Width and height of player, in pixels
-PLAYER_WIDTH = 14
+PLAYER_WIDTH = 28
 
 #Speed of the player in pixels per second
-PLAYER_SPEED = 48
+PLAYER_SPEED = BLOCK_WIDTH*3
 
 #Fast moving speed = SPEED_MULTIPLIER * PLAYER_SPEED
 SPEED_MULTIPLIER = 2

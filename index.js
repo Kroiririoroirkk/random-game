@@ -9,9 +9,11 @@ const KEY_RIGHT = 39;
 const KEY_DOWN = 40;
 const C_KEY = 67;
 
-const BLOCK_WIDTH = 16;
+const BLOCK_WIDTH = 32;
+const PLAYER_WIDTH = 28;
+const SCALE_FACTOR = 0.8;
 
-const PLAYER_SPEED = 48;
+const PLAYER_SPEED = BLOCK_WIDTH*3;
 const SPEED_MULTIPLIER = 2;
 
 // ----------- IMAGES -----------
@@ -80,6 +82,19 @@ class Game {
   addGameObj(obj) {
     this.gameObjs.push(obj);
   }
+
+  getScaledWidth() {
+    return this.canvasCtx.canvas.width / SCALE_FACTOR;
+  }
+
+  getScaledHeight() {
+    return this.canvasCtx.canvas.height / SCALE_FACTOR;
+  }
+
+  getPlayerDrawPos() {
+    return new Vec(Math.floor(game.getScaledWidth()/2),
+                   Math.floor(game.getScaledHeight()/2));
+  }
 }
 
 // ----------- VEC -----------
@@ -94,7 +109,7 @@ class Vec {
   }
 
   relToPlayer() {
-    return this.relativeTo(game.playerObj.pos).add(new Vec(game.canvasCtx.canvas.width/2, game.canvasCtx.canvas.height/2));
+    return this.relativeTo(game.playerObj.pos).add(game.getPlayerDrawPos());
   }
 
   add(p) {
@@ -136,17 +151,15 @@ class Player extends Entity {
 
   render() {
     const ctx = game.canvasCtx,
-          startingX = Math.floor(ctx.canvas.width/2),
-          startingY = Math.floor(ctx.canvas.height/2),
+          pos = game.getPlayerDrawPos(),
           img = getImage("char-down-still.png");
     if (img) {
-      ctx.drawImage(img, startingX, startingY);
+      ctx.drawImage(img, pos.x, pos.y);
     } else {
-      const width = BLOCK_WIDTH*7/8;
       ctx.fillStyle = "rgb(0, 0, 0)";
-      ctx.fillRect(startingX, startingY, width, width);
+      ctx.fillRect(pos.x, pos.y, PLAYER_WIDTH, PLAYER_WIDTH);
       ctx.fillStyle = "rgb(255, 0, 0)";
-      ctx.fillRect(startingX+1, startingY+1, width-2, width-2);
+      ctx.fillRect(pos.x+1, pos.y+1, PLAYER_WIDTH-2, PLAYER_WIDTH-2);
     }
   }
 }
@@ -209,14 +222,13 @@ class OtherPlayer extends Entity {
   }
 
   render() {
-    const width = BLOCK_WIDTH*7/8,
-          ctx = game.canvasCtx,
+    const ctx = game.canvasCtx,
           startingX = Math.floor(this.pos.relToPlayer().x),
           startingY = Math.floor(this.pos.relToPlayer().y);
     ctx.fillStyle = "rgb(0, 0, 0)";
-    ctx.fillRect(startingX, startingY, width, width);
+    ctx.fillRect(startingX, startingY, PLAYER_WIDTH, PLAYER_WIDTH);
     ctx.fillStyle = "rgb(255, 20, 147)";
-    ctx.fillRect(startingX+1, startingY+1, width-2, width-2);
+    ctx.fillRect(startingX+1, startingY+1, PLAYER_WIDTH-2, PLAYER_WIDTH-2);
   }
 }
 
@@ -264,11 +276,11 @@ class GameLog {
     if (this.messageLog.length > 0) {
       const BOX_WIDTH   = 100,
             LINE_HEIGHT = 15,
-            ctx         = game.canvasCtx;
-      let text = ["Press c to clear!", ...this.messageLog]
-        .join(" \n ----- \n ");
+            ctx         = game.canvasCtx,
+            text = ["Press c to clear!", ...this.messageLog]
+              .join(" \n ----- \n ");
       ctx.font = "12px san-serif";
-      let textLines = wrapText(ctx, text, BOX_WIDTH);
+      const textLines = wrapText(ctx, text, BOX_WIDTH);
       ctx.fillStyle = "rgb(80, 0, 80)";
       ctx.fillRect(0, 40, BOX_WIDTH + 20, LINE_HEIGHT*textLines.length + 5);
       ctx.fillStyle = "rgb(255, 255, 255)";
@@ -399,8 +411,11 @@ function render() {
     ctx.canvas.height = height;
   }
 
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.fillStyle = "rgb(0, 0, 0)";
   ctx.fillRect(0, 0, width, height);
+
+  ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
   for (const obj of game.gameObjs) {
     obj.render();
   }
@@ -411,7 +426,9 @@ function render() {
     game.playerObj.render();
   }
 
-  ctx.font = "20px san-serif";
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  const fontSize = Math.floor(20);
+  ctx.font = `${fontSize}px san-serif`;
   let text = "Your username is " + game.username + ".";
   ctx.fillStyle = "rgb(80, 0, 80)";
   ctx.fillRect(0, 0, ctx.measureText(text).width + 20, 30);
