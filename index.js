@@ -22,6 +22,7 @@ class Game {
     this.canvasCtx = this.makePage(username);
     this.pressedKeys = new Set();
     this.playerObj = null;
+    this.otherPlayerObjs = [];
     this.gameObjs = [];
     this.username = username;
     this.registerKeyListeners();
@@ -172,14 +173,26 @@ class Sign extends Entity {
   }
 }
 
+class OtherPlayer extends Entity {
+  constructor(pos, username) {
+    super(pos);
+    this.username = username;
+  }
+
+  render() {
+    const ctx = game.canvasCtx;
+    ctx.beginPath();
+    ctx.fillStyle = "rgb(255, 20, 147)";
+    let pos = this.pos.relToPlayer();
+    ctx.arc(pos.x, pos.y, 7/8*BLOCK_WIDTH/2, 0, 2*Math.PI);
+    ctx.fill();
+  }
+}
+
 // ----------- ENTRY POINT -----------
 function startGame() {
   let username = document.getElementById("username").value;
   let ws = new WebSocket("wss://terrekin.kroiririoroirkk.repl.co");
-  ws.onopen = function(e) {
-    ws.send(username);
-  };
-  ws.onmessage = handleWSMessage;
   game = new Game(ws, username);
   main();
 }
@@ -189,8 +202,8 @@ function handleWSMessage(e) {
   console.log(e)
   if (e.data.startsWith("world|")) {
     let parts  = e.data.split("|"),
-        spawnX = parseInt(parts[1]),
-        spawnY = parseInt(parts[2]),
+        spawnX = parseFloat(parts[1]),
+        spawnY = parseFloat(parts[2]),
         origin = new Vec(spawnX, spawnY),
         map    = parts.slice(3);
     game.clearGameObjs();
@@ -223,15 +236,25 @@ function handleWSMessage(e) {
     }
   } else if (e.data.startsWith("movedto|")) {
     let parts = e.data.split("|"),
-        newX  = parseInt(parts[1]),
-        newY  = parseInt(parts[2]);
+        newX  = parseFloat(parts[1]),
+        newY  = parseFloat(parts[2]);
     game.playerObj.moveTo(new Vec(newX, newY));
   } else if (e.data.startsWith("signtext|")) {
     let parts = e.data.split("|"),
-        signX = parseInt(parts[1]),
-        signY = parseInt(parts[2]),
+        signX = parseFloat(parts[1]),
+        signY = parseFloat(parts[2]),
         text  = parts[3];
     alert(`Sign at x: ${signX}, y: ${signY} says: ${text}`);
+  } else if (e.data.startsWith("players|")) {
+    let parts = e.data.split("|");
+    game.otherPlayerObjs = [];
+    for (let i = 1; i < parts.length; i += 3) {
+      let username = parts[i],
+          posX     = parseFloat(parts[i+1]),
+          posY     = parseFloat(parts[i+2]),
+          pos      = new Vec(posX, posY);
+      game.otherPlayerObjs.push(new OtherPlayer(pos, username));
+    }
   }
 }
 
@@ -270,6 +293,7 @@ function update(dt) {
     game.ws.send("interact");
     game.pressedKeys.delete(SPACE);
   }
+  game.ws.send("ping");
 }
 
 function render() {
@@ -289,6 +313,9 @@ function render() {
   for (const obj of game.gameObjs) {
     obj.render();
   }
+  for (const obj of game.otherPlayerObjs) {
+    obj.render();
+  }
   if (game.playerObj) {
     game.playerObj.render();
   }
@@ -305,12 +332,17 @@ function main() {
   let w = window;
   let requestAnimationFrame = w.requestAnimationFrame || w.webkitRequestAnimationFrame || w.msRequestAnimationFrame || w.mozRequestAnimationFrame;
 
-  let gameLoop = function(then) {
-    return function(now) {
-      update((now - then)/1000);
-      render();
-      requestAnimationFrame(gameLoop(now));
+  game.ws.onopen = function(e) {
+    game.ws.send(game.username);
+    let gameLoop = function(then) {
+      return function(now) {
+        update((now - then)/1000);
+        render();
+        requestAnimationFrame(gameLoop(now));
+      };
     };
+    requestAnimationFrame(gameLoop(null));
   };
-  requestAnimationFrame(gameLoop(null));
+  game.ws.onmessage = handleWSMessage;
 }
+

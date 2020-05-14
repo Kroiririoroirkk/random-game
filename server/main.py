@@ -29,6 +29,12 @@ async def send_moved_to(ws, pos):
 async def send_sign(ws, sign):
   await ws.send(f"signtext|{sign.pos.x}|{sign.pos.y}|{sign.text}")
 
+async def send_players(ws, playerUsername, w_id):
+  s = "|".join(f"{username}|{p.pos.x}|{p.pos.y}"
+    for username, p in game.player_objs.items()
+      if p.world_id == w_id and username != playerUsername)
+  await ws.send("players|"+s)
+
 async def run(ws, path):
   username = await ws.recv()
   p = game.get_player(username)
@@ -43,6 +49,7 @@ async def run(ws, path):
     await parseMessage(message, username, ws)
 
 async def parseMessage(message, username, ws):
+  player = game.get_player(username)
   if message.startswith("move|") or message.startswith("fastmove|"):
     multiplier = 1
     if message.startswith("fastmove|"):
@@ -51,7 +58,6 @@ async def parseMessage(message, username, ws):
     direction = parts[1]
     dirVec = sum([geometry.vec_from_dir(char) for char in direction], start=Vec(0,0))
     if dirVec:
-      player = game.get_player(username)
       now = time.monotonic()
       dt = min(now - player.time_of_last_move, MAX_MOVE_DT)
       player.time_of_last_move = now
@@ -83,10 +89,11 @@ async def parseMessage(message, username, ws):
       game.set_player(username, player)
       await send_moved_to(ws, player.pos)
   elif message.startswith("interact"):
-    player = game.get_player(username)
     for sign_obj in worlds.get(player.world_id).sign_objs:
       if sign_obj.is_touching(player):
         await send_sign(ws, sign_obj)
+  elif message.startswith("ping"):
+    await send_players(ws, username, player.world_id)
 
 start_server = websockets.serve(run, "0.0.0.0", WSPORT)
 
