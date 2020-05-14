@@ -7,6 +7,7 @@ const KEY_LEFT = 37;
 const KEY_UP = 38;
 const KEY_RIGHT = 39;
 const KEY_DOWN = 40;
+const C_KEY = 67;
 
 const BLOCK_WIDTH = 16;
 
@@ -25,6 +26,7 @@ class Game {
     this.otherPlayerObjs = [];
     this.gameObjs = [];
     this.username = username;
+    this.gameLog = new GameLog();
     this.registerKeyListeners();
   }
 
@@ -189,6 +191,67 @@ class OtherPlayer extends Entity {
   }
 }
 
+// ----------- GAME LOG -----------
+function wrapText(ctx, text, maxWidth) {
+  let words = text.split(" "),
+      currentLine = words[0],
+      lines = [];
+
+  for (var i = 1; i < words.length; i++) {
+    if (words[i] === "\n") {
+      lines.push(currentLine);
+      currentLine = "";
+    } else {
+      let testLine  = currentLine === "" ?
+            words[i] : currentLine + " " + words[i],
+          metrics   = ctx.measureText(testLine),
+          testWidth = metrics.width;
+      if (testWidth < maxWidth) {
+        currentLine = testLine;
+      } else {
+        lines.push(currentLine);
+        currentLine = words[i] + ' ';
+      }
+    }
+  }
+  lines.push(currentLine);
+  return lines;
+}
+
+class GameLog {
+  constructor() {
+    this.messageLog = [];
+  }
+
+  addMsg(msg) {
+    this.messageLog.unshift(msg);
+  }
+
+  clear() {
+    this.messageLog = [];
+  }
+
+  render() {
+    if (this.messageLog.length > 0) {
+      const BOX_WIDTH   = 100,
+            LINE_HEIGHT = 15,
+            ctx         = game.canvasCtx;
+      let text = ["Press c to clear!", ...this.messageLog]
+        .join(" \n ----- \n ");
+      ctx.font = "12px san-serif";
+      let textLines = wrapText(ctx, text, BOX_WIDTH);
+      ctx.fillStyle = "rgb(80, 0, 80)";
+      ctx.fillRect(0, 40, BOX_WIDTH + 20, LINE_HEIGHT*textLines.length + 5);
+      ctx.fillStyle = "rgb(255, 255, 255)";
+      let y = 40;
+      for (const line of textLines) {
+        y += LINE_HEIGHT;
+        ctx.fillText(line, 10, y);
+      }
+    }
+  }
+}
+
 // ----------- ENTRY POINT -----------
 function startGame() {
   let username = document.getElementById("username").value;
@@ -199,7 +262,6 @@ function startGame() {
 
 // ----------- GAME LOGIC -----------
 function handleWSMessage(e) {
-  console.log(e)
   if (e.data.startsWith("world|")) {
     let parts  = e.data.split("|"),
         spawnX = parseFloat(parts[1]),
@@ -241,10 +303,8 @@ function handleWSMessage(e) {
     game.playerObj.moveTo(new Vec(newX, newY));
   } else if (e.data.startsWith("signtext|")) {
     let parts = e.data.split("|"),
-        signX = parseFloat(parts[1]),
-        signY = parseFloat(parts[2]),
         text  = parts[3];
-    alert(`Sign at x: ${signX}, y: ${signY} says: ${text}`);
+    game.gameLog.addMsg("The sign reads: " + text);
   } else if (e.data.startsWith("players|")) {
     let parts = e.data.split("|");
     game.otherPlayerObjs = [];
@@ -293,6 +353,9 @@ function update(dt) {
     game.ws.send("interact");
     game.pressedKeys.delete(SPACE);
   }
+  if (game.pressedKeys.has(C_KEY)) {
+    game.gameLog.clear();
+  }
   game.ws.send("ping");
 }
 
@@ -320,12 +383,14 @@ function render() {
     game.playerObj.render();
   }
 
+  ctx.font = "20px san-serif";
   let text = "Your username is " + game.username + ".";
   ctx.fillStyle = "rgb(80, 0, 80)";
   ctx.fillRect(0, 0, ctx.measureText(text).width + 20, 30);
   ctx.fillStyle = "rgb(255, 255, 255)";
-  ctx.font = "20px san-serif";
   ctx.fillText(text, 10, 20);
+
+  game.gameLog.render();
 }
 
 function main() {
