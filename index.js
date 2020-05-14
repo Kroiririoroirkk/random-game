@@ -356,7 +356,6 @@ function update(dt) {
   if (game.pressedKeys.has(C_KEY)) {
     game.gameLog.clear();
   }
-  game.ws.send("ping");
 }
 
 function render() {
@@ -407,6 +406,11 @@ function main() {
       };
     };
     requestAnimationFrame(gameLoop(null));
+    let ping = function() {
+      game.ws.send("ping");
+      setTimeout(ping, 333);
+    }
+    ping();
   };
   game.ws.onmessage = handleWSMessage;
 }
