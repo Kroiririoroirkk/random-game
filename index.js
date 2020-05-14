@@ -32,7 +32,7 @@ class Game {
 
   makePage() {
     let canvas = document.createElement("canvas");
-    let ctx = canvas.getContext("2d");
+    let ctx = canvas.getContext("2d", {alpha: false});
     canvas.innerHTML = "Oops! Something went wrong. Your browser might not support this game.";
     canvas.width = document.body.clientWidth;
     canvas.height = document.body.clientHeight;
@@ -78,18 +78,20 @@ class Vec {
 }
 
 // ----------- ENTITY -----------
+function drawRect(ctx, pos, fillStyle) {
+  ctx.fillStyle = "rgb(0, 0, 0)";
+  ctx.fillRect(Math.floor(pos.x), Math.floor(pos.y), BLOCK_WIDTH, BLOCK_WIDTH);
+  ctx.fillStyle = fillStyle;
+  ctx.fillRect(Math.floor(pos.x)+1, Math.floor(pos.y)+1, BLOCK_WIDTH-2, BLOCK_WIDTH-2);
+}
+
 class Entity {
   constructor(pos) {
     this.pos = pos;
   }
 
   render() {
-    const ctx = game.canvasCtx;
-    ctx.beginPath();
-    ctx.fillStyle = "rgb(50, 50, 50)";
-    let relPos = this.pos.relToPlayer();
-    ctx.arc(relPos.x, relPos.y, BLOCK_WIDTH/2, 0, 2*Math.PI);
-    ctx.fill();
+    drawRect(game.canvasCtx, this.pos.relToPlayer(), "rgb(50, 50, 50)");
   }
 
   move(offset) {
@@ -108,23 +110,18 @@ class Player extends Entity {
   }
 
   render() {
-    const ctx = game.canvasCtx;
-    ctx.beginPath();
+    const width = BLOCK_WIDTH*7/8,
+          ctx = game.canvasCtx,
+          startingX = Math.floor(ctx.canvas.width/2),
+          startingY = Math.floor(ctx.canvas.height/2);
+    ctx.fillStyle = "rgb(0, 0, 0)";
+    ctx.fillRect(startingX, startingY, width, width);
     ctx.fillStyle = "rgb(255, 0, 0)";
-    ctx.arc(ctx.canvas.width/2, ctx.canvas.height/2, 7/8*BLOCK_WIDTH/2, 0, 2*Math.PI);
-    ctx.fill();
+    ctx.fillRect(startingX+1, startingY+1, width-2, width-2);
   }
 }
 
 // ----------- ENTITIES -----------
-function drawRect(ctx, pos, fillStyle) {
-  ctx.fillStyle = fillStyle;
-  ctx.strokeStyle = "rgb(0, 0, 0)";
-  ctx.lineWidth = 1;
-  ctx.fillRect(pos.x - BLOCK_WIDTH/2, pos.y - BLOCK_WIDTH/2, BLOCK_WIDTH, BLOCK_WIDTH);
-  ctx.strokeRect(pos.x - BLOCK_WIDTH/2, pos.y - BLOCK_WIDTH/2, BLOCK_WIDTH, BLOCK_WIDTH);
-}
-
 class Grass extends Entity {
   constructor(pos) {
     super(pos);
@@ -182,12 +179,14 @@ class OtherPlayer extends Entity {
   }
 
   render() {
-    const ctx = game.canvasCtx;
-    ctx.beginPath();
+    const width = BLOCK_WIDTH*7/8,
+          ctx = game.canvasCtx,
+          startingX = Math.floor(this.pos.relToPlayer().x),
+          startingY = Math.floor(this.pos.relToPlayer().y);
+    ctx.fillStyle = "rgb(0, 0, 0)";
+    ctx.fillRect(startingX, startingY, width, width);
     ctx.fillStyle = "rgb(255, 20, 147)";
-    let pos = this.pos.relToPlayer();
-    ctx.arc(pos.x, pos.y, 7/8*BLOCK_WIDTH/2, 0, 2*Math.PI);
-    ctx.fill();
+    ctx.fillRect(startingX+1, startingY+1, width-2, width-2);
   }
 }
 
@@ -266,7 +265,7 @@ function handleWSMessage(e) {
     let parts  = e.data.split("|"),
         spawnX = parseFloat(parts[1]),
         spawnY = parseFloat(parts[2]),
-        origin = new Vec(spawnX, spawnY),
+        spawn  = new Vec(spawnX, spawnY),
         map    = parts.slice(3);
     game.clearGameObjs();
     for (let j = 0; j < map.length; j++) {
@@ -292,9 +291,9 @@ function handleWSMessage(e) {
       }
     }
     if (game.playerObj) {
-      game.playerObj.pos = origin;
+      game.playerObj.pos = spawn;
     } else {
-      game.playerObj = new Player(origin);
+      game.playerObj = new Player(spawn);
     }
   } else if (e.data.startsWith("movedto|")) {
     let parts = e.data.split("|"),

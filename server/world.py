@@ -1,8 +1,17 @@
-from config import BLOCK_WIDTH
+from config import BLOCK_WIDTH, PLAYER_WIDTH
 from geometry import Vec
 import entity
 
 worlds = {}
+
+class SpawnPoint:
+  def __init__(self, block_x, block_y):
+    self.block_x = block_x
+    self.block_y = block_y
+
+  def get_spawn_pos(self):
+    return Vec(self.block_x * BLOCK_WIDTH + (BLOCK_WIDTH-PLAYER_WIDTH)/2,
+               self.block_y * BLOCK_WIDTH + (BLOCK_WIDTH-PLAYER_WIDTH)/2)
 
 class World:
   def __init__(self, w_id, text, game_objs, wall_objs, portal_objs, sign_objs, spawn_posits):
@@ -82,9 +91,9 @@ STARTING_WORLD_DATA = WorldData("starting_world",
   "   wwwwwwggggggggsgggggggggwwwwww   |"
   "      wwwwwwwwwwwwpwwwwwwwwwww      |"
   "        wwwwwwwwwwwwwwwwwwww        ",
-  [Vec(18,18).blocks_to_px(),
-   Vec(18,34).blocks_to_px(),
-   Vec(1,18).blocks_to_px()],
+  [SpawnPoint(18,18),
+   SpawnPoint(18,34),
+   SpawnPoint(1,18)],
   [entity.PortalDest("second_world", 0),
    entity.SignText("Hello,"),
    entity.SignText("World!"),
@@ -95,8 +104,8 @@ SECOND_WORLD_DATA = WorldData("second_world",
   "wgpw|"
   "wpGw|"
   "wwww",
-  [Vec(1,2).blocks_to_px(),
-   Vec(2,1).blocks_to_px()],
+  [SpawnPoint(1,2),
+   SpawnPoint(2,1)],
   [entity.PortalDest("starting_world", 1),
    entity.PortalDest("starting_world", 2)])
 

@@ -4,6 +4,9 @@ WSPORT = 8080
 #Width and height of one in-game block, in pixels
 BLOCK_WIDTH = 16
 
+#Width and height of player, in pixels
+PLAYER_WIDTH = 14
+
 #Speed of the player in pixels per second
 PLAYER_SPEED = 48
 

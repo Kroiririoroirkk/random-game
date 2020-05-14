@@ -4,7 +4,7 @@ from sys import exit
 import time
 import websockets
 
-from config import BLOCK_WIDTH, MAX_MOVE_DT, PLAYER_SPEED, SPEED_MULTIPLIER, WSPORT
+from config import MAX_MOVE_DT, PLAYER_SPEED, PLAYER_WIDTH, SPEED_MULTIPLIER, WSPORT
 import entity
 import game
 from geometry import LineSegment, Vec
@@ -16,9 +16,9 @@ game = game.Game()
 async def set_and_send_world(ws, username, world, spawn_number):
   p = game.get_player(username)
   p.world_id = world.w_id
-  p.pos = world.spawn_posits[spawn_number]
+  p.pos = world.spawn_posits[spawn_number].get_spawn_pos()
   game.set_player(username, p)
-  await send_world(ws, world.text, world.spawn_posits[spawn_number])
+  await send_world(ws, world.text, p.pos)
 
 async def send_world(ws, world_text, spawn_pos):
   await ws.send(f"world|{spawn_pos.x}|{spawn_pos.y}|{world_text}")
@@ -67,7 +67,7 @@ async def parseMessage(message, username, ws):
       world = worlds.get(player.world_id)
       bumped_wall_objs = [
         wall_obj for wall_obj in world.wall_objs
-        if (wall_obj.pos.dist_to(player.pos) < BLOCK_WIDTH*2
+        if (wall_obj.pos.dist_to(player.pos) < 2*PLAYER_WIDTH
           and wall_obj.is_touching(player))]
       bumped_wall_objs.sort(key = lambda wall_obj:
         wall_obj.pos.dist_to(player.pos))

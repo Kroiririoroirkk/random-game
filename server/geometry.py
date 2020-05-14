@@ -1,4 +1,3 @@
-from config import BLOCK_WIDTH
 from enum import Enum
 import math
 
@@ -21,9 +20,6 @@ class Vec:
 
   def dist_to(self, p):
     return math.dist((self.x, self.y), (p.x, p.y))
-
-  def blocks_to_px(self):
-    return self * BLOCK_WIDTH
 
 def vec_from_dir(d):
   key = {
@@ -134,23 +130,18 @@ class BoundingBox:
              Vec(self.get_right_b(), self.get_bottom_b()))
 
   def get_width(self):
-    return self.v2.x - self.v1.x
+    return self.v2.x - self.v1.x + 1
 
   def get_height(self):
-    return self.v2.y - self.v1.y
-
+    return self.v2.y - self.v1.y + 1
+ 
   def is_touching(self, bbox):
     return not (bbox.get_left_b()   > self.get_right_b() or
                 bbox.get_right_b()  < self.get_left_b() or
                 bbox.get_top_b()    > self.get_bottom_b() or
                 bbox.get_bottom_b() < self.get_top_b())
 
-  def get_center(self):
-    return (self.v1 + self.v2)*0.5
-
   def scale(self, k):
-    c = self.get_center()
-    return BoundingBox(
-      Vec(c.x - k*self.get_width()/2, c.y - k*self.get_height()/2),
-      Vec(c.x + k*self.get_width()/2, c.y + k*self.get_width()/2))
+    return BoundingBox(self.v1,
+      Vec(self.v1.x + k*self.get_width(), self.v1.y + k*self.get_height()))
 
