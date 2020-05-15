@@ -331,7 +331,7 @@ function wrapText(ctx, text, maxWidth) {
         currentLine = testLine;
       } else {
         lines.push(currentLine);
-        currentLine = words[i] + ' ';
+        currentLine = words[i];
       }
     }
   }
@@ -341,43 +341,74 @@ function wrapText(ctx, text, maxWidth) {
 
 // ----------- GAME LOG -----------
 class GameLog {
-  constructor() {
+  constructor(width) {
+    this.width = width;
     this.messageLog = [];
     this.lineStart = 0;
+    this.wrappedText = [];
+    this.unfocus();
   }
 
   addMsg(msg) {
     this.messageLog.unshift(msg);
+    if (game.contextMenu === contextMenus.LOG) {
+      this.focus();
+    } else {
+      this.unfocus();
+    }
+  }
+
+  scrollUp() {
+    this.lineStart--;
+    if (this.lineStart < 0) {
+      this.lineStart = 0;
+    }
+  }
+
+  scrollDown() {
+    this.lineStart++;
+    if (this.lineStart > this.wrappedText.length) {
+      this.lineStart = this.wrappedText.length;
+    }
+  }
+
+  focus() {
+    const ctx = game.canvasCtx;
+    ctx.font = "20px sans-serif";
+    this.wrappedText = wrapText(ctx,
+      ["Press L to exit the log, C to clear, and arrow keys to scroll.",
+      ...this.messageLog]
+        .join(" \n ----- \n "), this.width);
+  }
+
+  unfocus() {
+    const ctx = game.canvasCtx;
+    ctx.font = "20px sans-serif";
+    this.wrappedText = wrapText(ctx,
+      ["Press L to open the log!",
+      ...this.messageLog]
+        .join(" \n ----- \n "), this.width);
+    this.lineStart = 0;
   }
 
   clear() {
     this.messageLog = [];
+    this.focus();
+    this.lineStart = 0;
   }
 
   render() {
-    const BOX_WIDTH   = 100,
-          LINE_HEIGHT = 15,
-          ctx         = game.canvasCtx,
-          text = game.contextMenu === contextMenus.LOG ?
-            ["Press l to exit the log, c to clear, and arrow keys to scroll.", ...this.messageLog]
-              .join(" \n ----- \n ") :
-            ["Press l to open the log!", ...this.messageLog]
-              .join(" \n ----- \n ");
-    ctx.font = "12px san-serif";
-    let textLines = wrapText(ctx, text, BOX_WIDTH);
-    if (this.lineStart < 0) {
-      this.lineStart = 0;
-    }
-    if (this.lineStart > textLines.length) {
-      this.lineStart = textLines.length;
-    }
-    textLines = textLines.slice(this.lineStart);
+    const LINE_HEIGHT  = 24,
+          ctx          = game.canvasCtx,
+          renderedText = this.wrappedText.slice(this.lineStart);
+
+    let y = 31;
+    ctx.font = "20px san-serif";
     ctx.fillStyle = "rgb(80, 0, 80)";
-    ctx.fillRect(0, 40, BOX_WIDTH + 20, LINE_HEIGHT*textLines.length + 5);
+    ctx.fillRect(0, y, this.width + 20, LINE_HEIGHT*renderedText.length + 5);
 
     ctx.fillStyle = "rgb(255, 255, 255)";
-    let y = 40;
-    for (const line of textLines) {
+    for (const line of renderedText) {
       y += LINE_HEIGHT;
       ctx.fillText(line, 10, y);
     }
@@ -392,13 +423,39 @@ class MenuItem {
 }
 
 class Menu {
-  constructor() {
+  constructor(width) {
+    this.width = width;
     this.items = [];
+    this.wrappedText = [];
     this.currentlySelected = 0;
+    this.unfocus();
   }
 
   addItem(item) {
     this.items.push(item);
+    if (game.contextMenu === contextMenus.MENU) {
+      this.focus();
+    } else {
+      this.unfocus();
+    }
+  }
+
+  focus() {
+    const ctx = game.canvasCtx;
+    ctx.font = "20px sans-serif";
+    this.wrappedText = wrapText(ctx,
+      ["Press M to close the menu, arrow keys to pick an option, and <enter> to choose.",
+      ...this.items.map((item, i) =>
+        i === this.currentlySelected ?
+          ">" + item.text :
+          item.text)].join(" \n ----- \n "), this.width);
+  }
+
+  unfocus() {
+    const ctx = game.canvasCtx;
+    ctx.font = "20px sans-serif";
+    this.wrappedText = wrapText(ctx,
+      "Press M to open the menu!", this.width);
   }
 
   cursorUp() {
@@ -406,6 +463,7 @@ class Menu {
     if (this.currentlySelected < 0) {
       this.currentlySelected = 0;
     }
+    this.focus();
   }
 
   cursorDown() {
@@ -413,28 +471,20 @@ class Menu {
     if (this.currentlySelected >= this.items.length) {
       this.currentlySelected = this.items.length - 1;
     }
+    this.focus();
   }
 
   render() {
-    const BOX_WIDTH   = 100,
-          LINE_HEIGHT = 15,
+    const LINE_HEIGHT = 24,
           ctx         = game.canvasCtx,
-          text = game.contextMenu === contextMenus.MENU ?
-            ["Press m to close the menu, arrow keys to pick an option, and enter to choose.", ...this.items.map((item, i) =>
-              i === this.currentlySelected ?
-                ">" + item.text :
-                item.text)]
-                  .join(" \n ----- \n ") :
-            "Press m to open the menu!",
-          startingX = game.getScaledWidth() - BOX_WIDTH - 20;
-    ctx.font = "12px san-serif";
-    const textLines = wrapText(ctx, text, BOX_WIDTH);
+          startingX = game.getScaledWidth() - this.width - 20;
+    let y = 0;
+    ctx.font = "20px san-serif";
     ctx.fillStyle = "rgb(80, 0, 80)";
-    ctx.fillRect(startingX, 0, BOX_WIDTH + 20, LINE_HEIGHT*textLines.length + 5);
+    ctx.fillRect(startingX, y, this.width + 20, LINE_HEIGHT*this.wrappedText.length + 5);
 
     ctx.fillStyle = "rgb(255, 255, 255)";
-    let y = 0;
-    for (const line of textLines) {
+    for (const line of this.wrappedText) {
       y += LINE_HEIGHT;
       ctx.fillText(line, startingX + 10, y);
     }
@@ -451,8 +501,8 @@ function startGame() {
 
 // ----------- GAME LOGIC -----------
 function initialize() {
-  game.gameLog = new GameLog();
-  game.menu = new Menu();
+  game.gameLog = new GameLog(250);
+  game.menu = new Menu(250);
   game.menu.addItem(new MenuItem("Profile"));
   game.menu.addItem(new MenuItem("Inventory"));
 }
@@ -556,11 +606,11 @@ function update(dt) {
     }
   } else if (game.contextMenu === contextMenus.LOG) {
     if (game.pressedKeys.has(KEY_UP)) {
-      game.gameLog.lineStart--;
+      game.gameLog.scrollUp();
       game.pressedKeys.delete(KEY_UP);
     }
     if (game.pressedKeys.has(KEY_DOWN)) {
-      game.gameLog.lineStart++;
+      game.gameLog.scrollDown();
       game.pressedKeys.delete(KEY_DOWN);
     }
     if (game.pressedKeys.has(C_KEY)) {
@@ -581,15 +631,19 @@ function update(dt) {
   if (game.pressedKeys.has(L_KEY)) {
     if (game.contextMenu === contextMenus.LOG) {
       game.contextMenu = contextMenus.MAP;
+      game.gameLog.unfocus();
     } else {
       game.contextMenu = contextMenus.LOG;
+      game.gameLog.focus();
     }
     game.pressedKeys.delete(L_KEY);
   } else if (game.pressedKeys.has(M_KEY)) {
     if (game.contextMenu === contextMenus.MENU) {
       game.contextMenu = contextMenus.MAP;
+      game.menu.unfocus();
     } else {
       game.contextMenu = contextMenus.MENU;
+      game.menu.focus();
     }
     game.pressedKeys.delete(M_KEY);
   }
@@ -624,7 +678,7 @@ function render() {
 
   game.unscale();
   ctx.font = "20px san-serif";
-  let text = "Your username is " + game.username + ".";
+  const text = "Your username is " + game.username + ".";
   ctx.fillStyle = "rgb(80, 0, 80)";
   ctx.fillRect(0, 0, ctx.measureText(text).width + 20, 30);
   ctx.fillStyle = "rgb(255, 255, 255)";
