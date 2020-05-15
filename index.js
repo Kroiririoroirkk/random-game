@@ -8,6 +8,8 @@ const KEY_UP = 38;
 const KEY_RIGHT = 39;
 const KEY_DOWN = 40;
 const C_KEY = 67;
+const L_KEY = 76;
+const M_KEY = 77;
 
 const BLOCK_WIDTH = 32;
 const PLAYER_WIDTH = 28;
@@ -16,8 +18,110 @@ var SCALE_FACTOR = 0.8;
 const PLAYER_SPEED = BLOCK_WIDTH*3;
 const SPEED_MULTIPLIER = 2;
 
+// ----------- GAME -----------
+var game;
+
+const contextMenus = Object.freeze({MAP:1, LOG:2, MENU:3});
+
+class Game {
+  constructor(ws, username) {
+    this.ws = ws;
+    this.canvasCtx = this.makePage(username);
+    this.pressedKeys = new Set();
+    this.playerObj = null;
+    this.otherPlayerObjs = [];
+    this.gameObjs = [];
+    this.username = username;
+    this.gameLog = null;
+    this.menu = null;
+    this.scaled = false;
+    this.contextMenu = contextMenus.MAP;
+    this.registerKeyListeners();
+  }
+
+  makePage() {
+    let canvas = document.createElement("canvas");
+    let ctx = canvas.getContext("2d", {alpha: false});
+    canvas.innerHTML = "Oops! Something went wrong. Your browser might not support this game.";
+    canvas.width = document.body.clientWidth;
+    canvas.height = document.body.clientHeight;
+    document.body.innerHTML = "";
+    document.body.style.backgroundColor = "white";
+    document.body.style.overflow = "hidden";
+    document.body.appendChild(canvas);
+    return ctx;
+  }
+
+  registerKeyListeners() {
+    addEventListener("keydown", e => this.pressedKeys.add(e.keyCode), false);
+    addEventListener("keyup", e => this.pressedKeys.delete(e.keyCode), false);
+  }
+
+  clearGameObjs() {
+    this.gameObjs = [];
+  }
+
+  addGameObj(obj) {
+    this.gameObjs.push(obj);
+  }
+
+  scale() {
+    this.scaled = true;
+    this.canvasCtx.setTransform(SCALE_FACTOR, 0, 0, SCALE_FACTOR, 0, 0);
+  }
+
+  unscale() {
+    this.scaled = false;
+    this.canvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+  }
+
+  getScaledWidth() {
+    if (this.scaled) {
+      return this.canvasCtx.canvas.width / SCALE_FACTOR;
+    } else {
+      return this.canvasCtx.canvas.width;
+    }
+  }
+
+  getScaledHeight() {
+    if (this.scaled) {
+      return this.canvasCtx.canvas.height / SCALE_FACTOR;
+    } else {
+      return this.canvasCtx.canvas.height;
+    }
+  }
+
+  getPlayerDrawPos() {
+    return new Vec(Math.floor(game.getScaledWidth()/2),
+                   Math.floor(game.getScaledHeight()/2));
+  }
+}
+
+// ----------- VEC -----------
+class Vec {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  relativeTo(p) {
+    return new Vec(this.x - p.x, this.y - p.y);
+  }
+
+  relToPlayer() {
+    return this.relativeTo(game.playerObj.pos).add(game.getPlayerDrawPos());
+  }
+
+  add(p) {
+    return new Vec(this.x + p.x, this.y + p.y);
+  }
+}
+
+// ----------- DIRECTION -----------
+const dirs = Object.freeze({LEFT:1, UP:2, RIGHT:3, DOWN:4});
+
 // ----------- IMAGES -----------
-var images = Object.create(null);
+const images = Object.create(null);
 
 const LOADING = "LOADING";
 
@@ -70,85 +174,6 @@ class Animation {
     return this.frames[frameIndex].sprite;
   }
 }
-
-// ----------- GAME -----------
-var game;
-
-class Game {
-  constructor(ws, username) {
-    this.ws = ws;
-    this.canvasCtx = this.makePage(username);
-    this.pressedKeys = new Set();
-    this.playerObj = null;
-    this.otherPlayerObjs = [];
-    this.gameObjs = [];
-    this.username = username;
-    this.gameLog = new GameLog();
-    this.registerKeyListeners();
-  }
-
-  makePage() {
-    let canvas = document.createElement("canvas");
-    let ctx = canvas.getContext("2d", {alpha: false});
-    canvas.innerHTML = "Oops! Something went wrong. Your browser might not support this game.";
-    canvas.width = document.body.clientWidth;
-    canvas.height = document.body.clientHeight;
-    document.body.innerHTML = "";
-    document.body.style.backgroundColor = "white";
-    document.body.style.overflow = "hidden";
-    document.body.appendChild(canvas);
-    return ctx;
-  }
-
-  registerKeyListeners() {
-    addEventListener("keydown", e => this.pressedKeys.add(e.keyCode), false);
-    addEventListener("keyup", e => this.pressedKeys.delete(e.keyCode), false);
-  }
-
-  clearGameObjs() {
-    this.gameObjs = [];
-  }
-
-  addGameObj(obj) {
-    this.gameObjs.push(obj);
-  }
-
-  getScaledWidth() {
-    return this.canvasCtx.canvas.width / SCALE_FACTOR;
-  }
-
-  getScaledHeight() {
-    return this.canvasCtx.canvas.height / SCALE_FACTOR;
-  }
-
-  getPlayerDrawPos() {
-    return new Vec(Math.floor(game.getScaledWidth()/2),
-                   Math.floor(game.getScaledHeight()/2));
-  }
-}
-
-// ----------- VEC -----------
-class Vec {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-  }
-
-  relativeTo(p) {
-    return new Vec(this.x - p.x, this.y - p.y);
-  }
-
-  relToPlayer() {
-    return this.relativeTo(game.playerObj.pos).add(game.getPlayerDrawPos());
-  }
-
-  add(p) {
-    return new Vec(this.x + p.x, this.y + p.y);
-  }
-}
-
-// ----------- DIRECTION -----------
-const dirs = Object.freeze({LEFT:1, UP:2, RIGHT:3, DOWN:4});
 
 // ----------- ENTITY -----------
 function drawRect(ctx, pos, fillStyle) {
@@ -287,7 +312,7 @@ class OtherPlayer extends Entity {
   }
 }
 
-// ----------- GAME LOG -----------
+// ----------- TEXT HANDLING -----------
 function wrapText(ctx, text, maxWidth) {
   let words = text.split(" "),
       currentLine = words[0],
@@ -314,9 +339,11 @@ function wrapText(ctx, text, maxWidth) {
   return lines;
 }
 
+// ----------- GAME LOG -----------
 class GameLog {
   constructor() {
     this.messageLog = [];
+    this.lineStart = 0;
   }
 
   addMsg(msg) {
@@ -328,22 +355,88 @@ class GameLog {
   }
 
   render() {
-    if (this.messageLog.length > 0) {
-      const BOX_WIDTH   = 100,
-            LINE_HEIGHT = 15,
-            ctx         = game.canvasCtx,
-            text = ["Press c to clear!", ...this.messageLog]
+    const BOX_WIDTH   = 100,
+          LINE_HEIGHT = 15,
+          ctx         = game.canvasCtx,
+          text = game.contextMenu === contextMenus.LOG ?
+            ["Press l to exit the log, c to clear, and arrow keys to scroll.", ...this.messageLog]
+              .join(" \n ----- \n ") :
+            ["Press l to open the log!", ...this.messageLog]
               .join(" \n ----- \n ");
-      ctx.font = "12px san-serif";
-      const textLines = wrapText(ctx, text, BOX_WIDTH);
-      ctx.fillStyle = "rgb(80, 0, 80)";
-      ctx.fillRect(0, 40, BOX_WIDTH + 20, LINE_HEIGHT*textLines.length + 5);
-      ctx.fillStyle = "rgb(255, 255, 255)";
-      let y = 40;
-      for (const line of textLines) {
-        y += LINE_HEIGHT;
-        ctx.fillText(line, 10, y);
-      }
+    ctx.font = "12px san-serif";
+    let textLines = wrapText(ctx, text, BOX_WIDTH);
+    if (this.lineStart < 0) {
+      this.lineStart = 0;
+    }
+    if (this.lineStart > textLines.length) {
+      this.lineStart = textLines.length;
+    }
+    textLines = textLines.slice(this.lineStart);
+    ctx.fillStyle = "rgb(80, 0, 80)";
+    ctx.fillRect(0, 40, BOX_WIDTH + 20, LINE_HEIGHT*textLines.length + 5);
+
+    ctx.fillStyle = "rgb(255, 255, 255)";
+    let y = 40;
+    for (const line of textLines) {
+      y += LINE_HEIGHT;
+      ctx.fillText(line, 10, y);
+    }
+  }
+}
+
+// ----------- MENU -----------
+class MenuItem {
+  constructor(text) {
+    this.text = text;
+  }
+}
+
+class Menu {
+  constructor() {
+    this.items = [];
+    this.currentlySelected = 0;
+  }
+
+  addItem(item) {
+    this.items.push(item);
+  }
+
+  cursorUp() {
+    this.currentlySelected--;
+    if (this.currentlySelected < 0) {
+      this.currentlySelected = 0;
+    }
+  }
+
+  cursorDown() {
+    this.currentlySelected++;
+    if (this.currentlySelected >= this.items.length) {
+      this.currentlySelected = this.items.length - 1;
+    }
+  }
+
+  render() {
+    const BOX_WIDTH   = 100,
+          LINE_HEIGHT = 15,
+          ctx         = game.canvasCtx,
+          text = game.contextMenu === contextMenus.MENU ?
+            ["Press m to close the menu, arrow keys to pick an option, and enter to choose.", ...this.items.map((item, i) =>
+              i === this.currentlySelected ?
+                ">" + item.text :
+                item.text)]
+                  .join(" \n ----- \n ") :
+            "Press m to open the menu!",
+          startingX = game.getScaledWidth() - BOX_WIDTH - 20;
+    ctx.font = "12px san-serif";
+    const textLines = wrapText(ctx, text, BOX_WIDTH);
+    ctx.fillStyle = "rgb(80, 0, 80)";
+    ctx.fillRect(startingX, 0, BOX_WIDTH + 20, LINE_HEIGHT*textLines.length + 5);
+
+    ctx.fillStyle = "rgb(255, 255, 255)";
+    let y = 0;
+    for (const line of textLines) {
+      y += LINE_HEIGHT;
+      ctx.fillText(line, startingX + 10, y);
     }
   }
 }
@@ -357,6 +450,13 @@ function startGame() {
 }
 
 // ----------- GAME LOGIC -----------
+function initialize() {
+  game.gameLog = new GameLog();
+  game.menu = new Menu();
+  game.menu.addItem(new MenuItem("Profile"));
+  game.menu.addItem(new MenuItem("Inventory"));
+}
+
 function handleWSMessage(e) {
   if (e.data.startsWith("world|")) {
     let parts  = e.data.split("|"),
@@ -415,46 +515,83 @@ function handleWSMessage(e) {
 }
 
 function update(dt) {
-  let moveStr = "",
-      multiplier = 1,
-      fastmove = false;
-  if (game.pressedKeys.has(SHIFT)) {
-    multiplier = SPEED_MULTIPLIER;
-    fastmove = true;
-  }
-  if (game.pressedKeys.has(KEY_LEFT)) {
-    moveStr += "l";
-    game.playerObj.move(new Vec(-PLAYER_SPEED*dt*multiplier, 0));
-    game.playerObj.facing = dirs.LEFT;
-  }
-  if (game.pressedKeys.has(KEY_UP)) {
-    moveStr += "u";
-    game.playerObj.move(new Vec(0, -PLAYER_SPEED*dt*multiplier));
-    game.playerObj.facing = dirs.UP;
-  }
-  if (game.pressedKeys.has(KEY_RIGHT)) {
-    moveStr += "r";
-    game.playerObj.move(new Vec(PLAYER_SPEED*dt*multiplier, 0));
-    game.playerObj.facing = dirs.RIGHT;
-  }
-  if (game.pressedKeys.has(KEY_DOWN)) {
-    moveStr += "d";
-    game.playerObj.move(new Vec(0, PLAYER_SPEED*dt*multiplier));
-    game.playerObj.facing = dirs.DOWN;
-  }
-  if (moveStr) {
-    if (fastmove) {
-      game.ws.send("fastmove|" + moveStr);
-    } else {
-      game.ws.send("move|" + moveStr);
+  if (game.contextMenu === contextMenus.MAP) {
+    let moveStr = "",
+        multiplier = 1,
+        fastmove = false;
+    if (game.pressedKeys.has(SHIFT)) {
+      multiplier = SPEED_MULTIPLIER;
+      fastmove = true;
+    }
+    if (game.pressedKeys.has(KEY_LEFT)) {
+      moveStr += "l";
+      game.playerObj.move(new Vec(-PLAYER_SPEED*dt*multiplier, 0));
+      game.playerObj.facing = dirs.LEFT;
+    }
+    if (game.pressedKeys.has(KEY_UP)) {
+      moveStr += "u";
+      game.playerObj.move(new Vec(0, -PLAYER_SPEED*dt*multiplier));
+      game.playerObj.facing = dirs.UP;
+    }
+    if (game.pressedKeys.has(KEY_RIGHT)) {
+      moveStr += "r";
+      game.playerObj.move(new Vec(PLAYER_SPEED*dt*multiplier, 0));
+      game.playerObj.facing = dirs.RIGHT;
+    }
+    if (game.pressedKeys.has(KEY_DOWN)) {
+      moveStr += "d";
+      game.playerObj.move(new Vec(0, PLAYER_SPEED*dt*multiplier));
+      game.playerObj.facing = dirs.DOWN;
+    }
+    if (moveStr) {
+      if (fastmove) {
+        game.ws.send("fastmove|" + moveStr);
+      } else {
+        game.ws.send("move|" + moveStr);
+      }
+    }
+    if (game.pressedKeys.has(SPACE)) {
+      game.ws.send("interact");
+      game.pressedKeys.delete(SPACE);
+    }
+  } else if (game.contextMenu === contextMenus.LOG) {
+    if (game.pressedKeys.has(KEY_UP)) {
+      game.gameLog.lineStart--;
+      game.pressedKeys.delete(KEY_UP);
+    }
+    if (game.pressedKeys.has(KEY_DOWN)) {
+      game.gameLog.lineStart++;
+      game.pressedKeys.delete(KEY_DOWN);
+    }
+    if (game.pressedKeys.has(C_KEY)) {
+      game.gameLog.clear();
+      game.pressedKeys.delete(C_KEY);
+    }
+  } else if (game.contextMenu === contextMenus.MENU) {
+    if (game.pressedKeys.has(KEY_UP)) {
+      game.menu.cursorUp();
+      game.pressedKeys.delete(KEY_UP);
+    }
+    if (game.pressedKeys.has(KEY_DOWN)) {
+      game.menu.cursorDown();
+      game.pressedKeys.delete(KEY_DOWN);
     }
   }
-  if (game.pressedKeys.has(SPACE)) {
-    game.ws.send("interact");
-    game.pressedKeys.delete(SPACE);
-  }
-  if (game.pressedKeys.has(C_KEY)) {
-    game.gameLog.clear();
+
+  if (game.pressedKeys.has(L_KEY)) {
+    if (game.contextMenu === contextMenus.LOG) {
+      game.contextMenu = contextMenus.MAP;
+    } else {
+      game.contextMenu = contextMenus.LOG;
+    }
+    game.pressedKeys.delete(L_KEY);
+  } else if (game.pressedKeys.has(M_KEY)) {
+    if (game.contextMenu === contextMenus.MENU) {
+      game.contextMenu = contextMenus.MAP;
+    } else {
+      game.contextMenu = contextMenus.MENU;
+    }
+    game.pressedKeys.delete(M_KEY);
   }
 }
 
@@ -470,11 +607,11 @@ function render() {
     ctx.canvas.height = height;
   }
 
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  game.unscale();
   ctx.fillStyle = "rgb(0, 0, 0)";
   ctx.fillRect(0, 0, width, height);
 
-  ctx.scale(SCALE_FACTOR, SCALE_FACTOR);
+  game.scale();
   for (const obj of game.gameObjs) {
     obj.render();
   }
@@ -485,9 +622,8 @@ function render() {
     game.playerObj.render();
   }
 
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  const fontSize = Math.floor(20);
-  ctx.font = `${fontSize}px san-serif`;
+  game.unscale();
+  ctx.font = "20px san-serif";
   let text = "Your username is " + game.username + ".";
   ctx.fillStyle = "rgb(80, 0, 80)";
   ctx.fillRect(0, 0, ctx.measureText(text).width + 20, 30);
@@ -495,12 +631,14 @@ function render() {
   ctx.fillText(text, 10, 20);
 
   game.gameLog.render();
+  game.menu.render();
 }
 
 function main() {
   let w = window;
   let requestAnimationFrame = w.requestAnimationFrame || w.webkitRequestAnimationFrame || w.msRequestAnimationFrame || w.mozRequestAnimationFrame;
 
+  initialize();
   game.ws.onopen = function(e) {
     game.ws.send(game.username);
     let gameLoop = function(then) {
