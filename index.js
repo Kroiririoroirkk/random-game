@@ -28,16 +28,46 @@ function loadImage(filename) {
   images[filename] = LOADING;
 }
 
-function getImage(filename) {
-  if (filename in images) {
-    if (images[filename] === LOADING) {
-      return null;
+function getImage(...filenames) {
+  for (const filename in filenames) {
+    if (filename in images) {
+      if (images[filename] !== LOADING) {
+        return images[filename];
+      }
     } else {
-      return images[filename];
+      loadImage(filename);
     }
-  } else {
-    loadImage(filename);
-    return null;
+  }
+  return null;
+}
+
+class Frame {
+  constructor(sprite, time) {
+    this.sprite = sprite;
+    this.time = time;
+  }
+}
+
+class Animation {
+  constructor(frames) {
+    this.frames = frames;
+    this.frameIndex = 0;
+    this.frameDuration = frames[0].time;
+  }
+
+  animate(dt) {
+    this.frameDuration -= dt;
+    if (this.frameDuration <= 0) {
+      this.frameIndex++;
+      if (this.frameIndex >= this.frames.length) {
+        this.framesIndex %= frames.length;
+      }
+      this.frameDuration += frames[frameIndex].time;
+    }
+  }
+
+  getSprite() {
+    return this.frames[frameIndex].sprite;
   }
 }
 
@@ -117,6 +147,9 @@ class Vec {
   }
 }
 
+// ----------- DIRECTION -----------
+const dirs = Object.freeze({LEFT:1, UP:2, RIGHT:3, DOWN:4});
+
 // ----------- ENTITY -----------
 function drawRect(ctx, pos, fillStyle) {
   ctx.fillStyle = "rgb(0, 0, 0)";
@@ -147,12 +180,20 @@ class Entity {
 class Player extends Entity {
   constructor(pos) {
     super(pos);
+    this.facing = dirs.DOWN;
+  }
+
+  getSprite() {
+    if (this.facing === dirs.LEFT)  {return getImage("char-left-still.png", "char-down-still.png");}
+    if (this.facing === dirs.UP)    {return getImage("char-up-still.png", "char-down-still.png");}
+    if (this.facing === dirs.RIGHT) {return getImage("char-right-still.png", "char-down-still.png");}
+    if (this.facing === dirs.DOWN)  {return getImage("char-down-still.png");}
   }
 
   render() {
     const ctx = game.canvasCtx,
           pos = game.getPlayerDrawPos(),
-          img = getImage("char-down-still.png");
+          img = this.getSprite();
     if (img) {
       ctx.drawImage(img, pos.x, pos.y);
     } else {
@@ -171,7 +212,14 @@ class Grass extends Entity {
   }
 
   render() {
-    drawRect(game.canvasCtx, this.pos.relToPlayer(), "rgb(0, 255, 0)");
+    const ctx = game.canvasCtx,
+          pos = this.pos.relToPlayer(),
+          img = getImage("grass.png");
+    if (img) {
+      ctx.drawImage(img, pos.x, pos.y);
+    } else {
+      drawRect(game.canvasCtx, pos, "rgb(0, 255, 0)");
+    }
   }
 }
 
@@ -181,7 +229,14 @@ class WildGrass extends Entity {
   }
 
   render() {
-    drawRect(game.canvasCtx, this.pos.relToPlayer(), "rgb(0, 180, 0)");
+    const ctx = game.canvasCtx,
+          pos = this.pos.relToPlayer(),
+          img = getImage("wild-grass.png");
+    if (img) {
+      ctx.drawImage(img, pos.x, pos.y);
+    } else {
+      drawRect(game.canvasCtx, pos, "rgb(0, 180, 0)");
+    }
   }
 }
 
@@ -370,18 +425,22 @@ function update(dt) {
   if (game.pressedKeys.has(KEY_LEFT)) {
     moveStr += "l";
     game.playerObj.move(new Vec(-PLAYER_SPEED*dt*multiplier, 0));
+    game.playerObj.facing = dirs.LEFT;
   }
   if (game.pressedKeys.has(KEY_UP)) {
     moveStr += "u";
     game.playerObj.move(new Vec(0, -PLAYER_SPEED*dt*multiplier));
+    game.playerObj.facing = dirs.UP;
   }
   if (game.pressedKeys.has(KEY_RIGHT)) {
     moveStr += "r";
     game.playerObj.move(new Vec(PLAYER_SPEED*dt*multiplier, 0));
+    game.playerObj.facing = dirs.RIGHT;
   }
   if (game.pressedKeys.has(KEY_DOWN)) {
     moveStr += "d";
     game.playerObj.move(new Vec(0, PLAYER_SPEED*dt*multiplier));
+    game.playerObj.facing = dirs.DOWN;
   }
   if (moveStr) {
     if (fastmove) {
