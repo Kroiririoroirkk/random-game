@@ -578,15 +578,15 @@ function update(dt) {
       game.playerObj.move(new Vec(-PLAYER_SPEED*dt*multiplier, 0));
       game.playerObj.facing = dirs.LEFT;
     }
-    if (game.pressedKeys.has(KEY_UP)) {
-      moveStr += "u";
-      game.playerObj.move(new Vec(0, -PLAYER_SPEED*dt*multiplier));
-      game.playerObj.facing = dirs.UP;
-    }
     if (game.pressedKeys.has(KEY_RIGHT)) {
       moveStr += "r";
       game.playerObj.move(new Vec(PLAYER_SPEED*dt*multiplier, 0));
       game.playerObj.facing = dirs.RIGHT;
+    }
+    if (game.pressedKeys.has(KEY_UP)) {
+      moveStr += "u";
+      game.playerObj.move(new Vec(0, -PLAYER_SPEED*dt*multiplier));
+      game.playerObj.facing = dirs.UP;
     }
     if (game.pressedKeys.has(KEY_DOWN)) {
       moveStr += "d";
