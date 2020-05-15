@@ -29,7 +29,7 @@ function loadImage(filename) {
 }
 
 function getImage(...filenames) {
-  for (const filename in filenames) {
+  for (const filename of filenames) {
     if (filename in images) {
       if (images[filename] !== LOADING) {
         return images[filename];
