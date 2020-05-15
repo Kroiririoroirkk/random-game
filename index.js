@@ -271,7 +271,14 @@ class Wall extends Entity {
   }
 
   render() {
-    drawRect(game.canvasCtx, this.pos.relToPlayer(), "rgb(210, 105, 30)");
+    const ctx = game.canvasCtx,
+          pos = this.pos.relToPlayer(),
+          img = getImage("wall.png");
+    if (img) {
+      ctx.drawImage(img, pos.x, pos.y);
+    } else {
+      drawRect(game.canvasCtx, this.pos.relToPlayer(), "rgb(210, 105, 30)");
+    }
   }
 }
 
