@@ -1,46 +1,38 @@
 from config import BLOCK_WIDTH
-from geometry import BoundingBox, LineSegment, Vec
+from geometry import BoundingBox, Vec
 from world import worlds
-
-class Tile:
-  def __init__(self):
-    self.blocks_movement = False
-
-  async def on_move_on(self, game, ws, username, player, player_start_pos, tile_pos):
-    pass
-
-  async def on_interact(self, game, ws, username, player, tile_pos):
-    pass
+from tilebasic import Empty, Tile
 
 def get_tile_bounding_box(tile_pos):
-  block = Vec(BLOCK_WIDTH-1, BLOCK_WIDTH-1)
+  block = Vec(BLOCK_WIDTH, BLOCK_WIDTH)
   return BoundingBox(tile_pos, tile_pos + block)
 
 def block_movement(tile_pos, player_start_pos, player):
   bbox = get_tile_bounding_box(tile_pos)
-  p_bbox = player.get_bounding_box()
-  d = p_bbox.get_width()
-  player_path = LineSegment(player_start_pos, player.pos)
-  path_ne = player_path.shift(Vec(d-1,0))
-  path_nw = player_path
-  path_se = player_path.shift(Vec(d-1,d-1))
-  path_sw = player_path.shift(Vec(0,d-1))
-  if ((path_ne.is_intersecting(bbox.get_left_side())
-      or path_se.is_intersecting(bbox.get_left_side()))
-      and path_ne.start.x <= bbox.get_left_b()):
-    player.pos.x = bbox.get_left_b() - d
-  if ((path_sw.is_intersecting(bbox.get_top_side())
-      or path_se.is_intersecting(bbox.get_top_side()))
-      and path_sw.start.y <= bbox.get_top_b()):
-    player.pos.y = bbox.get_top_b() - d
-  if ((path_nw.is_intersecting(bbox.get_right_side())
-      or path_sw.is_intersecting(bbox.get_right_side()))
-      and path_nw.start.x >= bbox.get_right_b()):
-    player.pos.x = bbox.get_right_b() + 1
-  if ((path_nw.is_intersecting(bbox.get_bottom_side())
-      or path_ne.is_intersecting(bbox.get_bottom_side()))
-      and path_nw.start.y >= bbox.get_bottom_b()):
-    player.pos.y = bbox.get_bottom_b() + 1
+  player_end_pos = player.pos
+  player.pos = player_start_pos
+  if player.get_bounding_box().is_touching(bbox):
+    player.pos = player_end_pos
+  else:
+    dp = player_end_pos - player_start_pos
+    dx = dp.x
+    dy = dp.y
+    player_width = player.get_width()
+    player_height = player.get_height()
+
+    player.move(Vec(dx,0))
+    if player.get_bounding_box().is_touching(bbox):
+      if dx > 0:
+        player.setX(bbox.get_left_b() - player_width - 1)
+      elif dx < 0:
+        player.setX(bbox.get_right_b() + 1)
+
+    player.move(Vec(0,dy))
+    if player.get_bounding_box().is_touching(bbox):
+      if dy > 0:
+        player.setY(bbox.get_top_b() - player_height - 1)
+      elif dy < 0:
+        player.setY(bbox.get_bottom_b() + 1)
 
 class TileMetadata:
   pass
@@ -49,9 +41,6 @@ class TilePlus(Tile):
   def __init__(self, data):
     super().__init__()
     self.data = data
-
-class Empty(Tile):
-  pass
 
 class Grass(Tile):
   pass

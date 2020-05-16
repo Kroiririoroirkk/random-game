@@ -11,8 +11,14 @@ class Entity:
   def move(self, offset):
     self.pos += offset
 
+  def setX(self, newX):
+    self.pos = Vec(newX, self.pos.y)
+
+  def setY(self, newY):
+    self.pos = Vec(self.pos.x, newY)
+
   def get_bounding_box(self):
-    block = Vec(BLOCK_WIDTH-1, BLOCK_WIDTH-1)
+    block = Vec(BLOCK_WIDTH, BLOCK_WIDTH)
     return BoundingBox(self.pos, self.pos + block)
 
   def get_tilesXY_touched(self):
@@ -26,6 +32,12 @@ class Entity:
   def is_touching(self, e):
     return self.get_bounding_box().is_touching(e.get_bounding_box())
 
+  def get_width(self):
+    return self.get_bounding_box().get_width()
+
+  def get_height(self):
+    return self.get_bounding_box().get_height()
+
 class Player(Entity):
   def __init__(self):
     super().__init__(None)
@@ -33,5 +45,5 @@ class Player(Entity):
     self.world_id = None
 
   def get_bounding_box(self):
-    return super().get_bounding_box().scale(PLAYER_WIDTH/BLOCK_WIDTH)
-
+    d = Vec(PLAYER_WIDTH, PLAYER_WIDTH)
+    return BoundingBox(self.pos, self.pos + d)

@@ -1,5 +1,6 @@
 from config import BLOCK_WIDTH, PLAYER_WIDTH
 from geometry import Vec
+from tilebasic import Empty
 
 worlds = {}
 
@@ -27,7 +28,10 @@ class World:
     self.spawn_posits = spawn_posits
 
   def get_tile(self, block_x, block_y):
-    return self.tiles[block_y][block_x]
+    try:
+      return self.tiles[block_y][block_x]
+    except IndexError:
+      return Empty()
 
 class WorldData:
   def __init__(self, w_id, text, spawn_posits, tile_metadata):
