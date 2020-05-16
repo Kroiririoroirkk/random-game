@@ -69,14 +69,23 @@ class PortalData(TileMetadata):
   def __init__(self, w_id, spawn_num):
     self.w_id = w_id
     self.spawn_num = spawn_num
+    self.immune_players = set()
 
 class Portal(TilePlus):
-  async def on_move_on(self, game, ws, username, player, player_start_pos, tile_pos):
-    w_id = self.data.w_id
-    w = worlds.get(w_id)
-    spawn_num = self.data.spawn_num
-    await game.set_and_send_world(ws, username, player, w, spawn_num)
-    await game.send_players(ws, username, w_id)
+  async def on_move_touching(self, game, ws, username, player, player_start_pos, tile_pos):
+    if username not in self.data.immune_players:
+      w_id = self.data.w_id
+      w = worlds.get(w_id)
+      spawn_num = self.data.spawn_num
+      await game.set_and_send_world(ws, username, player, w, spawn_num)
+      await game.send_players(ws, username, w_id)
+      spawn_point = w.spawn_posits[spawn_num]
+      t = w.get_tile(spawn_point.block_x, spawn_point.block_y)
+      if isinstance(t, Portal):
+        t.data.immune_players.add(username)
+
+  async def on_move_off(self, game, ws, username, player, player_start_pos, tile_pos):
+    self.data.immune_players.discard(username)
 
 class SignData(TileMetadata):
   def __init__(self, text, ground_tile):
