@@ -556,7 +556,7 @@ function handleWSMessage(e) {
     game.playerObj.moveTo(new Vec(newX, newY));
   } else if (e.data.startsWith("signtext|")) {
     let parts = e.data.split("|"),
-        text  = parts[3];
+        text  = parts[1];
     game.gameLog.addMsg("The sign reads: " + text);
   } else if (e.data.startsWith("players|")) {
     let parts = e.data.split("|");
