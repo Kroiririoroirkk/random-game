@@ -391,10 +391,11 @@ class GameLog {
   unfocus() {
     const ctx = game.canvasCtx;
     ctx.font = "20px sans-serif";
-    this.wrappedText = wrapText(ctx,
-      ["Press L to open the log!",
-      this.messageLog[0]]
-        .join(" \n ----- \n "), this.width);
+    const openMsg = "Press L to open the log!";
+    const text = this.messageLog.length > 0 ?
+      `${openMsg} \n ----- \n ${this.messageLog[0]}` :
+      openMsg;
+    this.wrappedText = wrapText(ctx, text, this.width);
     this.lineStart = 0;
   }
 
