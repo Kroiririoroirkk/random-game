@@ -34,13 +34,11 @@ def block_movement(tile_pos, player_start_pos, player):
       elif dy < 0:
         player.setY(bbox.get_bottom_b() + 1)
 
-class TileMetadata:
-  pass
-
 class TilePlus(Tile):
   def __init__(self, data):
     super().__init__()
-    self.data = data
+    self.data = {}
+    self.send_to_client = []
 
 class Grass(Tile):
   pass
@@ -72,6 +70,7 @@ class SignData(TileMetadata):
     super().__init__()
     self.text = text
     self.ground_tile = ground_tile
+    self.send_to_client = ["ground_tile"]
 
 class Sign(TilePlus):
   async def on_interact(self, game, ws, username, player, tile_pos):
