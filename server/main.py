@@ -9,6 +9,7 @@ import entity
 import game
 from geometry import Vec
 import geometry
+from tile import block_movement
 from world import worlds, tileXY_to_pos
 from loadworld import load_worlds
 
@@ -42,25 +43,26 @@ async def parseMessage(message, username, ws):
     dirVec = sum([geometry.vec_from_dir(char) for char in direction], start=Vec(0,0))
     if dirVec:
       start_pos = player.pos
-      tilesXY_touched = player.get_tilesXY_touched()
+      start_tiles = player.get_tilesXY_touched()
       now = time.monotonic()
       dt = min(now - player.time_of_last_move, MAX_MOVE_DT)
       player.time_of_last_move = now
       offset = dirVec * (PLAYER_SPEED * dt * multiplier)
       player.pos += offset
       tilesXY_touching = player.get_tilesXY_touched()
-      tilesXY_moved_on = [tileXY for tileXY in tilesXY_touching
-        if tileXY not in tilesXY_touched]
-      tilesXY_moved_touching = [tileXY for tileXY in tilesXY_touching
-        if tileXY in tilesXY_touched]
-      tilesXY_moved_off = [tileXY for tileXY in tilesXY_touched
-        if tileXY not in tilesXY_touching]
+      wall_tiles = [tileXY for tileXY in tilesXY_touching
+        if world.get_tile(*tileXY).blocks_movement]
+      if wall_tiles:
+        wall_tiles = [tileXY_to_pos(*tileXY) for tileXY in wall_tiles]
+        wall_tiles.sort(key = lambda tilePos:
+          tilePos.dist_to(player.pos))
+        for wall_tile in wall_tiles:
+          block_movement(wall_tile, start_pos, player)
+        tilesXY_touching = player.get_tilesXY_touched()
+      tilesXY_moved_on = [tile for tile in tilesXY_touching
+        if tile not in start_tiles]
       for tileXY in tilesXY_moved_on:
         await world.get_tile(*tileXY).on_move_on(game, ws, username, player, start_pos, tileXY_to_pos(*tileXY))
-      for tileXY in tilesXY_moved_touching:
-        await world.get_tile(*tileXY).on_move_touching(game, ws, username, player, start_pos, tileXY_to_pos(*tileXY))
-      for tileXY in tilesXY_moved_off:
-        await world.get_tile(*tileXY).on_move_off(game, ws, username, player, start_pos, tileXY_to_pos(*tileXY))
       game.set_player(username, player)
       await game.send_moved_to(ws, player.pos)
   elif message.startswith("interact"):

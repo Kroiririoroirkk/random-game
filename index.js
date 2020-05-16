@@ -516,6 +516,7 @@ function initialize() {
 }
 
 function handleWSMessage(e) {
+  console.log(e);
   if (e.data.startsWith("world|")) {
     let parts  = e.data.split("|"),
         spawnX = parseFloat(parts[1]),
