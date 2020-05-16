@@ -393,7 +393,7 @@ class GameLog {
     ctx.font = "20px sans-serif";
     this.wrappedText = wrapText(ctx,
       ["Press L to open the log!",
-      ...this.messageLog]
+      this.messageLog[0]]
         .join(" \n ----- \n "), this.width);
     this.lineStart = 0;
   }
