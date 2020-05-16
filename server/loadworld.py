@@ -1,4 +1,4 @@
-from world import worlds, SpawnPoint, World, WorldData
+from world import worlds, TileXY, World, WorldData
 import tile
 
 def load_world(w):
@@ -39,7 +39,7 @@ STARTING_WORLD_DATA = WorldData("starting_world",
   "wwggggggggggggggggggggggggggggggggww|"
   "wwggggggggggggggggggggggggggggggggww|"
   "wwggggggggggggggggggggggggggggggggww|"
-  "wwggggggggggggggggggggggggggggggggww|"
+  "wwgggggggggggggggggggggggggggpggggww|"
   "wwggggggggggggggggggggggggggggggggww|"
   "wwgggggggGggggGgggggGGGGGGGgggggggww|"
   "wwgggggggGggggGggggggggGggggggggggww|"
@@ -53,7 +53,7 @@ STARTING_WORLD_DATA = WorldData("starting_world",
   "wwggggggggggggggggggggggggggggggggww|"
   "wwggggggggggggggggggggggggggggggggww|"
   "wwggggggggggggggggggggggggggggggggww|"
-  "wwggggggggggggggggggggggggggggggggww|"
+  "wwgggggggggggggggggggggggggggpggggww|"
   "wwggggggggggggggggggggggggggggggggww|"
   "wwggggggggggggggggggggggggggggggggww|"
   "wwwggggggggggggggggggggggggggggggwww|"
@@ -63,12 +63,16 @@ STARTING_WORLD_DATA = WorldData("starting_world",
   "   wwwwwwggggggggsgggggggggwwwwww   |"
   "      wwwwwwwwwwwwpwwwwwwwwwww      |"
   "        wwwwwwwwwwwwwwwwwwww        ",
-  [SpawnPoint(18,18),
-   SpawnPoint(18,34),
-   SpawnPoint(1,18)],
-  [tile.PortalData("second_world", 0),
+  [TileXY(18,18),
+   TileXY(18,34),
+   TileXY(1,18),
+   TileXY(29,12),
+   TileXY(29,26)],
+  [tile.PortalData("starting_world", 4),
+   tile.PortalData("second_world", 0),
    tile.SignData("Hello,", tile.WildGrass()),
    tile.SignData("World!", tile.WildGrass()),
+   tile.PortalData("starting_world", 3),
    tile.SignData("Enter the portal!", tile.Grass()),
    tile.PortalData("second_world", 1)])
 SECOND_WORLD_DATA = WorldData("second_world",
@@ -76,8 +80,8 @@ SECOND_WORLD_DATA = WorldData("second_world",
   "wgpw|"
   "wpGw|"
   "wwww",
-  [SpawnPoint(1,2),
-   SpawnPoint(2,1)],
+  [TileXY(1,2),
+   TileXY(2,1)],
   [tile.PortalData("starting_world", 1),
    tile.PortalData("starting_world", 2)])
 

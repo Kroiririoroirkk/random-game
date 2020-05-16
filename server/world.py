@@ -1,14 +1,12 @@
+from collections import namedtuple
+
 from config import BLOCK_WIDTH, PLAYER_WIDTH
 from geometry import Vec
 from tilebasic import Empty
 
 worlds = {}
 
-class SpawnPoint:
-  def __init__(self, block_x, block_y):
-    self.block_x = block_x
-    self.block_y = block_y
-
+class TileXY(namedtuple("TileXY", ["block_x", "block_y"])):
   def get_spawn_pos(self):
     return Vec(self.block_x * BLOCK_WIDTH + (BLOCK_WIDTH-PLAYER_WIDTH)/2,
                self.block_y * BLOCK_WIDTH + (BLOCK_WIDTH-PLAYER_WIDTH)/2)
