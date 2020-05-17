@@ -1,5 +1,5 @@
 from storeworld import world_to_client_JSON
-from world import tileXY_to_pos
+from world import tileXY_to_spawn_pos
 
 class Game:
   def __init__(self):
@@ -13,7 +13,7 @@ class Game:
 
   async def set_and_send_world(self, ws, username, player, world, spawn_id):
     player.world_id = world.w_id
-    player.pos = tileXY_to_pos(world.spawn_points[spawn_id])
+    player.pos = tileXY_to_spawn_pos(world.spawn_points[spawn_id])
     self.set_player(username, player)
     await Game.send_world(ws, world, player.pos)
 
