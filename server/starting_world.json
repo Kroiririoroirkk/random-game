@@ -796,9 +796,6 @@
       {"tile_id": "wild_grass"},
       {"tile_id": "wild_grass"},
       {"tile_id": "wild_grass"},
-      {"tile_id": "wild_grass"},
-      {"tile_id": "wild_grass"},
-      {"tile_id": "grass"},
       {"tile_id": "sign",
        "tile_data": {
          "text": "Hello,",
@@ -811,6 +808,9 @@
          "ground_tile": {"tile_id": "wild_grass"}
        }
       },
+      {"tile_id": "grass"},
+      {"tile_id": "grass"},
+      {"tile_id": "grass"},
       {"tile_id": "grass"},
       {"tile_id": "grass"},
       {"tile_id": "grass"},
