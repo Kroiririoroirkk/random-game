@@ -13,7 +13,7 @@ const M_KEY = 77;
 
 const BLOCK_WIDTH = 32;
 const PLAYER_WIDTH = 28;
-var SCALE_FACTOR = 0.8;
+const SCALE_FACTOR = 2;
 
 const PLAYER_SPEED = BLOCK_WIDTH*3;
 const SPEED_MULTIPLIER = 2;
