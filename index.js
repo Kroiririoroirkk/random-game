@@ -343,10 +343,10 @@ class Player extends Entity {
     if (this.moving) {
       return this.getAnimation().getSprite();
     } else {
-      if (this.facing === dirs.LEFT)  {return getImage("char-left-still.png", "char-down-still.png");}
-      if (this.facing === dirs.UP)    {return getImage("char-up-still.png", "char-down-still.png");}
-      if (this.facing === dirs.RIGHT) {return getImage("char-right-still.png", "char-down-still.png");}
-      if (this.facing === dirs.DOWN)  {return getImage("char-down-still.png");}
+      if (this.facing === dirs.LEFT)  {return getImage("char-left-still.png", "char-down-still1.png");}
+      if (this.facing === dirs.UP)    {return getImage("char-up-still1.png", "char-down-still1.png");}
+      if (this.facing === dirs.RIGHT) {return getImage("char-right-still.png", "char-down-still1.png");}
+      if (this.facing === dirs.DOWN)  {return getImage("char-down-still1.png");}
     }
   }
 
