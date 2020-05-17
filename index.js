@@ -280,6 +280,7 @@ class Player extends Entity {
     super(pos);
     this.facing = dirs.DOWN;
     this.moving = false;
+    this.running = false;
     this.leftAnimation = new Animation(
       new Frame(0.2, "char-left-walk1.png", "char-left-still.png", "char-down-still.png"),
       new Frame(0.2, "char-left-still.png", "char-down-still.png"),
@@ -332,6 +333,7 @@ class Player extends Entity {
   }
 
   animate(dt) {
+    if (this.running) {dt = 2*dt;}
     this.getAnimation().animate(dt);
   }
 
@@ -341,6 +343,7 @@ class Player extends Entity {
   }
 
   stopMoving() {
+    this.running = false;
     this.moving = false;
   }
 
@@ -689,8 +692,10 @@ function update(dt) {
       if (moveStr) {
         if (fastmove) {
           game.ws.send("fastmove|" + moveStr);
+          game.playerObj.running = true;
         } else {
           game.ws.send("move|" + moveStr);
+          game.playerObj.running = false;
         }
         game.playerObj.animate(dt);
       } else {
