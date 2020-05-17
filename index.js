@@ -314,7 +314,7 @@ class Player extends Entity {
     );
     this.upAnimation = new Animation(
       new Frame(0.2, "char-up-walk1.png", "char-up-still1.png", "char-down-still1.png"),
-      new Frame(0.2, "char-up-still2.png", "char-down-still1.png"),
+      new Frame(0.2, "char-up-still2.png", "char-up-still1.png", "char-down-still1.png"),
       new Frame(0.2, "char-up-walk2.png", "char-up-still1.png", "char-down-still1.png"),
       new Frame(0.2, "char-up-still1.png", "char-down-still1.png")
     );
