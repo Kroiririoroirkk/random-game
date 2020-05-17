@@ -32,6 +32,7 @@ class Game {
     this.otherPlayerObjs = [];
     this.map = [];
     this.username = username;
+    this.usernameNotice = null;
     this.gameLog = null;
     this.menu = null;
     this.scaled = false;
@@ -120,6 +121,25 @@ class Vec {
 // ----------- DIRECTION -----------
 const dirs = Object.freeze({LEFT:1, UP:2, RIGHT:3, DOWN:4});
 
+// ----------- RENDER -----------
+class Render {
+  constructor(render, ground_y) {
+    this.render = render;
+    this.ground_y = ground_y;
+  }
+
+  withY(y) {
+    return new Render(this.render, y);
+  }
+
+  static renders(renderList) {
+    renderList.sort((r1, r2) => r1.ground_y - r2.ground_y);
+    renderList.forEach(function(r) {
+      r.render();
+    });
+  }
+}
+
 // ----------- IMAGES -----------
 const images = new Map();
 
@@ -145,6 +165,7 @@ function getImage(...filenames) {
   return null;
 }
 
+// ----------- ANIMATIONS -----------
 class Frame {
   constructor(time, ...sprites) {
     this.time = time;
@@ -193,7 +214,9 @@ class Entity {
   }
 
   render() {
-    drawRect(game.canvasCtx, this.pos.relToPlayer(), "rgb(50, 50, 50)");
+    return [new Render((function() {
+      drawRect(game.canvasCtx, this.pos.relToPlayer(), "rgb(50, 50, 50)")
+    }).bind(this), this.pos.y)];
   }
 
   move(offset) {
@@ -214,15 +237,17 @@ class Tile {
   }
 
   render() {
-    const ctx = game.canvasCtx,
-          pos = this.pos.relToPlayer(),
-          spr = this.constructor._sprite,
-          img = spr ? getImage(spr) : null;
-    if (img) {
-      ctx.drawImage(img, pos.x, pos.y);
-    } else {
-      drawRect(game.canvasCtx, pos, this.constructor._fillStyle);
-    }
+    return [new Render((function() {
+      const ctx = game.canvasCtx,
+            pos = this.pos.relToPlayer(),
+            spr = this.constructor._sprite,
+            img = spr ? getImage(spr) : null;
+      if (img) {
+        ctx.drawImage(img, pos.x, pos.y);
+      } else {
+        drawRect(game.canvasCtx, pos, this.constructor._fillStyle);
+      }
+    }).bind(this), this.pos.y)];
   }
 
   static get hasMetadata() {
@@ -348,17 +373,19 @@ class Player extends Entity {
   }
 
   render() {
-    const ctx = game.canvasCtx,
-          pos = game.getPlayerDrawPos(),
-          img = this.getSprite();
-    if (img) {
-      ctx.drawImage(img, pos.x, pos.y);
-    } else {
-      ctx.fillStyle = "rgb(0, 0, 0)";
-      ctx.fillRect(pos.x, pos.y, PLAYER_WIDTH, PLAYER_WIDTH);
-      ctx.fillStyle = "rgb(255, 0, 0)";
-      ctx.fillRect(pos.x+1, pos.y+1, PLAYER_WIDTH-2, PLAYER_WIDTH-2);
-    }
+    return [new Render((function() {
+      const ctx = game.canvasCtx,
+            pos = game.getPlayerDrawPos(),
+            img = this.getSprite();
+      if (img) {
+        ctx.drawImage(img, pos.x, pos.y);
+      } else {
+        ctx.fillStyle = "rgb(0, 0, 0)";
+        ctx.fillRect(pos.x, pos.y, PLAYER_WIDTH, PLAYER_WIDTH);
+        ctx.fillStyle = "rgb(255, 0, 0)";
+        ctx.fillRect(pos.x+1, pos.y+1, PLAYER_WIDTH-2, PLAYER_WIDTH-2);
+      }
+    }).bind(this), this.pos.y + PLAYER_WIDTH)];
   }
 }
 
@@ -369,6 +396,7 @@ class OtherPlayer extends Entity {
   }
 
   render() {
+    return [new Render((function() {
     const ctx = game.canvasCtx,
           startingX = Math.floor(this.pos.relToPlayer().x),
           startingY = Math.floor(this.pos.relToPlayer().y);
@@ -376,6 +404,7 @@ class OtherPlayer extends Entity {
     ctx.fillRect(startingX, startingY, PLAYER_WIDTH, PLAYER_WIDTH);
     ctx.fillStyle = "rgb(255, 20, 147)";
     ctx.fillRect(startingX+1, startingY+1, PLAYER_WIDTH-2, PLAYER_WIDTH-2);
+    }).bind(this), this.pos.y + PLAYER_WIDTH)]
   }
 }
 
@@ -407,8 +436,9 @@ class Sign extends TilePlus {
   }
 
   render() {
-    this.data.groundTile.render();
-    super.render();
+    const SIGN_HEIGHT = 27;
+    return [...this.data.groundTile.render(),
+            ...(super.render().map(r => r.withY(this.pos.y + SIGN_HEIGHT)))];
   }
 }
 registerTile("sign", Sign, "sign.png", "rgb(255, 255, 0)");
@@ -438,6 +468,19 @@ function wrapText(ctx, text, maxWidth) {
   }
   lines.push(currentLine);
   return lines;
+}
+
+// ----------- USERNAME NOTICE -----------
+class UsernameNotice {
+  render() {
+    const ctx = game.canvasCtx,
+          text = "Your username is " + game.username + ".";
+    ctx.font = "20px san-serif";
+    ctx.fillStyle = "rgb(80, 0, 80)";
+    ctx.fillRect(0, 0, ctx.measureText(text).width + 20, 30);
+    ctx.fillStyle = "rgb(255, 255, 255)";
+    ctx.fillText(text, 10, 20);
+  }
 }
 
 // ----------- GAME LOG -----------
@@ -603,6 +646,7 @@ function startGame() {
 
 // ----------- GAME LOGIC -----------
 function initialize() {
+  game.usernameNotice = new UsernameNotice();
   game.gameLog = new GameLog(250);
   game.menu = new Menu(250);
   game.menu.addItem(new MenuItem("Profile"));
@@ -768,26 +812,22 @@ function render() {
   ctx.fillRect(0, 0, width, height);
 
   game.scale();
+  let renderList = [];
   for (let j = 0; j < game.map.length; j++) {
     for (let i = 0; i < game.map[j].length; i++) {
-      game.map[j][i].render();
+      renderList.push(...game.map[j][i].render());
     }
   }
   for (const obj of game.otherPlayerObjs) {
-    obj.render();
+    renderList.push(...obj.render());
   }
   if (game.playerObj) {
-    game.playerObj.render();
+    renderList.push(...game.playerObj.render());
   }
+  Render.renders(renderList);
 
   game.unscale();
-  ctx.font = "20px san-serif";
-  const text = "Your username is " + game.username + ".";
-  ctx.fillStyle = "rgb(80, 0, 80)";
-  ctx.fillRect(0, 0, ctx.measureText(text).width + 20, 30);
-  ctx.fillStyle = "rgb(255, 255, 255)";
-  ctx.fillText(text, 10, 20);
-
+  game.usernameNotice.render();
   game.gameLog.render();
   game.menu.render();
 }
