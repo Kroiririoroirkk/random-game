@@ -307,28 +307,28 @@ class Player extends Entity {
     this.moving = false;
     this.running = false;
     this.leftAnimation = new Animation(
-      new Frame(0.2, "char-left-walk1.png", "char-left-still.png", "char-down-still.png"),
-      new Frame(0.2, "char-left-still.png", "char-down-still.png"),
-      new Frame(0.2, "char-left-walk2.png", "char-left-still.png", "char-down-still.png"),
-      new Frame(0.2, "char-left-still.png", "char-down-still.png")
+      new Frame(0.2, "char-left-walk1.png", "char-left-still.png", "char-down-still1.png"),
+      new Frame(0.2, "char-left-still.png", "char-down-still1.png"),
+      new Frame(0.2, "char-left-walk2.png", "char-left-still.png", "char-down-still1.png"),
+      new Frame(0.2, "char-left-still.png", "char-down-still1.png")
     );
     this.upAnimation = new Animation(
-      new Frame(0.2, "char-up-walk1.png", "char-up-still.png", "char-down-still.png"),
-      new Frame(0.2, "char-up-still.png", "char-down-still.png"),
-      new Frame(0.2, "char-up-walk2.png", "char-up-still.png", "char-down-still.png"),
-      new Frame(0.2, "char-up-still.png", "char-down-still.png")
+      new Frame(0.2, "char-up-walk1.png", "char-up-still1.png", "char-down-still1.png"),
+      new Frame(0.2, "char-up-still2.png", "char-down-still1.png"),
+      new Frame(0.2, "char-up-walk2.png", "char-up-still1.png", "char-down-still1.png"),
+      new Frame(0.2, "char-up-still1.png", "char-down-still1.png")
     );
     this.rightAnimation = new Animation(
-      new Frame(0.2, "char-right-walk1.png", "char-right-still.png", "char-down-still.png"),
-      new Frame(0.2, "char-right-still.png", "char-down-still.png"),
-      new Frame(0.2, "char-right-walk2.png", "char-right-still.png", "char-down-still.png"),
-      new Frame(0.2, "char-right-still.png", "char-down-still.png")
+      new Frame(0.2, "char-right-walk1.png", "char-right-still.png", "char-down-still1.png"),
+      new Frame(0.2, "char-right-still.png", "char-down-still1.png"),
+      new Frame(0.2, "char-right-walk2.png", "char-right-still.png", "char-down-still1.png"),
+      new Frame(0.2, "char-right-still.png", "char-down-still1.png")
     );
     this.downAnimation = new Animation(
-      new Frame(0.2, "char-down-walk1.png", "char-down-still.png"),
-      new Frame(0.2, "char-down-still.png"),
-      new Frame(0.2, "char-down-walk2.png", "char-down-still.png"),
-      new Frame(0.2, "char-down-still.png")
+      new Frame(0.2, "char-down-walk1.png", "char-down-still1.png"),
+      new Frame(0.2, "char-down-still2.png", "char-down-still1.png"),
+      new Frame(0.2, "char-down-walk2.png", "char-down-still1.png"),
+      new Frame(0.2, "char-down-still1.png")
     );
   }
 
