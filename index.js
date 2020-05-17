@@ -281,28 +281,28 @@ class Player extends Entity {
     this.facing = dirs.DOWN;
     this.moving = false;
     this.leftAnimation = new Animation(
-      new Frame(0.2, "char-left-still.png", "char-down-still.png"),
       new Frame(0.2, "char-left-walk1.png", "char-left-still.png", "char-down-still.png"),
       new Frame(0.2, "char-left-still.png", "char-down-still.png"),
-      new Frame(0.2, "char-left-walk2.png", "char-left-still.png", "char-down-still.png")
+      new Frame(0.2, "char-left-walk2.png", "char-left-still.png", "char-down-still.png"),
+      new Frame(0.2, "char-left-still.png", "char-down-still.png")
     );
     this.upAnimation = new Animation(
-      new Frame(0.2, "char-up-still.png", "char-down-still.png"),
       new Frame(0.2, "char-up-walk1.png", "char-up-still.png", "char-down-still.png"),
       new Frame(0.2, "char-up-still.png", "char-down-still.png"),
-      new Frame(0.2, "char-up-walk2.png", "char-up-still.png", "char-down-still.png")
+      new Frame(0.2, "char-up-walk2.png", "char-up-still.png", "char-down-still.png"),
+      new Frame(0.2, "char-up-still.png", "char-down-still.png")
     );
     this.rightAnimation = new Animation(
-      new Frame(0.2, "char-right-still.png", "char-down-still.png"),
       new Frame(0.2, "char-right-walk1.png", "char-right-still.png", "char-down-still.png"),
       new Frame(0.2, "char-right-still.png", "char-down-still.png"),
-      new Frame(0.2, "char-right-walk2.png", "char-right-still.png", "char-down-still.png")
+      new Frame(0.2, "char-right-walk2.png", "char-right-still.png", "char-down-still.png"),
+      new Frame(0.2, "char-right-still.png", "char-down-still.png")
     );
     this.downAnimation = new Animation(
-      new Frame(0.2, "char-down-still.png"),
       new Frame(0.2, "char-down-walk1.png", "char-down-still.png"),
       new Frame(0.2, "char-down-still.png"),
-      new Frame(0.2, "char-down-walk2.png", "char-down-still.png")
+      new Frame(0.2, "char-down-walk2.png", "char-down-still.png"),
+      new Frame(0.2, "char-down-still.png")
     );
   }
 
