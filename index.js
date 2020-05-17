@@ -205,8 +205,16 @@ class Tile {
     this.pos = pos;
   }
 
-  render(tilePos) {
-    drawRect(game.canvasCtx, tilePos.relToPlayer(), "rgb(50, 50, 50)");
+  render() {
+    const ctx = game.canvasCtx,
+          pos = this.pos.relToPlayer(),
+          spr = this.constructor._sprite,
+          img = spr ? getImage(spr) : null;
+    if (img) {
+      ctx.drawImage(img, pos.x, pos.y);
+    } else {
+      drawRect(game.canvasCtx, pos, this.constructor._fillStyle);
+    }
   }
 
   static get hasMetadata() {
@@ -214,11 +222,13 @@ class Tile {
   }
 }
 
-function registerTile(tileId, tileClass) {
+function registerTile(tileId, tileClass, sprite=null, fillStyle="rgb(50, 50, 50)") {
   if (tiles.has(tileId)) {
     throw `Tile ID ${tileId} is already in use.`;
   } else {
     tiles.set(tileId, tileClass);
+    tileClass._sprite = sprite;
+    tileClass._fillStyle = fillStyle;
   }
 }
 
@@ -235,10 +245,24 @@ function tileFromJSON(obj, pos) {
   const tileId    = obj.tile_id,
         tileClass = getTileById(tileId);
   if (tileClass.hasMetadata) {
-    7/0;
     return new tileClass(pos, tileClass.dataFromJSON(obj.tile_data, pos));
   } else {
     return new tileClass(pos);
+  }
+}
+
+class TilePlus extends Tile {
+  constructor(pos, data) {
+    super(pos);
+    this.data = data;
+  }
+
+  static get hasMetadata() {
+    return true;
+  }
+
+  static dataFromJSON(obj, pos) {
+    throw Error("Method dataFromJSON not implemented by " + this.constructor.name);
   }
 }
 
@@ -289,81 +313,20 @@ class OtherPlayer extends Entity {
 }
 
 // ----------- TILES -----------
-class Empty extends Tile {
-  constructor(pos) {
-    super(pos);
-  }
+class Empty extends Tile {}
+registerTile("empty", Empty, null, "rgb(0, 0, 0)");
 
-  render() {
+class Grass extends Tile {}
+registerTile("grass", Grass, "grass.png", "rgb(0, 255, 0)");
 
-  }
-}
-registerTile("empty", Empty);
+class WildGrass extends Tile {}
+registerTile("wild_grass", WildGrass, "wild-grass.png", "rgb(0, 180, 0)");
 
-class Grass extends Tile {
-  constructor(pos) {
-    super(pos);
-  }
+class Wall extends Tile {}
+registerTile("wall", Wall, "wall.png", "rgb(210, 105, 30)");
 
-  render() {
-    const ctx = game.canvasCtx,
-          pos = this.pos.relToPlayer(),
-          img = getImage("grass.png");
-    if (img) {
-      ctx.drawImage(img, pos.x, pos.y);
-    } else {
-      drawRect(game.canvasCtx, pos, "rgb(0, 255, 0)");
-    }
-  }
-}
-registerTile("grass", Grass);
-
-class WildGrass extends Tile {
-  constructor(pos) {
-    super(pos);
-  }
-
-  render() {
-    const ctx = game.canvasCtx,
-          pos = this.pos.relToPlayer(),
-          img = getImage("wild-grass.png");
-    if (img) {
-      ctx.drawImage(img, pos.x, pos.y);
-    } else {
-      drawRect(game.canvasCtx, pos, "rgb(0, 180, 0)");
-    }
-  }
-}
-registerTile("wild_grass", WildGrass);
-
-class Wall extends Tile {
-  constructor(pos) {
-    super(pos);
-  }
-
-  render() {
-    const ctx = game.canvasCtx,
-          pos = this.pos.relToPlayer(),
-          img = getImage("wall.png");
-    if (img) {
-      ctx.drawImage(img, pos.x, pos.y);
-    } else {
-      drawRect(game.canvasCtx, pos, "rgb(210, 105, 30)");
-    }
-  }
-}
-registerTile("wall", Wall);
-
-class Portal extends Tile {
-  constructor(pos) {
-    super(pos);
-  }
-
-  render() {
-    drawRect(game.canvasCtx, this.pos.relToPlayer(), "rgb(0, 0, 0)");
-  }
-}
-registerTile("portal", Portal);
+class Portal extends Tile {}
+registerTile("portal", Portal, "portal.png", "rgb(0, 0, 0)");
 
 class SignData {
   constructor(groundTile) {
@@ -371,33 +334,17 @@ class SignData {
   }
 }
 
-class Sign extends Tile {
-  constructor(pos, data) {
-    super(pos);
-    this.data = data;
-  }
-
-  static get hasMetadata() {
-    return true;
-  }
-
+class Sign extends TilePlus {
   static dataFromJSON(obj, pos) {
     return new SignData(tileFromJSON(obj.ground_tile, pos));
   }
 
   render() {
     this.data.groundTile.render();
-    const ctx = game.canvasCtx,
-          pos = this.pos.relToPlayer(),
-          img = getImage("sign.png");
-    if (img) {
-      ctx.drawImage(img, pos.x, pos.y);
-    } else {
-      drawRect(game.canvasCtx, pos, "rgb(255, 255, 0)");
-    }
+    super.render();
   }
 }
-registerTile("sign", Sign);
+registerTile("sign", Sign, "sign.png", "rgb(255, 255, 0)");
 
 // ----------- TEXT HANDLING -----------
 function wrapText(ctx, text, maxWidth) {
