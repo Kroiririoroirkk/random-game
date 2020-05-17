@@ -22,12 +22,12 @@ async def run(ws, path):
   p = game.get_player(username)
   if p:
     print("Returning user: " + username)
-    await game.send_world(ws, worlds.get(p.world_id).text, p.pos)
+    await game.send_world(ws, worlds.get(p.world_id), p.pos)
   else:
     print("New user: " + username)
     new_player = entity.Player()
     game.set_player(username, new_player)
-    await game.set_and_send_world(ws, username, new_player, worlds.get("starting_world"), 0)
+    await game.set_and_send_world(ws, username, new_player, worlds.get("starting_world"), "center_spawn")
   async for message in ws:
     await parseMessage(message, username, ws)
 
@@ -51,9 +51,9 @@ async def parseMessage(message, username, ws):
       player.pos += offset
       tilesXY_touching = player.get_tilesXY_touched()
       wall_tiles = [tileXY for tileXY in tilesXY_touching
-        if world.get_tile(*tileXY).blocks_movement]
+        if world.get_tile(tileXY).blocks_movement]
       if wall_tiles:
-        wall_tiles = [tileXY_to_pos(*tileXY) for tileXY in wall_tiles]
+        wall_tiles = [tileXY_to_pos(tileXY) for tileXY in wall_tiles]
         wall_tiles.sort(key = lambda tilePos:
           tilePos.dist_to(player.pos))
         for wall_tile in wall_tiles:
@@ -62,12 +62,12 @@ async def parseMessage(message, username, ws):
       tilesXY_moved_on = [tile for tile in tilesXY_touching
         if tile not in start_tiles]
       for tileXY in tilesXY_moved_on:
-        await world.get_tile(*tileXY).on_move_on(game, ws, username, player, start_pos, tileXY_to_pos(*tileXY))
+        await world.get_tile(tileXY).on_move_on(game, ws, username, player, start_pos, tileXY_to_pos(tileXY))
       game.set_player(username, player)
       await game.send_moved_to(ws, player.pos)
   elif message.startswith("interact"):
     for tileXY in player.get_tilesXY_touched():
-      await world.get_tile(*tileXY).on_interact(game, ws, username, player, tileXY_to_pos(*tileXY))
+      await world.get_tile(tileXY).on_interact(game, ws, username, player, tileXY_to_pos(tileXY))
   elif message.startswith("ping"):
     await game.send_players(ws, username, player.world_id)
 

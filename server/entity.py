@@ -1,8 +1,6 @@
-import itertools
-
 from config import BLOCK_WIDTH, PLAYER_WIDTH
 from geometry import BoundingBox, Vec
-from world import pos_to_tileXY
+from world import TileXY, pos_to_tileXY
 
 class Entity:
   def __init__(self, pos):
@@ -25,9 +23,9 @@ class Entity:
     bbox = self.get_bounding_box()
     startTileX, startTileY = pos_to_tileXY(bbox.v1)
     endTileX, endTileY = pos_to_tileXY(bbox.v2)
-    return list(itertools.product(
-      range(startTileX, endTileX+1),
-      range(startTileY, endTileY+1)))
+    return [TileXY(tileX, tileY)
+            for tileY in range(startTileY, endTileY + 1)
+            for tileX in range(startTileX, endTileX + 1)]
 
   def is_touching(self, e):
     return self.get_bounding_box().is_touching(e.get_bounding_box())

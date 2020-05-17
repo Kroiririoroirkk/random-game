@@ -1,6 +1,9 @@
-from world import worlds, TileXY, World, WorldData
-import tile
+import json
 
+from tile import tile_from_JSON
+from world import TileXY, World, worlds
+
+"""
 def load_world(w):
   world_map = w.text.split("|")
   tiles = []
@@ -63,29 +66,48 @@ STARTING_WORLD_DATA = WorldData("starting_world",
   "   wwwwwwggggggggsgggggggggwwwwww   |"
   "      wwwwwwwwwwwwpwwwwwwwwwww      |"
   "        wwwwwwwwwwwwwwwwwwww        ",
-  [TileXY(18,18),
-   TileXY(18,34),
-   TileXY(1,18),
-   TileXY(29,12),
-   TileXY(29,26)],
-  [tile.PortalData("starting_world", 4),
-   tile.PortalData("second_world", 0),
+  {"center_spawn": TileXY(18,18),
+   "bottom_portal": TileXY(18,34),
+   "left_portal": TileXY(1,18),
+   "top_right_portal": TileXY(29,12),
+   "bottom_right_portal": TileXY(29,26)},
+  [tile.PortalData("starting_world", "bottom_right_portal"),
+   tile.PortalData("second_world", "bottom_left_portal"),
    tile.SignData("Hello,", tile.WildGrass()),
    tile.SignData("World!", tile.WildGrass()),
-   tile.PortalData("starting_world", 3),
+   tile.PortalData("starting_world", "top_right_portal"),
    tile.SignData("Enter the portal!", tile.Grass()),
-   tile.PortalData("second_world", 1)])
+   tile.PortalData("second_world", "top_right_portal")])
 SECOND_WORLD_DATA = WorldData("second_world",
   "wwww|"
   "wgpw|"
   "wpGw|"
   "wwww",
-  [TileXY(1,2),
-   TileXY(2,1)],
-  [tile.PortalData("starting_world", 1),
-   tile.PortalData("starting_world", 2)])
+  {"bottom_left_portal": TileXY(1,2),
+   "top_right_portal": TileXY(2,1)},
+  [tile.PortalData("starting_world", "bottom_portal"),
+   tile.PortalData("starting_world", "left_portal")])
+"""
+
+def load_world(world_id, w):
+  assert w["version"] == "0.0.0"
+  tiles = []
+  for row in w["tiles"]:
+    row_tiles = []
+    for t in row:
+      row_tiles.append(tile_from_JSON(t))
+    tiles.append(row_tiles)
+
+  spawn_points = {spawn_id:
+    TileXY(spawn_tileXY["block_x"], spawn_tileXY["block_y"])
+    for spawn_id, spawn_tileXY in w["spawn_points"].items()}
+  worlds[world_id] = World(world_id, tiles, spawn_points)
+
+def load_file(world_id):
+  with open(f"{world_id}.json") as f:
+    load_world(world_id, json.load(f))
 
 def load_worlds():
-  load_world(STARTING_WORLD_DATA)
-  load_world(SECOND_WORLD_DATA)
+  load_file("starting_world")
+  load_file("second_world")
 

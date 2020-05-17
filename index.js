@@ -30,7 +30,7 @@ class Game {
     this.pressedKeys = new Set();
     this.playerObj = null;
     this.otherPlayerObjs = [];
-    this.gameObjs = [];
+    this.map = [];
     this.username = username;
     this.gameLog = null;
     this.menu = null;
@@ -57,12 +57,8 @@ class Game {
     addEventListener("keyup", e => this.pressedKeys.delete(e.keyCode), false);
   }
 
-  clearGameObjs() {
-    this.gameObjs = [];
-  }
-
-  addGameObj(obj) {
-    this.gameObjs.push(obj);
+  clearMap() {
+    this.map = [];
   }
 
   scale() {
@@ -201,6 +197,17 @@ class Entity {
   }
 }
 
+// ----------- TILE -----------
+class Tile {
+  constructor() {
+
+  }
+
+  render(tilePos) {
+    drawRect(game.canvasCtx, tilePos.relToPlayer(), "rgb(50, 50, 50)");
+  }
+}
+
 // ----------- PLAYER -----------
 class Player extends Entity {
   constructor(pos) {
@@ -230,78 +237,6 @@ class Player extends Entity {
   }
 }
 
-// ----------- ENTITIES -----------
-class Grass extends Entity {
-  constructor(pos) {
-    super(pos);
-  }
-
-  render() {
-    const ctx = game.canvasCtx,
-          pos = this.pos.relToPlayer(),
-          img = getImage("grass.png");
-    if (img) {
-      ctx.drawImage(img, pos.x, pos.y);
-    } else {
-      drawRect(game.canvasCtx, pos, "rgb(0, 255, 0)");
-    }
-  }
-}
-
-class WildGrass extends Entity {
-  constructor(pos) {
-    super(pos);
-  }
-
-  render() {
-    const ctx = game.canvasCtx,
-          pos = this.pos.relToPlayer(),
-          img = getImage("wild-grass.png");
-    if (img) {
-      ctx.drawImage(img, pos.x, pos.y);
-    } else {
-      drawRect(game.canvasCtx, pos, "rgb(0, 180, 0)");
-    }
-  }
-}
-
-class Wall extends Entity {
-  constructor(pos) {
-    super(pos);
-  }
-
-  render() {
-    const ctx = game.canvasCtx,
-          pos = this.pos.relToPlayer(),
-          img = getImage("wall.png");
-    if (img) {
-      ctx.drawImage(img, pos.x, pos.y);
-    } else {
-      drawRect(game.canvasCtx, this.pos.relToPlayer(), "rgb(210, 105, 30)");
-    }
-  }
-}
-
-class Portal extends Entity {
-  constructor(pos) {
-    super(pos);
-  }
-
-  render() {
-    drawRect(game.canvasCtx, this.pos.relToPlayer(), "rgb(0, 0, 0)");
-  }
-}
-
-class Sign extends Entity {
-  constructor(pos) {
-    super(pos);
-  }
-
-  render() {
-    drawRect(game.canvasCtx, this.pos.relToPlayer(), "rgb(255, 255, 0)");
-  }
-}
-
 class OtherPlayer extends Entity {
   constructor(pos, username) {
     super(pos);
@@ -316,6 +251,88 @@ class OtherPlayer extends Entity {
     ctx.fillRect(startingX, startingY, PLAYER_WIDTH, PLAYER_WIDTH);
     ctx.fillStyle = "rgb(255, 20, 147)";
     ctx.fillRect(startingX+1, startingY+1, PLAYER_WIDTH-2, PLAYER_WIDTH-2);
+  }
+}
+
+// ----------- TILES -----------
+class Empty extends Tile {
+  constructor() {
+    super();
+  }
+
+  render(tilePos) {
+
+  }
+}
+
+class Grass extends Tile {
+  constructor() {
+    super();
+  }
+
+  render(tilePos) {
+    const ctx = game.canvasCtx,
+          pos = tilePos.relToPlayer(),
+          img = getImage("grass.png");
+    if (img) {
+      ctx.drawImage(img, pos.x, pos.y);
+    } else {
+      drawRect(game.canvasCtx, pos, "rgb(0, 255, 0)");
+    }
+  }
+}
+
+class WildGrass extends Tile {
+  constructor() {
+    super();
+  }
+
+  render(tilePos) {
+    const ctx = game.canvasCtx,
+          pos = tilePos.relToPlayer(),
+          img = getImage("wild-grass.png");
+    if (img) {
+      ctx.drawImage(img, pos.x, pos.y);
+    } else {
+      drawRect(game.canvasCtx, pos, "rgb(0, 180, 0)");
+    }
+  }
+}
+
+class Wall extends Tile {
+  constructor() {
+    super();
+  }
+
+  render(tilePos) {
+    const ctx = game.canvasCtx,
+          pos = tilePos.relToPlayer(),
+          img = getImage("wall.png");
+    if (img) {
+      ctx.drawImage(img, pos.x, pos.y);
+    } else {
+      drawRect(game.canvasCtx, pos, "rgb(210, 105, 30)");
+    }
+  }
+}
+
+class Portal extends Tile {
+  constructor() {
+    super();
+  }
+
+  render(tilePos) {
+    drawRect(game.canvasCtx, tilePos.relToPlayer(), "rgb(0, 0, 0)");
+  }
+}
+
+class Sign extends Tile {
+  constructor() {
+    super();
+  }
+
+  render(tilePos) {
+    drawRect(game.canvasCtx, tilePos.relToPlayer(), "rgb(255, 255, 0)");
   }
 }
 
@@ -518,38 +535,46 @@ function initialize() {
 function handleWSMessage(e) {
   console.log(e);
   if (e.data.startsWith("world|")) {
-    let parts  = e.data.split("|"),
-        spawnX = parseFloat(parts[1]),
-        spawnY = parseFloat(parts[2]),
-        spawn  = new Vec(spawnX, spawnY),
-        map    = parts.slice(3);
-    game.clearGameObjs();
-    for (let j = 0; j < map.length; j++) {
-      for (let i = 0; i < map[j].length; i++) {
-        let pos = new Vec(i * BLOCK_WIDTH, j * BLOCK_WIDTH);
-        switch(map[j][i]) {
-          case "g":
-            game.addGameObj(new Grass(pos));
-            break;
-          case "G":
-            game.addGameObj(new WildGrass(pos));
-            break;
-          case "w":
-            game.addGameObj(new Wall(pos));
-            break;
-          case "p":
-            game.addGameObj(new Portal(pos));
-            break;
-          case "s":
-            game.addGameObj(new Sign(pos));
-            break;
+    const VERSION = "0.0.0",
+          parts   = e.data.split("|"),
+          world   = JSON.parse(parts.slice(1)),
+          tiles   = world.tiles,
+          spawn   = new Vec(world.spawn_pos.x, world.spawn_pos.y);
+    if (world.version === VERSION) {
+      game.clearMap();
+      let map = [];
+      for (let j = 0; j < tiles.length; j++) {
+        let rowTiles = [];
+        for (let i = 0; i < tiles[j].length; i++) {
+          switch(tiles[j][i].tile_id) {
+            case "empty":
+              rowTiles.push(new Empty());
+              break;
+            case "grass":
+              rowTiles.push(new Grass());
+              break;
+            case "wild_grass":
+              rowTiles.push(new WildGrass());
+              break;
+            case "wall":
+              rowTiles.push(new Wall());
+              break;
+            case "portal":
+              rowTiles.push(new Portal());
+              break;
+            case "sign":
+              rowTiles.push(new Sign());
+              break;
+          }
         }
+        map.push(rowTiles);
       }
-    }
-    if (game.playerObj) {
-      game.playerObj.pos = spawn;
-    } else {
-      game.playerObj = new Player(spawn);
+      game.map = map;
+      if (game.playerObj) {
+        game.playerObj.pos = spawn;
+      } else {
+        game.playerObj = new Player(spawn);
+      }
     }
   } else if (e.data.startsWith("movedto|")) {
     let parts = e.data.split("|"),
@@ -675,8 +700,11 @@ function render() {
   ctx.fillRect(0, 0, width, height);
 
   game.scale();
-  for (const obj of game.gameObjs) {
-    obj.render();
+  for (let j = 0; j < game.map.length; j++) {
+    for (let i = 0; i < game.map[j].length; i++) {
+      let pos = new Vec(BLOCK_WIDTH * i, BLOCK_WIDTH * j)
+      game.map[j][i].render(pos);
+    }
   }
   for (const obj of game.otherPlayerObjs) {
     obj.render();

@@ -1,3 +1,6 @@
+from storeworld import world_to_client_JSON
+from world import tileXY_to_pos
+
 class Game:
   def __init__(self):
     self.player_objs = {}
@@ -8,19 +11,22 @@ class Game:
   def set_player(self, username, player):
     self.player_objs[username] = player
 
-  async def set_and_send_world(self, ws, username, player, world, spawn_number):
+  async def set_and_send_world(self, ws, username, player, world, spawn_id):
     player.world_id = world.w_id
-    player.pos = world.spawn_posits[spawn_number].get_spawn_pos()
+    player.pos = tileXY_to_pos(world.spawn_points[spawn_id])
     self.set_player(username, player)
-    await self.send_world(ws, world.text, player.pos)
+    await Game.send_world(ws, world, player.pos)
 
-  async def send_world(self, ws, world_text, spawn_pos):
-    await ws.send(f"world|{spawn_pos.x}|{spawn_pos.y}|{world_text}")
+  @staticmethod
+  async def send_world(ws, world, spawn_pos):
+    await ws.send(f"world|{world_to_client_JSON(world, spawn_pos)}")
 
-  async def send_moved_to(self, ws, pos):
+  @staticmethod
+  async def send_moved_to(ws, pos):
     await ws.send(f"movedto|{pos.x}|{pos.y}") 
 
-  async def send_sign(self, ws, sign):
+  @staticmethod
+  async def send_sign(ws, sign):
     await ws.send(f"signtext|{sign.data.text}")
 
   async def send_players(self, ws, playerUsername, w_id):

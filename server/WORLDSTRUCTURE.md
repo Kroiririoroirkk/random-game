@@ -25,17 +25,7 @@ Worlds are stored as JSON. Two different formats are used.
             },
             "tile_data": {
               "type": "object",
-              "$comment": "Optionally, any data that the tile needs.",
-              "properties": {
-                "send_to_client": {
-                  "type": "array",
-                  "$comment": "List of property names indicating what tile data should be sent to the client.",
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              },
-              "required": ["send_to_client"]
+              "$comment": "Optionally, any data that the tile needs."
             }
           },
           "required": ["tile_id"]

@@ -1,0 +1,49 @@
+{
+  "version": "0.0.0",
+  "tiles": [
+    [
+      {"tile_id": "wall"},
+      {"tile_id": "wall"},
+      {"tile_id": "wall"},
+      {"tile_id": "wall"}
+    ],
+    [
+      {"tile_id": "wall"},
+      {"tile_id": "grass"},
+      {"tile_id": "portal",
+       "tile_data": {
+         "w_id": "starting_world",
+         "spawn_id": "bottom_portal"
+       }
+      },
+      {"tile_id": "wall"}
+    ],
+    [
+      {"tile_id": "wall"},
+      {"tile_id": "portal",
+       "tile_data": {
+         "w_id": "starting_world",
+         "spawn_id": "left_portal"
+       }
+      },
+      {"tile_id": "wild_grass"},
+      {"tile_id": "wall"}
+    ],
+    [
+      {"tile_id": "wall"},
+      {"tile_id": "wall"},
+      {"tile_id": "wall"},
+      {"tile_id": "wall"}
+    ]
+  ],
+  "spawn_points": {
+    "bottom_left_portal": {
+      "block_x": 1,
+      "block_y": 2
+    },
+    "top_right_portal": {
+      "block_x": 2,
+      "block_y": 1
+    }
+  }
+}
