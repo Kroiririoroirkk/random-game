@@ -105,7 +105,11 @@ class Vec {
   }
 
   relToPlayer() {
-    return this.relativeTo(game.playerObj.pos).add(game.getPlayerDrawPos());
+    if (game.playerObj) {
+      return this.relativeTo(game.playerObj.pos).add(game.getPlayerDrawPos());
+    } else {
+      throw new Error("Player doesn't exist yet");
+    }
   }
 
   add(p) {
@@ -142,17 +146,16 @@ function getImage(...filenames) {
 }
 
 class Frame {
-  constructor(sprite, time) {
-    this.sprite = sprite;
+  constructor(time, ...sprites) {
     this.time = time;
+    this.sprites = sprites;
   }
 }
 
 class Animation {
-  constructor(frames) {
+  constructor(...frames) {
     this.frames = frames;
-    this.frameIndex = 0;
-    this.frameDuration = frames[0].time;
+    this.reset();
   }
 
   animate(dt) {
@@ -160,14 +163,19 @@ class Animation {
     if (this.frameDuration <= 0) {
       this.frameIndex++;
       if (this.frameIndex >= this.frames.length) {
-        this.framesIndex %= frames.length;
+        this.frameIndex %= this.frames.length;
       }
-      this.frameDuration += frames[frameIndex].time;
+      this.frameDuration += this.frames[this.frameIndex].time;
     }
   }
 
+  reset() {
+    this.frameIndex = 0;
+    this.frameDuration = this.frames[0].time;
+  }
+
   getSprite() {
-    return this.frames[frameIndex].sprite;
+    return getImage(...this.frames[this.frameIndex].sprites);
   }
 }
 
@@ -224,7 +232,7 @@ class Tile {
 
 function registerTile(tileId, tileClass, sprite=null, fillStyle="rgb(50, 50, 50)") {
   if (tiles.has(tileId)) {
-    throw `Tile ID ${tileId} is already in use.`;
+    throw new Error(`Tile ID ${tileId} is already in use.`);
   } else {
     tiles.set(tileId, tileClass);
     tileClass._sprite = sprite;
@@ -237,7 +245,7 @@ function getTileById(tileId) {
   if (tileClass) {
     return tileClass;
   } else {
-    throw `Tile ID ${tileId} not found.`;
+    throw new Error(`Tile ID ${tileId} not found.`);
   }
 }
 
@@ -262,7 +270,7 @@ class TilePlus extends Tile {
   }
 
   static dataFromJSON(obj, pos) {
-    throw Error("Method dataFromJSON not implemented by " + this.constructor.name);
+    throw new Error("Method dataFromJSON not implemented by " + this.constructor.name);
   }
 }
 
@@ -271,13 +279,69 @@ class Player extends Entity {
   constructor(pos) {
     super(pos);
     this.facing = dirs.DOWN;
+    this.moving = false;
+    this.leftAnimation = new Animation(
+      new Frame(0.2, "char-left-still.png", "char-down-still.png"),
+      new Frame(0.2, "char-left-walk1.png", "char-left-still.png", "char-down-still.png"),
+      new Frame(0.2, "char-left-still.png", "char-down-still.png"),
+      new Frame(0.2, "char-left-walk2.png", "char-left-still.png", "char-down-still.png")
+    );
+    this.upAnimation = new Animation(
+      new Frame(0.2, "char-up-still.png", "char-down-still.png"),
+      new Frame(0.2, "char-up-walk1.png", "char-up-still.png", "char-down-still.png"),
+      new Frame(0.2, "char-up-still.png", "char-down-still.png"),
+      new Frame(0.2, "char-up-walk2.png", "char-up-still.png", "char-down-still.png")
+    );
+    this.rightAnimation = new Animation(
+      new Frame(0.2, "char-right-still.png", "char-down-still.png"),
+      new Frame(0.2, "char-right-walk1.png", "char-right-still.png", "char-down-still.png"),
+      new Frame(0.2, "char-right-still.png", "char-down-still.png"),
+      new Frame(0.2, "char-right-walk2.png", "char-right-still.png", "char-down-still.png")
+    );
+    this.downAnimation = new Animation(
+      new Frame(0.2, "char-down-still.png"),
+      new Frame(0.2, "char-down-walk1.png", "char-down-still.png"),
+      new Frame(0.2, "char-down-still.png"),
+      new Frame(0.2, "char-down-walk2.png", "char-down-still.png")
+    );
+  }
+
+  getAnimation() {
+    if (this.facing === dirs.LEFT)  {return this.leftAnimation;}
+    if (this.facing === dirs.UP)    {return this.upAnimation;}
+    if (this.facing === dirs.RIGHT) {return this.rightAnimation;}
+    if (this.facing === dirs.DOWN)  {return this.downAnimation;}
   }
 
   getSprite() {
-    if (this.facing === dirs.LEFT)  {return getImage("char-left-still.png", "char-down-still.png");}
-    if (this.facing === dirs.UP)    {return getImage("char-up-still.png", "char-down-still.png");}
-    if (this.facing === dirs.RIGHT) {return getImage("char-right-still.png", "char-down-still.png");}
-    if (this.facing === dirs.DOWN)  {return getImage("char-down-still.png");}
+    if (this.moving) {
+      return this.getAnimation().getSprite();
+    } else {
+      if (this.facing === dirs.LEFT)  {return getImage("char-left-still.png", "char-down-still.png");}
+      if (this.facing === dirs.UP)    {return getImage("char-up-still.png", "char-down-still.png");}
+      if (this.facing === dirs.RIGHT) {return getImage("char-right-still.png", "char-down-still.png");}
+      if (this.facing === dirs.DOWN)  {return getImage("char-down-still.png");}
+    }
+  }
+
+  move(offset) {
+    super.move(offset);
+    if (!this.moving) {
+      this.startMoving();
+    }
+  }
+
+  animate(dt) {
+    this.getAnimation().animate(dt);
+  }
+
+  startMoving() {
+    this.getAnimation().reset();
+    this.moving = true;
+  }
+
+  stopMoving() {
+    this.moving = false;
   }
 
   render() {
@@ -593,43 +657,49 @@ function handleWSMessage(e) {
 
 function update(dt) {
   if (game.contextMenu === contextMenus.MAP) {
-    let moveStr = "",
-        multiplier = 1,
-        fastmove = false;
-    if (game.pressedKeys.has(SHIFT)) {
-      multiplier = SPEED_MULTIPLIER;
-      fastmove = true;
-    }
-    if (game.pressedKeys.has(KEY_LEFT)) {
-      moveStr += "l";
-      game.playerObj.move(new Vec(-PLAYER_SPEED*dt*multiplier, 0));
-      game.playerObj.facing = dirs.LEFT;
-    }
-    if (game.pressedKeys.has(KEY_RIGHT)) {
-      moveStr += "r";
-      game.playerObj.move(new Vec(PLAYER_SPEED*dt*multiplier, 0));
-      game.playerObj.facing = dirs.RIGHT;
-    }
-    if (game.pressedKeys.has(KEY_UP)) {
-      moveStr += "u";
-      game.playerObj.move(new Vec(0, -PLAYER_SPEED*dt*multiplier));
-      game.playerObj.facing = dirs.UP;
-    }
-    if (game.pressedKeys.has(KEY_DOWN)) {
-      moveStr += "d";
-      game.playerObj.move(new Vec(0, PLAYER_SPEED*dt*multiplier));
-      game.playerObj.facing = dirs.DOWN;
-    }
-    if (moveStr) {
-      if (fastmove) {
-        game.ws.send("fastmove|" + moveStr);
-      } else {
-        game.ws.send("move|" + moveStr);
+    if (game.playerObj) {
+      let moveStr = "",
+          multiplier = 1,
+          fastmove = false;
+      if (game.pressedKeys.has(SHIFT)) {
+        multiplier = SPEED_MULTIPLIER;
+        fastmove = true;
       }
-    }
-    if (game.pressedKeys.has(SPACE)) {
-      game.ws.send("interact");
-      game.pressedKeys.delete(SPACE);
+
+      if (game.pressedKeys.has(KEY_LEFT)) {
+        moveStr += "l";
+        game.playerObj.move(new Vec(-PLAYER_SPEED*dt*multiplier, 0));
+        game.playerObj.facing = dirs.LEFT;
+      }
+      if (game.pressedKeys.has(KEY_RIGHT)) {
+        moveStr += "r";
+        game.playerObj.move(new Vec(PLAYER_SPEED*dt*multiplier, 0));
+        game.playerObj.facing = dirs.RIGHT;
+      }
+      if (game.pressedKeys.has(KEY_UP)) {
+        moveStr += "u";
+        game.playerObj.move(new Vec(0, -PLAYER_SPEED*dt*multiplier));
+        game.playerObj.facing = dirs.UP;
+      }
+      if (game.pressedKeys.has(KEY_DOWN)) {
+        moveStr += "d";
+        game.playerObj.move(new Vec(0, PLAYER_SPEED*dt*multiplier));
+        game.playerObj.facing = dirs.DOWN;
+      }
+      if (moveStr) {
+        if (fastmove) {
+          game.ws.send("fastmove|" + moveStr);
+        } else {
+          game.ws.send("move|" + moveStr);
+        }
+        game.playerObj.animate(dt);
+      } else {
+        game.playerObj.stopMoving();
+      }
+      if (game.pressedKeys.has(SPACE)) {
+        game.ws.send("interact");
+        game.pressedKeys.delete(SPACE);
+      }
     }
   } else if (game.contextMenu === contextMenus.LOG) {
     if (game.pressedKeys.has(KEY_UP)) {
