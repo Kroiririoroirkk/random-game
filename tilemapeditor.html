@@ -8,7 +8,77 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico">
   </head>
   <body>
-    <h1>Make a tilemap!!</h1>
-    <p>Or return to the <a href="index.html">homepage</a>?</p>
+    <div>
+      <h1>Make a tilemap!!</h1>
+      <p>Or return to the <a href="index.html">homepage</a>?</p>
+      <p>Enter your map:</p>
+      <textarea id="map" name="map"></textarea><br>
+      <input type="button" value="Make my map!" onclick="makeMap()">
+      <p id="outputPara" style="display: none;">Output:</p>
+      <textarea id="output" style="display: none;" readonly></textarea>
+    </div>
+    <div>
+      <p>Examples:</p>
+<pre>wwww
+wgpw
+wpGw
+wwww</pre>
+      <p>with these values entered:</p>
+Portal: <code>starting_world</code> and <code>bottom_portal</code>;<br>
+Portal: <code>starting_world</code> and <code>left_portal</code>;<br>
+Spawnpoint: spawn_id: <code>bottom_left_portal</code>, x: <code>1</code>, y: <code>2</code>, more?: <code>y</code>;<br>
+Spawnpoint: spawn_id: <code>top_right_portal</code>, x: <code>2</code>, y: <code>1</code>, more?: <code>n</code>.
+      <hr>
+<pre>        wwwwwwwwwwwwwwwwwwww        
+      wwwwwwwwwwwwwwwwwwwwwwww      
+   wwwwwwggggggggggggggggggwwwwww   
+  wwwwggggggggggggggggggggggggwwww  
+ wwwggggggggggggggggggggggggggggwww 
+ wwggggggggggggggggggggggggggggggww 
+wwwggggggggggggggggggggggggggggggwww
+wwggggggggggggggggggggggggggggggggww
+wwggggggggggggggggggggggggggggggggww
+wwggggggggggggggggggggggggggggggggww
+wwggggggggggggggggggggggggggggggggww
+wwggggggggggggggggggggggggggggggggww
+wwgggggggggggggggggggggggggggpggggww
+wwggggggggggggggggggggggggggggggggww
+wwgggggggGggggGgggggGGGGGGGgggggggww
+wwgggggggGggggGggggggggGggggggggggww
+wwgggggggGggggGggggggggGggggggggggww
+wwgggggggGGGGGGggggggggGggggggggggww
+wpgggggggGggggGggggggggGggggggggggww
+wwgggggggGggggGggggggggGggggggggggww
+wwgggggggGggggGgggggGGGGGssgggggggww
+wwggggggggggggggggggggggggggggggggww
+wwggggggggggggggggggggggggggggggggww
+wwggggggggggggggggggggggggggggggggww
+wwggggggggggggggggggggggggggggggggww
+wwggggggggggggggggggggggggggggggggww
+wwgggggggggggggggggggggggggggpggggww
+wwggggggggggggggggggggggggggggggggww
+wwggggggggggggggggggggggggggggggggww
+wwwggggggggggggggggggggggggggggggwww
+ wwggggggggggggggggggggggggggggggww 
+ wwwggggggggggggggggggggggggggggwww 
+  wwwwggggggggggggggggggggggggwwww  
+   wwwwwwggggggggsgggggggggwwwwww   
+      wwwwwwwwwwwwpwwwwwwwwwww      
+        wwwwwwwwwwwwwwwwwwww        </pre>
+      <p>with these values entered:</p>
+Portal: <code>starting_world</code> and <code>bottom_right_portal</code>;<br>
+Portal: <code>second_world</code> and <code>bottom_left_portal</code>;<br>
+Sign: <code>Hello,</code> and <code>G</code>;<br>
+Sign: <code>World!</code> and <code>G</code>;<br>
+Portal: <code>starting_world</code> and <code>top_right_portal</code>;<br>
+Sign: <code>Enter the portal!</code> and <code>g</code>;<br>
+Portal: <code>second_world</code> and <code>top_right_portal</code>;<br>
+Spawnpoint: spawn_id: <code>center_spawn</code>, x: <code>18</code>, y: <code>18</code>, more?: <code>y</code>;<br>
+Spawnpoint: spawn_id: <code>bottom_portal</code>, x: <code>18</code>, y: <code>34</code>, more?: <code>y</code>;<br>
+Spawnpoint: spawn_id: <code>left_portal</code>, x: <code>1</code>, y: <code>18</code>, more?: <code>y</code>;<br>
+Spawnpoint: spawn_id: <code>top_right_portal</code>, x: <code>29</code>, y: <code>12</code>, more?: <code>y</code>;<br>
+Spawnpoint: spawn_id: <code>bottom_portal</code>, x: <code>29</code>, y: <code>26</code>, more?: <code>y</code>;<br>
+Spawnpoint: spawn_id: <code>bottom_portal</code>, x: <code>18</code>, y: <code>34</code>, more?: <code>n</code>.
+    </div>
   </body>
 </html>
