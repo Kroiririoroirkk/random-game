@@ -847,11 +847,11 @@ function main() {
       };
     };
     requestAnimationFrame(gameLoop(null));
-    let ping = function() {
-      game.ws.send("ping");
-      setTimeout(ping, 333);
+    let getplayers = function() {
+      game.ws.send("getplayers");
+      setTimeout(getplayers, 333);
     }
-    ping();
+    getplayers();
   };
   game.ws.onmessage = handleWSMessage;
 }

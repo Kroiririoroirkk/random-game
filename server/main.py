@@ -40,7 +40,7 @@ async def parseMessage(message, username, ws):
       multiplier = SPEED_MULTIPLIER
     parts = message.split("|")
     direction = parts[1]
-    dirVec = sum([geometry.vec_from_dir(char) for char in direction], start=Vec(0,0))
+    dirVec = sum([geometry.vec_from_dir(char) for char in set(direction)], start=Vec(0,0))
     if dirVec:
       start_pos = player.pos
       start_tiles = player.get_tilesXY_touched()
@@ -68,7 +68,7 @@ async def parseMessage(message, username, ws):
   elif message.startswith("interact"):
     for tileXY in player.get_tilesXY_touched():
       await world.get_tile(tileXY).on_interact(game, ws, username, player, tileXY_to_pos(tileXY))
-  elif message.startswith("ping"):
+  elif message.startswith("getplayers"):
     await game.send_players(ws, username, player.world_id)
 
 start_server = websockets.serve(run, "0.0.0.0", WSPORT)
