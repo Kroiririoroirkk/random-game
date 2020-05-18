@@ -71,6 +71,9 @@ async def parseMessage(message, username, ws):
   elif message.startswith("getplayers"):
     await game.send_players(ws, username, player.world_id)
 
+async def update_loop():
+  raise NotImplementedError
+
 start_server = websockets.serve(run, "0.0.0.0", WSPORT)
 
 def cleanup(sig, frame):
@@ -81,6 +84,7 @@ signal(SIGINT, cleanup)
 
 print("WebSocket server starting! Press CTRL-C to exit.")
 loop = asyncio.get_event_loop()
+loop.create_task(update_loop())
 loop.run_until_complete(start_server)
 loop.run_forever()
 

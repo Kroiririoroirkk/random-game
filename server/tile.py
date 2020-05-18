@@ -29,9 +29,9 @@ def get_tile_by_id(tile_id):
 def get_tile_id(t):
   tile_class = type(t)
   try:
-    return next(id for id, cls in _tiles.items() if cls == tile_class)
+    return next(tId for tId, cls in _tiles.items() if cls == tile_class)
   except StopIteration:
-    return ValueError
+    raise ValueError
 
 def tile_from_JSON(t):
   tile_class = get_tile_by_id(t["tile_id"])
