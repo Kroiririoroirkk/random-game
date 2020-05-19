@@ -1,3 +1,5 @@
+import json
+
 from storeworld import world_to_client_JSON
 from world import tileXY_to_spawn_pos
 
@@ -34,3 +36,7 @@ class Game:
       for username, p in self.player_objs.items()
         if p.world_id == w_id and username != playerUsername)
     await ws.send("players|"+s)
+
+  async def send_update_entity(self, uuid, json_dict):
+    for player in self.player_objs.values():
+      await player.ws.send(f"updateentity|{uuid.hex}|{json.dumps(json_dict, separators=(',', ':'))}")

@@ -22,10 +22,11 @@ async def run(ws, path):
   p = game.get_player(username)
   if p:
     print("Returning user: " + username)
+    p.ws = ws
     await game.send_world(ws, worlds.get(p.world_id), p.pos)
   else:
     print("New user: " + username)
-    new_player = entity.Player()
+    new_player = entity.Player(ws)
     game.set_player(username, new_player)
     await game.set_and_send_world(ws, username, new_player, worlds.get("starting_world"), "center_spawn")
   async for message in ws:
@@ -40,7 +41,7 @@ async def parseMessage(message, username, ws):
       multiplier = SPEED_MULTIPLIER
     parts = message.split("|")
     direction = parts[1]
-    dirVec = sum([geometry.vec_from_dir(char) for char in set(direction)], start=Vec(0,0))
+    dirVec = sum([geometry.vec_from_dir(char) for char in set(direction)], Vec(0,0))
     if dirVec:
       start_pos = player.pos
       start_tiles = player.get_tilesXY_touched()
@@ -72,7 +73,19 @@ async def parseMessage(message, username, ws):
     await game.send_players(ws, username, player.world_id)
 
 async def update_loop():
-  raise NotImplementedError
+  then = time.monotonic()
+  while True:
+    now = time.monotonic()
+    dt = now - then
+    then = now
+    for world_id in set(p.world_id for p in game.player_objs.values()):
+      try:
+        world = worlds.get(world_id)
+        for entity in world.entities:
+          await entity.update(game, dt)
+      except websockets.exceptions.ConnectionClosedOK:
+        pass
+    await asyncio.sleep(0.1)
 
 start_server = websockets.serve(run, "0.0.0.0", WSPORT)
 

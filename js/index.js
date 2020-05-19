@@ -1,6 +1,8 @@
 "use strict";
 
 // ----------- CONSTANTS -----------
+const SERVER_URL = "ws://localhost:8080"//"wss://terrekin.kroiririoroirkk.repl.co";
+
 const SHIFT = 16;
 const SPACE = 32;
 const KEY_LEFT = 37;
@@ -31,6 +33,7 @@ class Game {
     this.playerObj = null;
     this.otherPlayerObjs = [];
     this.map = [];
+    this.entities = [];
     this.username = username;
     this.usernameNotice = null;
     this.gameLog = null;
@@ -92,6 +95,10 @@ class Game {
     return new Vec(Math.floor(game.getScaledWidth()/2),
                    Math.floor(game.getScaledHeight()/2));
   }
+
+  getEntity(uuid) {
+    return this.entities.find(e => e.uuid === uuid);
+  }
 }
 
 // ----------- VEC -----------
@@ -120,6 +127,13 @@ class Vec {
 
 // ----------- DIRECTION -----------
 const dirs = Object.freeze({LEFT:1, UP:2, RIGHT:3, DOWN:4});
+
+function strToDir(d) {
+  if (d === "l") {return dirs.LEFT;}
+  if (d === "u") {return dirs.UP;}
+  if (d === "r") {return dirs.RIGHT;}
+  if (d === "d") {return dirs.DOWN;}
+}
 
 // ----------- RENDER -----------
 class Render {
@@ -208,14 +222,27 @@ function drawRect(ctx, pos, fillStyle) {
   ctx.fillRect(Math.floor(pos.x)+1, Math.floor(pos.y)+1, BLOCK_WIDTH-2, BLOCK_WIDTH-2);
 }
 
+var entities = new Map();
+
 class Entity {
-  constructor(pos) {
+  constructor(uuid, pos, velocity, facing) {
+    this.uuid = uuid;
     this.pos = pos;
+    this.velocity = velocity;
+    this.facing = facing;
   }
 
   render() {
     return [new Render((function() {
-      drawRect(game.canvasCtx, this.pos.relToPlayer(), "rgb(50, 50, 50)")
+      const ctx = game.canvasCtx,
+            pos = this.pos.relToPlayer(),
+            spr = this.constructor._sprite,
+            img = spr ? getImage(spr) : null;
+      if (img) {
+        ctx.drawImage(img, pos.x, pos.y);
+      } else {
+        drawRect(game.canvasCtx, pos, this.constructor._fillStyle);
+      }
     }).bind(this), this.pos.y)];
   }
 
@@ -227,6 +254,38 @@ class Entity {
     this.pos = pos;
   }
 }
+
+function registerEntity(entityId, entityClass, sprite=null, fillStyle="rgb(50, 50, 50)") {
+  if (entities.has(entityId)) {
+    throw new Error(`Entity ID ${entityId} is already in use.`);
+  } else {
+    entities.set(entityId, entityClass);
+    entityClass._sprite = sprite;
+    entityClass._fillStyle = fillStyle;
+  }
+}
+
+function getEntityById(entityId) {
+  const entityClass = entities.get(entityId);
+  if (entityClass) {
+    return entityClass;
+  } else {
+    throw new Error(`Entity ID ${entityId} not found.`);
+  }
+}
+
+function entityFromJSON(obj) {
+  const entityId     = obj.entity_id,
+        entityClass  = getEntityById(entityId),
+        entityUuid   = obj.uuid,
+        entityPos    = new Vec(obj.pos.x, obj.pos.y),
+        entityVel    = new Vec(obj.velocity.x, obj.velocity.y),
+        entityFacing = strToDir(obj.facing);
+  return new entityClass(entityUuid, entityPos, entityVel, entityFacing);
+}
+
+class Walker extends Entity {}
+registerEntity("walker", Walker);
 
 // ----------- TILE -----------
 var tiles = new Map();
@@ -302,8 +361,7 @@ class TilePlus extends Tile {
 // ----------- PLAYER -----------
 class Player extends Entity {
   constructor(pos) {
-    super(pos);
-    this.facing = dirs.DOWN;
+    super(null, pos, null, dirs.DOWN);
     this.moving = false;
     this.running = false;
     this.leftAnimation = new Animation(
@@ -391,7 +449,7 @@ class Player extends Entity {
 
 class OtherPlayer extends Entity {
   constructor(pos, username) {
-    super(pos);
+    super(null, pos, null, null);
     this.username = username;
   }
 
@@ -639,7 +697,7 @@ class Menu {
 // ----------- ENTRY POINT -----------
 function startGame() {
   let username = document.getElementById("username").value;
-  let ws = new WebSocket("wss://terrekin.kroiririoroirkk.repl.co");
+  let ws = new WebSocket(SERVER_URL);
   game = new Game(ws, username);
   main();
 }
@@ -654,9 +712,8 @@ function initialize() {
 }
 
 function handleWSMessage(e) {
-  console.log(e);
   if (e.data.startsWith("world|")) {
-    const VERSION = "0.0.0",
+    const VERSION = "0.1.0",
           parts   = e.data.split("|"),
           world   = JSON.parse(parts.slice(1)),
           tiles   = world.tiles,
@@ -674,6 +731,7 @@ function handleWSMessage(e) {
         map.push(rowTiles);
       }
       game.map = map;
+      game.entities = world.entities.map(entityFromJSON);
       if (game.playerObj) {
         game.playerObj.pos = spawn;
       } else {
@@ -699,6 +757,31 @@ function handleWSMessage(e) {
           pos      = new Vec(posX, posY);
       game.otherPlayerObjs.push(new OtherPlayer(pos, username));
     }
+  } else if (e.data.startsWith("updateentity|")) {
+    let parts      = e.data.split("|"),
+        uuid       = parts[1],
+        entity     = game.getEntity(uuid),
+        entityJSON = JSON.parse(parts[2]);
+    if (entityJSON.pos) {
+      if (entityJSON.pos.x) {
+        entity.pos.x = entityJSON.pos.x;
+      }
+      if (entityJSON.pos.y) {
+        entity.pos.y = entityJSON.pos.y;
+      }
+    }
+    if (entityJSON.velocity) {
+      if (entityJSON.velocity.x) {
+        entity.velocity.x = entityJSON.velocity.x;
+      }
+      if (entityJSON.velocity.y) {
+        entity.velocity.y = entityJSON.velocity.y;
+      }
+    }
+    if (entityJSON.facing) {
+      entity.facing = strToDir(entityJSON.facing);
+    }
+    console.log(entity.pos);
   }
 }
 
@@ -812,24 +895,28 @@ function render() {
   ctx.fillRect(0, 0, width, height);
 
   game.scale();
-  let renderList = [];
-  for (let j = 0; j < game.map.length; j++) {
-    for (let i = 0; i < game.map[j].length; i++) {
-      renderList.push(...game.map[j][i].render());
-    }
-  }
-  for (const obj of game.otherPlayerObjs) {
-    renderList.push(...obj.render());
-  }
-  if (game.playerObj) {
-    renderList.push(...game.playerObj.render());
-  }
-  Render.renders(renderList);
 
-  game.unscale();
-  game.usernameNotice.render();
-  game.gameLog.render();
-  game.menu.render();
+  if (game.playerObj) {
+    let renderList = [];
+    for (let j = 0; j < game.map.length; j++) {
+      for (let i = 0; i < game.map[j].length; i++) {
+        renderList.push(...game.map[j][i].render());
+      }
+    }
+    for (const entity of game.entities) {
+      renderList.push(...entity.render());
+    }
+    for (const obj of game.otherPlayerObjs) {
+      renderList.push(...obj.render());
+    }
+    renderList.push(...game.playerObj.render());
+    Render.renders(renderList);
+
+    game.unscale();
+    game.usernameNotice.render();
+    game.gameLog.render();
+    game.menu.render();
+  }
 }
 
 function main() {

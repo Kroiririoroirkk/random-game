@@ -1,5 +1,5 @@
 {
-  "version": "0.0.0",
+  "version": "0.1.0",
   "tiles": [
     [
       {"tile_id": "wall"},
@@ -36,6 +36,7 @@
       {"tile_id": "wall"}
     ]
   ],
+  "entities": [],
   "spawn_points": {
     "bottom_left_portal": {
       "block_x": 1,

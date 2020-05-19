@@ -1,5 +1,5 @@
 {
-  "version": "0.0.0",
+  "version": "0.1.0",
   "tiles": [
     [
       {"tile_id": "empty"},
@@ -1404,6 +1404,15 @@
       {"tile_id": "empty"},
       {"tile_id": "empty"}
     ]
+  ],
+  "entities": [
+    {
+      "uuid": "1bdf51e957794199bc0f23e193d08041",
+      "entity_id": "walker",
+      "pos": {"x": 320, "y": 320},
+      "velocity": {"x": 10, "y": 0},
+      "facing": "r"
+    }
   ],
   "spawn_points": {
     "center_spawn": {

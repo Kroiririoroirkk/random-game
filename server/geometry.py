@@ -16,7 +16,10 @@ class Vec(namedtuple("Vec", ["x", "y"])):
     return Vec(self.x * scalar, self.y * scalar)
 
   def dist_to(self, p):
-    return math.dist((self.x, self.y), (p.x, p.y))
+    return math.hypot(self.x - p.x, self.y - p.y)
+
+  def norm(self):
+    return math.hypot(self.x, self.y)
 
 def vec_from_dir(d):
   key = {
@@ -32,6 +35,26 @@ class Dir(Enum):
   UP = 1
   RIGHT = 2
   DOWN = 3
+
+def dir_to_str(d):
+  if d is Dir.LEFT:
+    return "l"
+  elif d is Dir.UP:
+    return "u"
+  elif d is Dir.RIGHT:
+    return "r"
+  elif d is Dir.DOWN:
+    return "d"
+
+def str_to_dir(d):
+  if d == "l":
+    return Dir.LEFT
+  elif d == "u":
+    return Dir.UP
+  elif d == "r":
+    return Dir.RIGHT
+  elif d == "d":
+    return Dir.DOWN
 
 class BoundingBox():
   def __init__(self, v1, v2):

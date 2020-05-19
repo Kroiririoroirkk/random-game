@@ -70,3 +70,8 @@ Parameters (Variable number, given by number of other players * 3): `username1`,
 
 This message is sent in response to the [getplayers](#getplayers) message. For each player in the same world as the client, three parameters are given: the player's username, the player's x position, and the player's y position. The list of players returned excludes the client.
 
+### updateentity
+
+Parameters (6): `uuid`, `entity`
+
+This message is sent regularly by the server. It tells the client that the entity with the UUID `uuid` has been updated with the information given in `entity`, a JSON representation of the entity. If there are keys missing in `entity`, it is to be assumed that they remain the same. The UUID and entity_id of the entity will not change.

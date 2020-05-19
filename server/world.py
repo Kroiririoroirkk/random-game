@@ -19,9 +19,10 @@ def tileXY_to_pos(t):
   return Vec(t.block_x * BLOCK_WIDTH, t.block_y * BLOCK_WIDTH)
 
 class World:
-  def __init__(self, w_id, tiles, spawn_points):
+  def __init__(self, w_id, tiles, entities, spawn_points):
     self.w_id = w_id
     self.tiles = tiles
+    self.entities = entities
     self.spawn_points = spawn_points
 
   def get_tile(self, t):
