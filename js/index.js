@@ -781,7 +781,6 @@ function handleWSMessage(e) {
     if (entityJSON.facing) {
       entity.facing = strToDir(entityJSON.facing);
     }
-    console.log(entity.pos);
   }
 }
 
