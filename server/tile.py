@@ -1,4 +1,4 @@
-from world import worlds
+from world import worlds, tileXY_to_spawn_pos
 from geometry import Vec
 from tilebasic import Empty, Tile, TilePlus, TileMetadata, register_tile, register_tile_plus
 
@@ -62,7 +62,10 @@ class Portal(TilePlus):
     w_id = self.data.w_id
     w = worlds.get(w_id)
     spawn_id = self.data.spawn_id
-    await game.set_and_send_world(ws, username, player, w, spawn_id)
+    player.world_id = w_id
+    player.pos = tileXY_to_spawn_pos(w.spawn_points[spawn_id])
+    game.set_player(username, player)
+    await game.send_world(ws, w, player.pos)
     await game.send_players(ws, username, w_id)
 
 class SignData(TileMetadata):

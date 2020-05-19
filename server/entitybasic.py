@@ -1,7 +1,8 @@
+import math
 import uuid
 
 from config import BLOCK_WIDTH, PLAYER_WIDTH
-from geometry import BoundingBox, Dir, Vec, dir_to_str, str_to_dir
+from geometry import BoundingBox, Dir, Vec, dir_to_str, str_to_dir, dir_to_angle
 from world import TileXY, pos_to_tileXY
 
 _entities = {}
@@ -18,6 +19,23 @@ class Entity:
 
   def update(self, dt):
     self.pos += self.velocity * dt
+
+  def get_entities_can_interact(self, world):
+    if self.facing is Dir.LEFT:
+      return [e for e in world.entities
+        if self.pos.dist_to(e.pos) < 2 * BLOCK_WIDTH
+        and ((3*math.pi/4) < self.pos.angle_to(e.pos) < (math.pi)
+        or (-math.pi) < self.pos.angle_to(e.pos) < (-3*math.pi/4))]
+    else:
+      facing_angle = dir_to_angle(self.facing)
+      minAngle = facing_angle - math.pi/4
+      maxAngle = facing_angle + math.pi/4
+      return [e for e in world.entities
+        if self.pos.dist_to(e.pos) < 2 * BLOCK_WIDTH
+        and minAngle < self.pos.angle_to(e.pos) < maxAngle]
+
+  async def on_interact(self, game, ws, username, player):
+    pass
 
   def setX(self, newX):
     self.pos = Vec(newX, self.pos.y)
@@ -93,11 +111,12 @@ def register_entity(entity_id):
   return decorator
 
 class Player(Entity):
-  def __init__(self, ws):
-    self.uuid = None
+  def __init__(self, pos, velocity, facing, ws, world_id):
+    super().__init__(pos, velocity, facing)
+    self.world_id = world_id
     self.ws = ws
+    self.uuid = None
     self.time_of_last_move = 0
-    self.world_id = None
 
   def get_bounding_box(self):
     return super().get_bounding_box(PLAYER_WIDTH)

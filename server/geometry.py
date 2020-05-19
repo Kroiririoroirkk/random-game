@@ -21,6 +21,9 @@ class Vec(namedtuple("Vec", ["x", "y"])):
   def norm(self):
     return math.hypot(self.x, self.y)
 
+  def angle_to(self, p):
+    return math.atan2(p.y - self.y, p.x - self.y)
+
 def vec_from_dir(d):
   key = {
     "l": Vec(-1,0),
@@ -56,6 +59,16 @@ def str_to_dir(d):
   elif d == "d":
     return Dir.DOWN
 
+def dir_to_angle(d):
+  if d is Dir.LEFT:
+    return -math.pi
+  elif d is Dir.UP:
+    return math.pi/2
+  elif d is Dir.RIGHT:
+    return 0
+  elif d is Dir.DOWN:
+    return -math.pi/2
+
 class BoundingBox():
   def __init__(self, v1, v2):
     self.v1 = v1
@@ -87,7 +100,7 @@ class BoundingBox():
 
   def get_height(self):
     return self.v2.y - self.v1.y
- 
+
   def is_touching(self, bbox):
     return not (bbox.get_left_b()   > self.get_right_b() or
                 bbox.get_right_b()  < self.get_left_b() or

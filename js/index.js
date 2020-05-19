@@ -23,7 +23,7 @@ const SPEED_MULTIPLIER = 2;
 // ----------- GAME -----------
 var game;
 
-const contextMenus = Object.freeze({MAP:1, LOG:2, MENU:3});
+const contextMenus = Object.freeze({MAP:1, LOG:2, MENU:3, DIALOGUE:4});
 
 class Game {
   constructor(ws, username) {
@@ -38,6 +38,7 @@ class Game {
     this.usernameNotice = null;
     this.gameLog = null;
     this.menu = null;
+    this.dialogueBox = null;
     this.scaled = false;
     this.contextMenu = contextMenus.MAP;
     this.registerKeyListeners();
@@ -480,7 +481,7 @@ class Wall extends Tile {}
 registerTile("wall", Wall, "wall.png", "rgb(210, 105, 30)");
 
 class Portal extends Tile {}
-registerTile("portal", Portal, "portal.png", "rgb(0, 0, 0)");
+registerTile("portal", Portal, null, "rgb(0, 0, 0)");
 
 class SignData {
   constructor(groundTile) {
@@ -569,8 +570,8 @@ class GameLog {
 
   scrollDown() {
     this.lineStart++;
-    if (this.lineStart > this.wrappedText.length) {
-      this.lineStart = this.wrappedText.length;
+    if (this.lineStart > this.wrappedText.length-1) {
+      this.lineStart = this.wrappedText.length-1;
     }
   }
 
@@ -694,6 +695,64 @@ class Menu {
   }
 }
 
+// ----------- DIALOGUE BOX -----------
+class DialogueBox {
+  constructor(width, height) {
+    this.width = width;
+    this.height = height;
+    this.text = null;
+    this.lineStart = 0;
+    this.wrappedText = [];
+  }
+
+  setText(text) {
+    this.text = text;
+    const ctx = game.canvasCtx;
+    ctx.font = "20px sans-serif";
+    this.wrappedText = wrapText(ctx, text, this.width);
+  }
+
+  endDialogue() {
+    this.text = null;
+  }
+
+  scrollUp() {
+    this.lineStart--;
+    if (this.lineStart < 0) {
+      this.lineStart = 0;
+    }
+  }
+
+  scrollDown() {
+    this.lineStart++;
+    if (this.lineStart > this.wrappedText.length-1) {
+      this.lineStart = this.wrappedText.length-1;
+    }
+  }
+
+  render() {
+    if (this.text !== null) {
+      const LINE_HEIGHT  = 24,
+            ctx          = game.canvasCtx,
+            renderedText = this.wrappedText.slice(this.lineStart),
+            startingY    = game.getScaledHeight() - this.height - 20,
+            endingY      = startingY + this.height;
+
+      ctx.font = "20px san-serif";
+      ctx.fillStyle = "rgb(80, 0, 80)";
+      ctx.fillRect(0, startingY, this.width + 20, this.height + 20);
+
+      ctx.fillStyle = "rgb(255, 255, 255)";
+      let y = startingY;
+      for (const line of renderedText) {
+        y += LINE_HEIGHT;
+        if (y > endingY) {return;}
+        ctx.fillText(line, 10, y);
+      }
+    }
+  }
+}
+
 // ----------- ENTRY POINT -----------
 function startGame() {
   let username = document.getElementById("username").value;
@@ -709,6 +768,7 @@ function initialize() {
   game.menu = new Menu(250);
   game.menu.addItem(new MenuItem("Profile"));
   game.menu.addItem(new MenuItem("Inventory"));
+  game.dialogueBox = new DialogueBox(500, 100);
 }
 
 function handleWSMessage(e) {
@@ -745,7 +805,7 @@ function handleWSMessage(e) {
     game.playerObj.moveTo(new Vec(newX, newY));
   } else if (e.data.startsWith("signtext|")) {
     let parts = e.data.split("|"),
-        text  = parts[1];
+        text  = parts.slice(1).join("|");
     game.gameLog.addMsg("The sign reads: " + text);
   } else if (e.data.startsWith("players|")) {
     let parts = e.data.split("|");
@@ -759,7 +819,17 @@ function handleWSMessage(e) {
     }
   } else if (e.data.startsWith("entities|")) {
     let parts = e.data.split("|");
-    game.entities = parts.slice(1).map(e => entityFromJSON(JSON.parse(e)));
+    game.entities = parts.slice(1)
+                         .filter(Boolean)
+                         .map(e => entityFromJSON(JSON.parse(e)));
+  } else if (e.data.startsWith("dialogue|")) {
+    let parts = e.data.split("|"),
+        text = parts.slice(1).join("|");
+    game.contextMenu = contextMenus.DIALOGUE;
+    game.dialogueBox.setText(text);
+  } else if (e.data.startsWith("dialogueend")) {
+    game.contextMenu = contextMenus.MAP;
+    game.dialogueBox.endDialogue();
   }
 }
 
@@ -833,26 +903,40 @@ function update(dt) {
       game.menu.cursorDown();
       game.pressedKeys.delete(KEY_DOWN);
     }
+  } else if (game.contextMenu === contextMenus.DIALOGUE) {
+    if (game.pressedKeys.has(KEY_UP)) {
+      game.dialogueBox.scrollUp();
+      game.pressedKeys.delete(KEY_UP);
+    }
+    if (game.pressedKeys.has(KEY_DOWN)) {
+      game.dialogueBox.scrollDown();
+      game.pressedKeys.delete(KEY_DOWN);
+    }
+    if (game.pressedKeys.has(SPACE)) {
+      game.ws.send("interact");
+      game.pressedKeys.delete(SPACE);
+    }
   }
-
-  if (game.pressedKeys.has(L_KEY)) {
-    if (game.contextMenu === contextMenus.LOG) {
-      game.contextMenu = contextMenus.MAP;
-      game.gameLog.unfocus();
-    } else {
-      game.contextMenu = contextMenus.LOG;
-      game.gameLog.focus();
+  if (game.contextMenu !== contextMenus.DIALOGUE) {
+    if (game.pressedKeys.has(L_KEY)) {
+      if (game.contextMenu === contextMenus.LOG) {
+        game.contextMenu = contextMenus.MAP;
+        game.gameLog.unfocus();
+      } else {
+        game.contextMenu = contextMenus.LOG;
+        game.gameLog.focus();
+      }
+      game.pressedKeys.delete(L_KEY);
+    } else if (game.pressedKeys.has(M_KEY)) {
+      if (game.contextMenu === contextMenus.MENU) {
+        game.contextMenu = contextMenus.MAP;
+        game.menu.unfocus();
+      } else {
+        game.contextMenu = contextMenus.MENU;
+        game.menu.focus();
+      }
+      game.pressedKeys.delete(M_KEY);
     }
-    game.pressedKeys.delete(L_KEY);
-  } else if (game.pressedKeys.has(M_KEY)) {
-    if (game.contextMenu === contextMenus.MENU) {
-      game.contextMenu = contextMenus.MAP;
-      game.menu.unfocus();
-    } else {
-      game.contextMenu = contextMenus.MENU;
-      game.menu.focus();
-    }
-    game.pressedKeys.delete(M_KEY);
   }
 }
 
@@ -894,6 +978,7 @@ function render() {
     game.usernameNotice.render();
     game.gameLog.render();
     game.menu.render();
+    game.dialogueBox.render();
   }
 }
 
@@ -920,4 +1005,3 @@ function main() {
   };
   game.ws.onmessage = handleWSMessage;
 }
-

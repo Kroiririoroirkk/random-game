@@ -7,10 +7,9 @@ import websockets
 from config import MAX_MOVE_DT, PLAYER_SPEED, SPEED_MULTIPLIER, WSPORT
 import entity
 import game
-from geometry import Vec
-import geometry
+from geometry import Dir, Vec, str_to_dir, vec_from_dir
 from tile import block_movement
-from world import worlds, tileXY_to_pos
+from world import worlds, tileXY_to_pos, tileXY_to_spawn_pos
 from loadworld import load_worlds
 
 game = game.Game()
@@ -26,9 +25,13 @@ async def run(ws, path):
     await game.send_world(ws, worlds.get(p.world_id), p.pos)
   else:
     print("New user: " + username)
-    new_player = entity.Player(ws)
+    w_id = "starting_world"
+    spawn_id = "center_spawn"
+    w = worlds.get(w_id)
+    spawn_pos = tileXY_to_spawn_pos(w.spawn_points[spawn_id])
+    new_player = entity.Player(spawn_pos, Vec(0, 0), Dir.DOWN, ws, w_id)
     game.set_player(username, new_player)
-    await game.set_and_send_world(ws, username, new_player, worlds.get("starting_world"), "center_spawn")
+    await game.send_world(ws, w, spawn_pos)
   async for message in ws:
     await parseMessage(message, username, ws)
 
@@ -41,8 +44,9 @@ async def parseMessage(message, username, ws):
       multiplier = SPEED_MULTIPLIER
     parts = message.split("|")
     direction = parts[1]
-    dirVec = sum([geometry.vec_from_dir(char) for char in set(direction)], Vec(0,0))
+    dirVec = sum([vec_from_dir(char) for char in set(direction)], Vec(0,0))
     if dirVec:
+      player.facing = str_to_dir(direction[-1])
       start_pos = player.pos
       start_tiles = player.get_tilesXY_touched()
       now = time.monotonic()
@@ -69,6 +73,8 @@ async def parseMessage(message, username, ws):
   elif message.startswith("interact"):
     for tileXY in player.get_tilesXY_touched():
       await world.get_tile(tileXY).on_interact(game, ws, username, player, tileXY_to_pos(tileXY))
+    for entity in player.get_entities_can_interact(world):
+      await entity.on_interact(game, ws, username, player)
   elif message.startswith("getupdates"):
     await game.send_players(ws, username, player.world_id)
     await game.send_entities(ws, player.world_id)
@@ -98,4 +104,3 @@ loop = asyncio.get_event_loop()
 loop.create_task(update_loop())
 loop.run_until_complete(start_server)
 loop.run_forever()
-

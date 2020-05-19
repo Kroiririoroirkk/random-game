@@ -75,3 +75,15 @@ This message is sent in response to the [getplayers](#getplayers) message. For e
 Parameters (Variable number, given by number of entities): `entity1`, `entity2`, etc.
 
 This message is sent in response to the [getplayers](#getplayers) message. For each non-player entity in the same world as the client, one parameter is given: a JSON representation of the entity.
+
+### dialogue
+
+Parameters (1): `dialogue_text`
+
+This message is sent when the player interacts with an NPC with dialogue lines (possibly in response to the [interact](#interact) message). The `dialogue_text` parameter gives a line of the NPC's dialogue. Note that `dialogue_text` may contain `|` characters.
+
+### dialogueend
+
+No parameters
+
+This message is sent when the player interacts with an NPC with dialogue lines (possibly in response to the [interact](#interact) message) and the previous message the NPC sent was its last line.

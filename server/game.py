@@ -13,19 +13,13 @@ class Game:
   def set_player(self, username, player):
     self.player_objs[username] = player
 
-  async def set_and_send_world(self, ws, username, player, world, spawn_id):
-    player.world_id = world.w_id
-    player.pos = tileXY_to_spawn_pos(world.spawn_points[spawn_id])
-    self.set_player(username, player)
-    await Game.send_world(ws, world, player.pos)
-
   @staticmethod
   async def send_world(ws, world, spawn_pos):
     await ws.send(f"world|{world_to_client_JSON(world, spawn_pos)}")
 
   @staticmethod
   async def send_moved_to(ws, pos):
-    await ws.send(f"movedto|{pos.x}|{pos.y}") 
+    await ws.send(f"movedto|{pos.x}|{pos.y}")
 
   @staticmethod
   async def send_sign(ws, sign):
@@ -41,3 +35,11 @@ class Game:
     s = "|".join(json.dumps(e.toJSON(True), separators=(",", ":"))
       for e in worlds.get(w_id).entities)
     await ws.send("entities|"+s)
+
+  @staticmethod
+  async def send_dialogue(ws, dialogue_text):
+    await ws.send(f"dialogue|{dialogue_text}")
+
+  @staticmethod
+  async def send_dialogue_end(ws):
+    await ws.send("dialogueend")
