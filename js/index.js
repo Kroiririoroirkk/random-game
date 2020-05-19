@@ -162,7 +162,7 @@ const LOADING = "LOADING";
 function loadImage(filename) {
   const image = new Image();
   image.onload = function(){images.set(filename, image);};
-  image.src = 'data/img/' + filename;
+  image.src = "data/img/" + filename;
   images.set(filename, LOADING);
 }
 
@@ -757,30 +757,9 @@ function handleWSMessage(e) {
           pos      = new Vec(posX, posY);
       game.otherPlayerObjs.push(new OtherPlayer(pos, username));
     }
-  } else if (e.data.startsWith("updateentity|")) {
-    let parts      = e.data.split("|"),
-        uuid       = parts[1],
-        entity     = game.getEntity(uuid),
-        entityJSON = JSON.parse(parts[2]);
-    if (entityJSON.pos) {
-      if (entityJSON.pos.x) {
-        entity.pos.x = entityJSON.pos.x;
-      }
-      if (entityJSON.pos.y) {
-        entity.pos.y = entityJSON.pos.y;
-      }
-    }
-    if (entityJSON.velocity) {
-      if (entityJSON.velocity.x) {
-        entity.velocity.x = entityJSON.velocity.x;
-      }
-      if (entityJSON.velocity.y) {
-        entity.velocity.y = entityJSON.velocity.y;
-      }
-    }
-    if (entityJSON.facing) {
-      entity.facing = strToDir(entityJSON.facing);
-    }
+  } else if (e.data.startsWith("entities|")) {
+    let parts = e.data.split("|");
+    game.entities = parts.slice(1).map(e => entityFromJSON(JSON.parse(e)));
   }
 }
 
@@ -934,7 +913,7 @@ function main() {
     };
     requestAnimationFrame(gameLoop(null));
     let getplayers = function() {
-      game.ws.send("getplayers");
+      game.ws.send("getupdates");
       setTimeout(getplayers, 333);
     }
     getplayers();

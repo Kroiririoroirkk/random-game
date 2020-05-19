@@ -22,7 +22,7 @@ def world_to_client_JSON(world, spawn_pos):
     }
   }
 
-  return json.dumps(obj, separators=(',', ':'))
+  return json.dumps(obj, separators=(",", ":"))
 
 def world_to_save_JSON(world):
   tiles_list = []
@@ -43,4 +43,4 @@ def world_to_save_JSON(world):
       for spawn_id, spawn_point in world.spawn_points.items()}
   }
 
-  return json.dumps(obj, separators=(',', ':'))
+  return json.dumps(obj, separators=(",", ":"))

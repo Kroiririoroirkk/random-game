@@ -1410,7 +1410,7 @@
       "uuid": "1bdf51e957794199bc0f23e193d08041",
       "entity_id": "walker",
       "pos": {"x": 320, "y": 320},
-      "velocity": {"x": 10, "y": 0},
+      "velocity": {"x": 80, "y": 0},
       "facing": "r"
     }
   ],

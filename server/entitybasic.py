@@ -16,8 +16,8 @@ class Entity:
   def move(self, offset):
     self.pos += offset
 
-  async def update(self, game, dt):
-    pass
+  def update(self, dt):
+    self.pos += self.velocity * dt
 
   def setX(self, newX):
     self.pos = Vec(newX, self.pos.y)

@@ -38,11 +38,11 @@ No parameters.
 
 This message tells the server that the player wishes to interact, e.g. with a sign or a non-player character.
 
-### getplayers
+### getupdates
 
 No parameters.
 
-This message retrieves the usernames of other players and their locations. See [players](#players) for details on the response.
+This message retrieves the usernames of other players and their locations, as well as the state of the entities in the game. See [players](#players) and [entities](#entities) for details on the response.
 
 ## Messages sent by the server
 
@@ -70,8 +70,8 @@ Parameters (Variable number, given by number of other players * 3): `username1`,
 
 This message is sent in response to the [getplayers](#getplayers) message. For each player in the same world as the client, three parameters are given: the player's username, the player's x position, and the player's y position. The list of players returned excludes the client.
 
-### updateentity
+### entities
 
-Parameters (6): `uuid`, `entity`
+Parameters (Variable number, given by number of entities): `entity1`, `entity2`, etc.
 
-This message is sent regularly by the server. It tells the client that the entity with the UUID `uuid` has been updated with the information given in `entity`, a JSON representation of the entity. If there are keys missing in `entity`, it is to be assumed that they remain the same. The UUID and entity_id of the entity will not change.
+This message is sent in response to the [getplayers](#getplayers) message. For each non-player entity in the same world as the client, one parameter is given: a JSON representation of the entity.

@@ -69,8 +69,9 @@ async def parseMessage(message, username, ws):
   elif message.startswith("interact"):
     for tileXY in player.get_tilesXY_touched():
       await world.get_tile(tileXY).on_interact(game, ws, username, player, tileXY_to_pos(tileXY))
-  elif message.startswith("getplayers"):
+  elif message.startswith("getupdates"):
     await game.send_players(ws, username, player.world_id)
+    await game.send_entities(ws, player.world_id)
 
 async def update_loop():
   then = time.monotonic()
@@ -79,12 +80,9 @@ async def update_loop():
     dt = now - then
     then = now
     for world_id in set(p.world_id for p in game.player_objs.values()):
-      try:
-        world = worlds.get(world_id)
-        for entity in world.entities:
-          await entity.update(game, dt)
-      except websockets.exceptions.ConnectionClosedOK:
-        pass
+      world = worlds.get(world_id)
+      for entity in world.entities:
+        entity.update(dt)
     await asyncio.sleep(0.1)
 
 start_server = websockets.serve(run, "0.0.0.0", WSPORT)
