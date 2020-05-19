@@ -707,6 +707,7 @@ class DialogueBox {
 
   setText(text) {
     this.text = text;
+    this.lineStart = 0;
     const ctx = game.canvasCtx;
     ctx.font = "20px sans-serif";
     this.wrappedText = wrapText(ctx, text, this.width);
