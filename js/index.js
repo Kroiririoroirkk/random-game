@@ -1,7 +1,7 @@
 "use strict";
 
 // ----------- CONSTANTS -----------
-const SERVER_URL = "ws://localhost:8080"//"wss://terrekin.kroiririoroirkk.repl.co";
+const SERVER_URL = "wss://terrekin.kroiririoroirkk.repl.co";
 
 const SHIFT = 16;
 const SPACE = 32;
