@@ -1,122 +1,127 @@
-import math
+"""Defines the Entity class and register_entity."""
+from typing import Any, Dict
 import uuid
 
-from config import BLOCK_WIDTH, PLAYER_WIDTH
-from geometry import BoundingBox, Dir, Vec, dir_to_str, str_to_dir, dir_to_angle
-from world import TileXY, pos_to_tileXY
+from config import BLOCK_WIDTH
+from geometry import BoundingBox, Direction, Vec
+from tilecoord import TileCoord
 
-_entities = {}
+
+_entities: Dict[str, Any] = {}  # Maps entity_ids to Entity classes.
+
 
 class Entity:
-  def __init__(self, pos, velocity, facing):
-    self.pos = pos
-    self.velocity = velocity
-    self.facing = facing
-    self.uuid = uuid.uuid4()
+    """The Entity class encompasses things in the game that can move."""
 
-  def move(self, offset):
-    self.pos += offset
+    def __init__(self, pos, velocity, facing):
+        """Initialize entity with randomly generated UUID."""
+        self.pos = pos
+        self.velocity = velocity
+        self.facing = facing
+        self.uuid = uuid.uuid4()
 
-  def update(self, dt):
-    self.pos += self.velocity * dt
+    def move(self, offset):
+        """Move the entity by the given displacement vector."""
+        self.pos += offset
 
-  def get_entities_can_interact(self, world):
-    if self.facing is Dir.LEFT:
-      return [e for e in world.entities
-        if self.pos.dist_to(e.pos) < 2 * BLOCK_WIDTH
-        and ((3*math.pi/4) < self.pos.angle_to(e.pos) < (math.pi)
-        or (-math.pi) < self.pos.angle_to(e.pos) < (-3*math.pi/4))]
-    else:
-      facing_angle = dir_to_angle(self.facing)
-      minAngle = facing_angle - math.pi/4
-      maxAngle = facing_angle + math.pi/4
-      return [e for e in world.entities
-        if self.pos.dist_to(e.pos) < 2 * BLOCK_WIDTH
-        and minAngle < self.pos.angle_to(e.pos) < maxAngle]
+    def update(self, dt):
+        """Update the entity's position. Called every update loop."""
+        self.move(self.velocity * dt)
 
-  async def on_interact(self, game, ws, username, player):
-    pass
+    async def on_interact(self, game, ws, username, player):
+        """Triggered whenever the player interacts with the entity."""
 
-  def setX(self, newX):
-    self.pos = Vec(newX, self.pos.y)
+    def set_x(self, new_x):
+        """Set the entity's x position."""
+        self.pos = Vec(new_x, self.pos.y)
 
-  def setY(self, newY):
-    self.pos = Vec(self.pos.x, newY)
+    def set_y(self, new_y):
+        """Set the entity's y position."""
+        self.pos = Vec(self.pos.x, new_y)
 
-  def get_bounding_box(self, width=BLOCK_WIDTH):
-    block = Vec(width, width)
-    return BoundingBox(self.pos, self.pos + block)
+    def get_bounding_box(self):
+        """Get the entity's bounding box."""
+        return self.get_bounding_box_of_width(BLOCK_WIDTH)
 
-  def get_tilesXY_touched(self):
-    bbox = self.get_bounding_box()
-    startTileX, startTileY = pos_to_tileXY(bbox.v1)
-    endTileX, endTileY = pos_to_tileXY(bbox.v2)
-    return [TileXY(tileX, tileY)
-            for tileY in range(startTileY, endTileY + 1)
-            for tileX in range(startTileX, endTileX + 1)]
+    def get_bounding_box_of_width(self, width):
+        """Get a bounding box at the current position with a custom width."""
+        block = Vec(width, width)
+        return BoundingBox(self.pos, self.pos + block)
 
-  def is_touching(self, e):
-    return self.get_bounding_box().is_touching(e.get_bounding_box())
+    def get_tiles_touched(self):
+        """Get the tiles the entity is touching in the form of TileCoords."""
+        bbox = self.get_bounding_box()
+        start_tile_x, start_tile_y = TileCoord.pos_to_tile_coord(bbox.vec1)
+        end_tile_x, end_tile_y = TileCoord.pos_to_tile_coord(bbox.vec2)
+        return [TileCoord(tile_x, tile_y)
+                for tile_y in range(start_tile_y, end_tile_y + 1)
+                for tile_x in range(start_tile_x, end_tile_x + 1)]
 
-  def get_width(self):
-    return self.get_bounding_box().get_width()
+    def is_touching(self, other):
+        """Check if an entity is touching another entity."""
+        return self.get_bounding_box().is_touching(other.get_bounding_box())
 
-  def get_height(self):
-    return self.get_bounding_box().get_height()
+    def get_width(self):
+        """Get width of the entity's bounding box."""
+        return self.get_bounding_box().get_width()
 
-  @staticmethod
-  def fromJSON(e):
-    entity_class = Entity.get_entity_by_id(e["entity_id"])
-    entity_pos = Vec(e["pos"]["x"], e["pos"]["y"])
-    entity_velocity = Vec(e["velocity"]["x"], e["velocity"]["y"])
-    entity_facing = str_to_dir(e["facing"])
-    ent = entity_class(entity_pos, entity_velocity, entity_facing)
-    ent.uuid = uuid.UUID(e["uuid"])
-    return ent
+    def get_height(self):
+        """Get height of the entity's bounding box."""
+        return self.get_bounding_box().get_height()
 
-  def toJSON(self, is_to_client):
-    return {
-      "uuid": self.uuid.hex,
-      "entity_id": self.get_entity_id(),
-      "pos": {"x": self.pos.x, "y": self.pos.y},
-      "velocity": {"x": self.velocity.x, "y": self.velocity.y},
-      "facing": dir_to_str(self.facing)
-    }
+    @staticmethod
+    def from_json(entity_dict):
+        """Convert a dict representing a JSON object into an entity."""
+        entity_class = Entity.get_entity_by_id(entity_dict["entity_id"])
+        entity_pos = Vec(entity_dict["pos"]["x"], entity_dict["pos"]["y"])
+        entity_velocity = Vec(entity_dict["velocity"]["x"],
+                              entity_dict["velocity"]["y"])
+        entity_facing = Direction.str_to_direction(entity_dict["facing"])
+        ent = entity_class(entity_pos, entity_velocity, entity_facing)
+        ent.uuid = uuid.UUID(entity_dict["uuid"])
+        return ent
 
-  @staticmethod
-  def get_entity_by_id(entity_id):
-    entity_class = _entities.get(entity_id)
-    if entity_class:
-      return entity_class
-    else:
-      raise ValueError
+    def to_json(self, is_to_client):
+        """Convert an entity to a dict which can be converted to a JSON string.
 
-  def get_entity_id(self):
-    entity_class = type(self)
-    try:
-      return next(eId for eId, cls in _entities.items() if cls == entity_class)
-    except StopIteration:
-      raise ValueError
+        Args:
+            is_to_client: True to get the version of the entity sent
+                to the client, False to get the version of the entity
+                to save to file.
+        """
+        del is_to_client  # Unused
+        return {
+            "uuid": self.uuid.hex,
+            "entity_id": self.get_entity_id(),
+            "pos": {"x": self.pos.x, "y": self.pos.y},
+            "velocity": {"x": self.velocity.x, "y": self.velocity.y},
+            "facing": self.facing.direction_to_str()
+        }
 
-def _register_entity(entity_id, entity_class):
-  if entity_id in _entities:
-    raise ValueError
-  else:
-    _entities[entity_id] = entity_class
+    @staticmethod
+    def get_entity_by_id(entity_id):
+        """Get the Entity class corresponding to an entity_id."""
+        entity_class = _entities.get(entity_id)
+        if not entity_class:
+            raise ValueError
+        return entity_class
+
+    def get_entity_id(self):
+        """Get the entity_id of an Entity."""
+        entity_class = type(self)
+        try:
+            return next(
+                entity_id for entity_id, cls in _entities.items()
+                if cls == entity_class)
+        except StopIteration:
+            raise ValueError
+
 
 def register_entity(entity_id):
-  def decorator(entity_class):
-    _register_entity(entity_id, entity_class)
-    return entity_class
-  return decorator
-
-class Player(Entity):
-  def __init__(self, pos, velocity, facing, ws, world_id):
-    super().__init__(pos, velocity, facing)
-    self.world_id = world_id
-    self.ws = ws
-    self.uuid = None
-    self.time_of_last_move = 0
-
-  def get_bounding_box(self):
-    return super().get_bounding_box(PLAYER_WIDTH)
+    """Class decorator to register the entity_id with an Entity class."""
+    def decorator(entity_class):
+        if entity_id in _entities:
+            raise ValueError
+        _entities[entity_id] = entity_class
+        return entity_class
+    return decorator

@@ -12,7 +12,7 @@
       {"tile_id": "grass"},
       {"tile_id": "portal",
        "tile_data": {
-         "w_id": "starting_world",
+         "world_id": "starting_world",
          "spawn_id": "bottom_portal"
        }
       },
@@ -22,7 +22,7 @@
       {"tile_id": "wall"},
       {"tile_id": "portal",
        "tile_data": {
-         "w_id": "starting_world",
+         "world_id": "starting_world",
          "spawn_id": "left_portal"
        }
       },

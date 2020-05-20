@@ -1,45 +1,62 @@
+"""The Game class handles all the player objects and utility methods."""
 import json
 
-from storeworld import world_to_client_JSON
-from world import tileXY_to_spawn_pos, worlds
+from storeworld import world_to_client_json
+from world import World
+
 
 class Game:
-  def __init__(self):
-    self.player_objs = {}
+    """The Game class keeps track of players and WebSockets."""
 
-  def get_player(self, username):
-    return self.player_objs.get(username)
+    def __init__(self):
+        """There are initially no players in the game."""
+        self.player_objs = {}
 
-  def set_player(self, username, player):
-    self.player_objs[username] = player
+    def get_player(self, username):
+        """Get the player object associated with the given username."""
+        return self.player_objs.get(username)
 
-  @staticmethod
-  async def send_world(ws, world, spawn_pos):
-    await ws.send(f"world|{world_to_client_JSON(world, spawn_pos)}")
+    def set_player(self, username, player):
+        """Associate the given username with the given player object."""
+        self.player_objs[username] = player
 
-  @staticmethod
-  async def send_moved_to(ws, pos):
-    await ws.send(f"movedto|{pos.x}|{pos.y}")
+    @staticmethod
+    async def send_world(ws, world, spawn_pos):
+        """See the world message under PROTOCOL.md for explanation."""
+        await ws.send(f"world|{world_to_client_json(world, spawn_pos)}")
 
-  @staticmethod
-  async def send_sign(ws, sign):
-    await ws.send(f"signtext|{sign.data.text}")
+    @staticmethod
+    async def send_moved_to(ws, pos):
+        """See the movedto message under PROTOCOL.md for explanation."""
+        await ws.send(f"movedto|{pos.x}|{pos.y}")
 
-  async def send_players(self, ws, playerUsername, w_id):
-    s = "|".join(f"{username}|{p.pos.x}|{p.pos.y}"
-      for username, p in self.player_objs.items()
-        if p.world_id == w_id and username != playerUsername)
-    await ws.send("players|"+s)
+    @staticmethod
+    async def send_sign(ws, sign):
+        """See the signtext message under PROTOCOL.md for explanation."""
+        await ws.send(f"signtext|{sign.data.text}")
 
-  async def send_entities(self, ws, w_id):
-    s = "|".join(json.dumps(e.toJSON(True), separators=(",", ":"))
-      for e in worlds.get(w_id).entities)
-    await ws.send("entities|"+s)
+    async def send_players(self, ws, player_username, world_id):
+        """See the players message under PROTOCOL.md for explanation."""
+        players_str = "|".join(
+            f"{username}|{p.pos.x}|{p.pos.y}"
+            for username, p in self.player_objs.items()
+            if p.world_id == world_id
+            and username != player_username)
+        await ws.send("players|"+players_str)
 
-  @staticmethod
-  async def send_dialogue(ws, dialogue_text):
-    await ws.send(f"dialogue|{dialogue_text}")
+    async def send_entities(self, ws, world_id):
+        """See the entities message under PROTOCOL.md for explanation."""
+        entities_str = "|".join(
+            json.dumps(e.to_json(True), separators=(",", ":"))
+            for e in World.get_world_by_id(world_id).entities)
+        await ws.send("entities|"+entities_str)
 
-  @staticmethod
-  async def send_dialogue_end(ws):
-    await ws.send("dialogueend")
+    @staticmethod
+    async def send_dialogue(ws, dialogue_text):
+        """See the dialogue message under PROTOCOL.md for explanation."""
+        await ws.send(f"dialogue|{dialogue_text}")
+
+    @staticmethod
+    async def send_dialogue_end(ws):
+        """See the dialogueend message under PROTOCOL.md for explanation."""
+        await ws.send("dialogueend")
