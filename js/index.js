@@ -1,7 +1,7 @@
 "use strict";
 
 // ----------- CONSTANTS -----------
-const SERVER_URL = "wss://terrekin.kroiririoroirkk.repl.co";
+const SERVER_URL = "ws://localhost:8080"//"wss://terrekin.kroiririoroirkk.repl.co";
 
 const SHIFT = 16;
 const SPACE = 32;
@@ -482,9 +482,15 @@ registerTile("wild_grass", WildGrass, "wild-grass.png", "rgb(0, 180, 0)");
 class Wall extends Tile {}
 registerTile("wall", Wall, "wall.png", "rgb(210, 105, 30)");
 
-class Portal extends Tile {
-  constructor(pos) {
-    super(pos);
+class PortalData {
+  constructor(groundTile) {
+    this.groundTile = groundTile;
+  }
+}
+
+class Portal extends TilePlus {
+  constructor(pos, data) {
+    super(pos, data);
     this.animation = new Animation(
       new Frame(0.25, "portal-1.png"),
       new Frame(0.25, "portal-2.png", "portal-1.png"),
@@ -493,12 +499,16 @@ class Portal extends Tile {
     )
   }
 
+  static dataFromJSON(obj, pos) {
+    return new PortalData(tileFromJSON(obj.ground_tile, pos));
+  }
+
   animate(dt) {
     this.animation.animate(dt);
   }
 
   render() {
-    return [new Render((function() {
+    return [...this.data.groundTile.render(), new Render((function() {
       const ctx = game.canvasCtx,
             pos = this.pos.relToPlayer(),
             img = this.animation.getSprite();

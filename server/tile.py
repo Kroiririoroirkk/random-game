@@ -65,20 +65,27 @@ class Wall(Tile):
 class PortalData(TileMetadata):
     """Stores information about the destination of a portal tile."""
 
-    def __init__(self, world_id, spawn_id):
+    def __init__(self, world_id, spawn_id, ground_tile):
         """Initialize with destination world_id and spawn_id."""
         super().__init__()
         self.world_id = world_id
         self.spawn_id = spawn_id
+        self.ground_tile = ground_tile
+        self.send_to_client = ["ground_tile"]
 
     @staticmethod
     def from_json(data):
         """Convert a dict representing a JSON object into a portal data."""
-        return PortalData(data["world_id"], data["spawn_id"])
+        return PortalData(data["world_id"], data["spawn_id"],
+                          Tile.from_json(data["ground_tile"]))
 
     def to_json(self, is_to_client):
         """Serialize to JSON."""
-        return {"world_id": self.world_id, "spawn_id": self.spawn_id}
+        return {
+            "world_id": self.world_id,
+            "spawn_id": self.spawn_id,
+            "ground_tile": self.ground_tile.to_json(is_to_client)
+        }
 
 
 @register_tile_plus("portal", PortalData)

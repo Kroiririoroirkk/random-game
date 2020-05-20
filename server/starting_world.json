@@ -490,7 +490,8 @@
       {"tile_id": "portal",
        "tile_data": {
          "world_id": "starting_world",
-         "spawn_id": "bottom_right_portal"
+         "spawn_id": "bottom_right_portal",
+         "ground_tile": {"tile_id": "grass"}
        }
       },
       {"tile_id": "grass"},
@@ -695,7 +696,8 @@
       {"tile_id": "portal",
        "tile_data": {
          "world_id": "second_world",
-         "spawn_id": "bottom_left_portal"
+         "spawn_id": "bottom_left_portal",
+         "ground_tile": {"tile_id": "grass"}
        }
       },
       {"tile_id": "grass"},
@@ -1042,7 +1044,8 @@
       {"tile_id": "portal",
        "tile_data": {
          "world_id": "starting_world",
-         "spawn_id": "top_right_portal"
+         "spawn_id": "top_right_portal",
+         "ground_tile": {"tile_id": "grass"}
        }
       },
       {"tile_id": "grass"},
@@ -1301,6 +1304,7 @@
       {"tile_id": "sign",
        "tile_data": {
          "text": "Enter the portal!",
+         "ground_tile": {"tile_id": "grass"},
          "ground_tile": {"tile_id": "grass"}
        }
       },
@@ -1345,7 +1349,8 @@
       {"tile_id": "portal",
        "tile_data": {
          "world_id": "second_world",
-         "spawn_id": "top_right_portal"
+         "spawn_id": "top_right_portal",
+         "ground_tile": {"tile_id": "grass"}
        }
       },
       {"tile_id": "wall"},
