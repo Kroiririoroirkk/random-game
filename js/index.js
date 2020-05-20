@@ -498,10 +498,10 @@ class Portal extends TilePlus {
   constructor(pos, data) {
     super(pos, data);
     this.animation = new Animation(
-      new Frame(0.25, "portal-1.png"),
-      new Frame(0.25, "portal-2.png", "portal-1.png"),
-      new Frame(0.25, "portal-3.png", "portal-1.png"),
-      new Frame(0.25, "portal-4.png", "portal-1.png")
+      new Frame(0.28, "portal-1.png"),
+      new Frame(0.28, "portal-2.png", "portal-1.png"),
+      new Frame(0.28, "portal-3.png", "portal-1.png"),
+      new Frame(0.28, "portal-4.png", "portal-1.png")
     );
   }
 
