@@ -47,7 +47,8 @@ class Game {
   makePage() {
     let canvas = document.createElement("canvas");
     let ctx = canvas.getContext("2d", {alpha: false});
-    canvas.innerHTML = "Oops! Something went wrong. Your browser might not support this game.";
+    canvas.innerHTML =
+      "Oops! Something went wrong. Your browser might not support this game.";
     canvas.width = document.body.clientWidth;
     canvas.height = document.body.clientHeight;
     document.body.innerHTML = "";
@@ -138,9 +139,9 @@ function strToDir(d) {
 
 // ----------- RENDER -----------
 class Render {
-  constructor(render, ground_y) {
+  constructor(render, groundY) {
     this.render = render;
-    this.ground_y = ground_y;
+    this.groundY = groundY;
   }
 
   withY(y) {
@@ -148,7 +149,7 @@ class Render {
   }
 
   static renders(renderList) {
-    renderList.sort((r1, r2) => r1.ground_y - r2.ground_y);
+    renderList.sort((r1, r2) => r1.groundY - r2.groundY);
     renderList.forEach(function(r) {
       r.render();
     });
@@ -218,9 +219,11 @@ class Animation {
 // ----------- ENTITY -----------
 function drawRect(ctx, pos, fillStyle) {
   ctx.fillStyle = "rgb(0, 0, 0)";
-  ctx.fillRect(Math.floor(pos.x), Math.floor(pos.y), BLOCK_WIDTH, BLOCK_WIDTH);
+  ctx.fillRect(Math.floor(pos.x), Math.floor(pos.y),
+               BLOCK_WIDTH, BLOCK_WIDTH);
   ctx.fillStyle = fillStyle;
-  ctx.fillRect(Math.floor(pos.x)+1, Math.floor(pos.y)+1, BLOCK_WIDTH-2, BLOCK_WIDTH-2);
+  ctx.fillRect(Math.floor(pos.x)+1, Math.floor(pos.y)+1,
+               BLOCK_WIDTH-2, BLOCK_WIDTH-2);
 }
 
 var entities = new Map();
@@ -256,7 +259,8 @@ class Entity {
   }
 }
 
-function registerEntity(entityId, entityClass, sprite=null, fillStyle="rgb(50, 50, 50)") {
+function registerEntity(entityId, entityClass,
+                        sprite=null, fillStyle="rgb(50, 50, 50)") {
   if (entities.has(entityId)) {
     throw new Error(`Entity ID ${entityId} is already in use.`);
   } else {
@@ -317,7 +321,8 @@ class Tile {
   animate() {}
 }
 
-function registerTile(tileId, tileClass, sprite=null, fillStyle="rgb(50, 50, 50)") {
+function registerTile(tileId, tileClass,
+                      sprite=null, fillStyle="rgb(50, 50, 50)") {
   if (tiles.has(tileId)) {
     throw new Error(`Tile ID ${tileId} is already in use.`);
   } else {
@@ -357,7 +362,8 @@ class TilePlus extends Tile {
   }
 
   static dataFromJSON(obj, pos) {
-    throw new Error("Method dataFromJSON not implemented by " + this.constructor.name);
+    throw new Error("Method dataFromJSON not implemented by "
+                    + this.constructor.name);
   }
 }
 
@@ -458,14 +464,14 @@ class OtherPlayer extends Entity {
 
   render() {
     return [new Render((function() {
-    const ctx = game.canvasCtx,
-          startingX = Math.floor(this.pos.relToPlayer().x),
-          startingY = Math.floor(this.pos.relToPlayer().y);
-    ctx.fillStyle = "rgb(0, 0, 0)";
-    ctx.fillRect(startingX, startingY, PLAYER_WIDTH, PLAYER_WIDTH);
-    ctx.fillStyle = "rgb(255, 20, 147)";
-    ctx.fillRect(startingX+1, startingY+1, PLAYER_WIDTH-2, PLAYER_WIDTH-2);
-    }).bind(this), this.pos.y + PLAYER_WIDTH)]
+      const ctx = game.canvasCtx,
+            startingX = Math.floor(this.pos.relToPlayer().x),
+            startingY = Math.floor(this.pos.relToPlayer().y);
+      ctx.fillStyle = "rgb(0, 0, 0)";
+      ctx.fillRect(startingX, startingY, PLAYER_WIDTH, PLAYER_WIDTH);
+      ctx.fillStyle = "rgb(255, 20, 147)";
+      ctx.fillRect(startingX+1, startingY+1, PLAYER_WIDTH-2, PLAYER_WIDTH-2);
+    }).bind(this), this.pos.y + PLAYER_WIDTH)];
   }
 }
 
@@ -495,8 +501,8 @@ class Portal extends TilePlus {
       new Frame(0.25, "portal-1.png"),
       new Frame(0.25, "portal-2.png", "portal-1.png"),
       new Frame(0.25, "portal-3.png", "portal-1.png"),
-      new Frame(0.25, "portal-4.png", "portal-1.png"),
-    )
+      new Frame(0.25, "portal-4.png", "portal-1.png")
+    );
   }
 
   static dataFromJSON(obj, pos) {
@@ -724,7 +730,8 @@ class Menu {
     let y = 0;
     ctx.font = "20px san-serif";
     ctx.fillStyle = "rgb(80, 0, 80)";
-    ctx.fillRect(startingX, y, this.width + 20, LINE_HEIGHT*this.wrappedText.length + 5);
+    ctx.fillRect(startingX, y, this.width + 20,
+                 LINE_HEIGHT*this.wrappedText.length + 5);
 
     ctx.fillStyle = "rgb(255, 255, 255)";
     for (const line of this.wrappedText) {
@@ -1026,7 +1033,9 @@ function render(dt) {
 
 function main() {
   let w = window;
-  let requestAnimationFrame = w.requestAnimationFrame || w.webkitRequestAnimationFrame || w.msRequestAnimationFrame || w.mozRequestAnimationFrame;
+  let requestAnimationFrame =
+    w.requestAnimationFrame || w.webkitRequestAnimationFrame
+    || w.msRequestAnimationFrame || w.mozRequestAnimationFrame;
 
   initialize();
   game.ws.onopen = function(e) {
@@ -1043,7 +1052,7 @@ function main() {
     let getplayers = function() {
       game.ws.send("getupdates");
       setTimeout(getplayers, 333);
-    }
+    };
     getplayers();
   };
   game.ws.onmessage = handleWSMessage;
