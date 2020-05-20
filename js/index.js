@@ -197,7 +197,7 @@ class Animation {
 
   animate(dt) {
     this.frameDuration -= dt;
-    if (this.frameDuration <= 0) {
+    while (this.frameDuration <= 0) {
       this.frameIndex++;
       if (this.frameIndex >= this.frames.length) {
         this.frameIndex %= this.frames.length;
