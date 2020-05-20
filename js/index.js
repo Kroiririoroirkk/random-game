@@ -313,6 +313,8 @@ class Tile {
   static get hasMetadata() {
     return false;
   }
+
+  animate() {}
 }
 
 function registerTile(tileId, tileClass, sprite=null, fillStyle="rgb(50, 50, 50)") {
@@ -480,7 +482,34 @@ registerTile("wild_grass", WildGrass, "wild-grass.png", "rgb(0, 180, 0)");
 class Wall extends Tile {}
 registerTile("wall", Wall, "wall.png", "rgb(210, 105, 30)");
 
-class Portal extends Tile {}
+class Portal extends Tile {
+  constructor(pos) {
+    super(pos);
+    this.animation = new Animation(
+      new Frame(0.25, "portal-1.png"),
+      new Frame(0.25, "portal-2.png", "portal-1.png"),
+      new Frame(0.25, "portal-3.png", "portal-1.png"),
+      new Frame(0.25, "portal-4.png", "portal-1.png"),
+    )
+  }
+
+  animate(dt) {
+    this.animation.animate(dt);
+  }
+
+  render() {
+    return [new Render((function() {
+      const ctx = game.canvasCtx,
+            pos = this.pos.relToPlayer(),
+            img = this.animation.getSprite();
+      if (img) {
+        ctx.drawImage(img, pos.x, pos.y);
+      } else {
+        drawRect(game.canvasCtx, pos, this.constructor._fillStyle);
+      }
+    }).bind(this), this.pos.y)];
+  }
+}
 registerTile("portal", Portal, null, "rgb(0, 0, 0)");
 
 class SignData {
@@ -941,7 +970,7 @@ function update(dt) {
   }
 }
 
-function render() {
+function render(dt) {
   let ctx = game.canvasCtx;
 
   let width  = document.body.clientWidth,
@@ -963,7 +992,9 @@ function render() {
     let renderList = [];
     for (let j = 0; j < game.map.length; j++) {
       for (let i = 0; i < game.map[j].length; i++) {
-        renderList.push(...game.map[j][i].render());
+        let tile = game.map[j][i];
+        renderList.push(...tile.render());
+        tile.animate(dt);
       }
     }
     for (const entity of game.entities) {
@@ -992,8 +1023,9 @@ function main() {
     game.ws.send(game.username);
     let gameLoop = function(then) {
       return function(now) {
-        update((now - then)/1000);
-        render();
+        let dt = (now - then)/1000;
+        update(dt);
+        render(dt);
         requestAnimationFrame(gameLoop(now));
       };
     };
