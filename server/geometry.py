@@ -37,7 +37,7 @@ class Vec(namedtuple("Vec", ["x", "y"])):
         Returns:
             An angle in radians from -pi to pi, measured from the +x axis.
         """
-        return math.atan2(other.y - self.y, other.x - self.y)
+        return math.atan2(self.y - other.y, other.x - self.x)
 
     @staticmethod
     def vec_from_direction_str(direction_str):
