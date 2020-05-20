@@ -53,10 +53,11 @@ class Walker(Entity):
             except IndexError:
                 del self.conv_progress[player]
                 await game.send_dialogue_end(ws)
-                if self.facing is Direction.LEFT:
-                    self.velocity = Vec(-self.speed, 0)
-                elif self.facing is Direction.RIGHT:
-                    self.velocity = Vec(self.speed, 0)
+                if not self.conv_progress:
+                    if self.facing is Direction.LEFT:
+                        self.velocity = Vec(-self.speed, 0)
+                    elif self.facing is Direction.RIGHT:
+                        self.velocity = Vec(self.speed, 0)
         else:
             self.conv_progress[player] = 0
             await game.send_dialogue(
