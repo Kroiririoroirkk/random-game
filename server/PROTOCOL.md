@@ -6,11 +6,11 @@ This document lists the various messages that can be sent to and by the server. 
 
 Messages are of the form
 
-`header|parameter1|parameter2|...etc...|lastparameter`.
+`messagename|parameter1|parameter2|...etc...|lastparameter`.
 
 If the message has no parameters, the message is simply
 
-`header`.
+`messagename`.
 
 ## Messages sent to the server
 
@@ -37,6 +37,12 @@ This message is similar to `move`, except that it is used for fast-walking. See 
 No parameters.
 
 This message tells the server that the player wishes to interact, e.g. with a sign or a non-player character.
+
+### dialoguechoose
+
+Parameters (1): `choice`.
+
+This message should be sent after a [dialoguechoice](#dialoguechoice) message. It indicates which option the client has chosen to say. The parameter `choice` is a zero-indexed number (i.e. to pick the first option, the client should send `0`) telling the server which option the client has picked, out of the options given by the [dialoguechoice](#dialoguechoice) message.
 
 ### getupdates
 
@@ -80,10 +86,16 @@ This message is sent in response to the [getplayers](#getplayers) message. For e
 
 Parameters (1): `dialogue_text`
 
-This message is sent when the player interacts with an NPC with dialogue lines (possibly in response to the [interact](#interact) message). The `dialogue_text` parameter gives a line of the NPC's dialogue. Note that `dialogue_text` may contain `|` characters.
+This is one of three possible messages sent when the player interacts with an NPC with dialogue lines (possibly in response to the [interact](#interact) message). It indicates that the NPC has spoke the text given in `dialogue_text`. The `dialogue_text` parameter gives a line of the NPC's dialogue. Note that `dialogue_text` may contain `|` characters.
+
+### dialoguechoice
+
+Parameters (Variable number, given by number of choices, at least one): `choice1`, `choice2`, etc.
+
+This is one of three possible messages sent when the player interacts with an NPC with dialogue lines (possibly in response to the [interact](#interact) message). It indicates that the player can either choose to say `choice1`, `choice2`, or etc. The client chooses an option using the [dialoguechoose](#dialoguechoose) message.
 
 ### dialogueend
 
 No parameters
 
-This message is sent when the player interacts with an NPC with dialogue lines (possibly in response to the [interact](#interact) message) and the previous message the NPC sent was its last line.
+This is one of three possible messages sent when the player interacts with an NPC with dialogue lines (possibly in response to the [interact](#interact) message). It indicates that the previous message the NPC sent was its last line.
