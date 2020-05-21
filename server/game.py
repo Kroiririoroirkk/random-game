@@ -1,6 +1,5 @@
 """The Game class handles all the player objects and utility methods."""
 import json
-from websockets.exceptions import ConnectionClosed
 
 from storeworld import world_to_client_json
 from world import World
@@ -67,14 +66,12 @@ class Game:
         """See the dialogueend message under PROTOCOL.md for explanation."""
         await ws.send(f"dialogueend|{uuid.hex}")
 
-    async def send_tag(self, tagging_player, tagged_player):
+    async def send_tag(self, tagging_player_user, tagged_player_user):
         """See the tag message under PROTOCOL.md for explanation."""
-        message = f"tag|{tagging_player}|{tagged_player}"
-        try:
-            await self.get_player(tagging_player).ws.send(message)
-        except ConnectionClosed:
-            pass
-        try:
-            await self.get_player(tagged_player).ws.send(message)
-        except ConnectionClosed:
-            pass
+        message = f"tag|{tagging_player_user}|{tagged_player_user}"
+        tagging_player = self.get_player(tagging_player_user)
+        tagged_player = self.get_player(tagged_player_user)
+        if tagging_player.online:
+            await tagging_player.ws.send(message)
+        if tagged_player.online:
+            await tagged_player.ws.send(message)

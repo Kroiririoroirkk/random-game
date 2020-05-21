@@ -14,6 +14,7 @@ class Player(Entity):
         super().__init__(pos, velocity, facing)
         self.world_id = world_id
         self.ws = ws
+        self.online = True
         self.uuid = None
         self.time_of_last_move = 0
 

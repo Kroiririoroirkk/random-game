@@ -5,6 +5,7 @@ import sys
 import time
 import uuid
 import websockets
+from websockets.exceptions import ConnectionClosed
 
 from config import (
     MAX_MOVE_DT, PLAYER_SPEED, SPEED_MULTIPLIER, UPDATE_DT, WSPORT)
@@ -35,6 +36,7 @@ async def run(ws, path):
     if player:
         print("Returning user: " + username)
         player.ws = ws
+        player.online = True
         world = World.get_world_by_id(player.world_id)
         await running_game.send_world(ws, world, player.pos)
     else:
@@ -46,8 +48,11 @@ async def run(ws, path):
         new_player = Player(spawn_pos, Vec(0, 0), Direction.DOWN, ws, world_id)
         running_game.set_player(username, new_player)
         await running_game.send_world(ws, world, spawn_pos)
-    async for message in ws:
-        await parseMessage(message, username, ws)
+    try:
+        async for message in ws:
+            await parseMessage(message, username, ws)
+    except ConnectionClosed:
+        player.online = False
 
 
 async def parseMessage(message, username, ws):
