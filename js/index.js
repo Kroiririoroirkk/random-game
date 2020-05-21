@@ -4,14 +4,13 @@
 const SERVER_URL = "wss://terrekin.kroiririoroirkk.repl.co";
 
 const SHIFT = 16;
-const SPACE = 32;
 const KEY_LEFT = 37;
 const KEY_UP = 38;
 const KEY_RIGHT = 39;
 const KEY_DOWN = 40;
+const A_KEY = 65;
 const C_KEY = 67;
-const L_KEY = 76;
-const M_KEY = 77;
+const Z_KEY = 90;
 
 const BLOCK_WIDTH = 32;
 const PLAYER_WIDTH = 28;
@@ -634,7 +633,7 @@ class GameLog {
     const ctx = game.canvasCtx;
     ctx.font = "20px sans-serif";
     this.wrappedText = wrapText(ctx,
-      ["Press L to exit the log, C to clear, and arrow keys to scroll.",
+      ["Press A to exit the log, C to clear, and arrow keys to scroll.",
       ...this.messageLog]
         .join(" \n ----- \n "), this.width);
   }
@@ -642,7 +641,7 @@ class GameLog {
   unfocus() {
     const ctx = game.canvasCtx;
     ctx.font = "20px sans-serif";
-    const openMsg = "Press L to open the log!";
+    const openMsg = "Press A to open the log!";
     const text = this.messageLog.length > 0 ?
       `${openMsg} \n ----- \n ${this.messageLog[0]}` :
       openMsg;
@@ -703,7 +702,7 @@ class Menu {
     const ctx = game.canvasCtx;
     ctx.font = "20px sans-serif";
     this.wrappedText = wrapText(ctx,
-      ["Press M to close the menu, arrow keys to pick an option, and <enter> to choose.",
+      ["Press C to close the menu, arrow keys to pick an option, and Z to choose.",
       ...this.items.map((item, i) =>
         i === this.currentlySelected ?
           ">" + item.text :
@@ -714,7 +713,7 @@ class Menu {
     const ctx = game.canvasCtx;
     ctx.font = "20px sans-serif";
     this.wrappedText = wrapText(ctx,
-      "Press M to open the menu!", this.width);
+      "Press C to open the menu!", this.width);
   }
 
   cursorUp() {
@@ -916,7 +915,7 @@ class SampleRateSlider {
           renderEndX = width + this.endX,
           renderX = width + this.getSliderX(),
           renderY = game.getScaledHeight() + this.y;
-    ctx.strokeStyle = "rgb(0, 0, 0)";
+    ctx.strokeStyle = "rgb(100, 0, 0)";
     ctx.lineWidth = 10;
     ctx.beginPath();
     ctx.moveTo(renderStartX, renderY);
@@ -924,9 +923,9 @@ class SampleRateSlider {
     ctx.stroke();
 
     if (this.active) {
-      ctx.fillStyle = "rgb(100, 0, 100)";
+      ctx.fillStyle = "rgb(200, 0, 200)";
     } else {
-      ctx.fillStyle = "rgb(80, 0, 80)";
+      ctx.fillStyle = "rgb(150, 0, 150)";
     }
     ctx.lineWidth = 5;
     ctx.beginPath();
@@ -1079,9 +1078,9 @@ function update(dt) {
       } else {
         game.playerObj.stopMoving();
       }
-      if (game.pressedKeys.has(SPACE)) {
+      if (game.pressedKeys.has(Z_KEY)) {
         game.ws.send("interact");
-        game.pressedKeys.delete(SPACE);
+        game.pressedKeys.delete(Z_KEY);
       }
     }
   } else if (game.contextMenu === contextMenus.LOG) {
@@ -1115,7 +1114,7 @@ function update(dt) {
       game.dialogueBox.onDownArrow();
       game.pressedKeys.delete(KEY_DOWN);
     }
-    if (game.pressedKeys.has(SPACE)) {
+    if (game.pressedKeys.has(Z_KEY)) {
       if (game.dialogueBox.state === dialogueState.CHOOSE) {
         let option = game.dialogueBox.getOptionSelected(),
             uuid   = game.dialogueBox.entityUuid;
@@ -1123,11 +1122,11 @@ function update(dt) {
       } else {
         game.ws.send("interact");
       }
-      game.pressedKeys.delete(SPACE);
+      game.pressedKeys.delete(Z_KEY);
     }
   }
   if (game.contextMenu !== contextMenus.DIALOGUE) {
-    if (game.pressedKeys.has(L_KEY)) {
+    if (game.pressedKeys.has(A_KEY)) {
       if (game.contextMenu === contextMenus.LOG) {
         game.contextMenu = contextMenus.MAP;
         game.gameLog.unfocus();
@@ -1135,8 +1134,8 @@ function update(dt) {
         game.contextMenu = contextMenus.LOG;
         game.gameLog.focus();
       }
-      game.pressedKeys.delete(L_KEY);
-    } else if (game.pressedKeys.has(M_KEY)) {
+      game.pressedKeys.delete(A_KEY);
+    } else if (game.pressedKeys.has(C_KEY)) {
       if (game.contextMenu === contextMenus.MENU) {
         game.contextMenu = contextMenus.MAP;
         game.menu.unfocus();
@@ -1144,7 +1143,7 @@ function update(dt) {
         game.contextMenu = contextMenus.MENU;
         game.menu.focus();
       }
-      game.pressedKeys.delete(M_KEY);
+      game.pressedKeys.delete(C_KEY);
     }
   }
 }
