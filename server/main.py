@@ -101,7 +101,8 @@ async def parseMessage(message, username, ws):
             await running_game.send_moved_to(ws, player.pos)
     elif message.startswith("interact"):
         if player.talking_to:
-            player.talking_to.on_interact(running_game, ws, username, player)
+            await player.talking_to.on_interact(
+                running_game, ws, username, player)
         else:
             for tile_coord in player.get_tiles_touched():
                 tile_interacted = world.get_tile(tile_coord)
