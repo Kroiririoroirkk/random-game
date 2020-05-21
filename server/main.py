@@ -45,8 +45,8 @@ async def run(ws, path):
         spawn_id = "center_spawn"
         world = World.get_world_by_id(world_id)
         spawn_pos = world.spawn_points[spawn_id].to_spawn_pos()
-        new_player = Player(spawn_pos, Vec(0, 0), Direction.DOWN, ws, world_id)
-        running_game.set_player(username, new_player)
+        player = Player(spawn_pos, Vec(0, 0), Direction.DOWN, ws, world_id)
+        running_game.set_player(username, player)
         await running_game.send_world(ws, world, spawn_pos)
     try:
         async for message in ws:
