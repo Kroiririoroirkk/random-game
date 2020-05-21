@@ -50,9 +50,11 @@ class Walker(Entity):
             try:
                 await game.send_dialogue(
                     ws, self.uuid, self.dialogue[self.conv_progress[player]])
+                player.talking_to = self
             except IndexError:
                 del self.conv_progress[player]
                 await game.send_dialogue_end(ws, self.uuid)
+                player.talking_to = None
                 if not self.conv_progress:
                     if self.facing is Direction.LEFT:
                         self.velocity = Vec(-self.speed, 0)
@@ -62,6 +64,7 @@ class Walker(Entity):
             self.conv_progress[player] = 0
             await game.send_dialogue(
                 ws, self.uuid, self.dialogue[self.conv_progress[player]])
+            player.talking_to = self
 
     def get_bounding_box(self):
         """Walker's bounding box is same as player's."""
@@ -107,9 +110,11 @@ class Stander(Entity):
             try:
                 await self.send_line(
                     game, ws, self.dialogue[self.conv_progress[player]])
+                player.talking_to = self
             except IndexError:
                 del self.conv_progress[player]
                 await game.send_dialogue_end(ws, self.uuid)
+                player.talking_to = None
             except ValueError:
                 del self.conv_progress[player]
                 await self.on_interact(game, ws, username, player)
@@ -117,6 +122,7 @@ class Stander(Entity):
             self.conv_progress[player] = 0
             await self.send_line(
                 game, ws, self.dialogue[self.conv_progress[player]])
+            player.talking_to = self
 
     async def on_dialogue_choose(self, game, ws, username, player, choice):
         """Respond to player choosing dialogue."""
@@ -126,9 +132,11 @@ class Stander(Entity):
                 await self.send_line(
                     game, ws, self.dialogue[
                         self.conv_progress[player]].get(choice))
+                player.talking_to = self
             except IndexError:
                 del self.conv_progress[player]
                 await game.send_dialogue_end(ws, self.uuid)
+                player.talking_to = None
             except ValueError:
                 self.conv_progress[player] -= 1
 

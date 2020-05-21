@@ -16,6 +16,7 @@ class Player(Entity):
         self.ws = ws
         self.online = True
         self.uuid = None
+        self.talking_to = None
         self.time_of_last_move = 0
 
     def get_entities_can_interact(self, world):

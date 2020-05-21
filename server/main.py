@@ -100,19 +100,22 @@ async def parseMessage(message, username, ws):
             running_game.set_player(username, player)
             await running_game.send_moved_to(ws, player.pos)
     elif message.startswith("interact"):
-        for tile_coord in player.get_tiles_touched():
-            tile_interacted = world.get_tile(tile_coord)
-            await tile_interacted.on_interact(
-                running_game, ws, username,
-                player, tile_coord.to_pos())
-        for entity_interacted in player.get_entities_can_interact(world):
-            await entity_interacted.on_interact(
-                running_game, ws, username, player)
-        for p_username, player_in_game in running_game.player_objs.items():
-            if (player_in_game.world_id == player.world_id
-                    and player_in_game.is_touching(player)
-                    and p_username != username):
-                await running_game.send_tag(username, p_username)
+        if player.talking_to:
+            player.talking_to.on_interact(running_game, ws, username, player)
+        else:
+            for tile_coord in player.get_tiles_touched():
+                tile_interacted = world.get_tile(tile_coord)
+                await tile_interacted.on_interact(
+                    running_game, ws, username,
+                    player, tile_coord.to_pos())
+            for entity_interacted in player.get_entities_can_interact(world):
+                await entity_interacted.on_interact(
+                    running_game, ws, username, player)
+            for p_username, player_in_game in running_game.player_objs.items():
+                if (player_in_game.world_id == player.world_id
+                        and player_in_game.is_touching(player)
+                        and p_username != username):
+                    await running_game.send_tag(username, p_username)
     elif message.startswith("getupdates"):
         await running_game.send_players(ws, username, player.world_id)
         await running_game.send_entities(ws, player.world_id)
