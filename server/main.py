@@ -7,12 +7,13 @@ import uuid
 import websockets
 from websockets.exceptions import ConnectionClosed
 
+from collision import block_movement
 from config import (
     MAX_MOVE_DT, PLAYER_SPEED, SPEED_MULTIPLIER, UPDATE_DT, WSPORT)
 import game
 from geometry import Direction, Vec
 from player import Player
-from tile import block_movement
+from tile import Tile
 from world import World
 from loadworld import load_worlds
 
@@ -87,8 +88,20 @@ async def parseMessage(message, username, ws):
                     key=lambda tile_pos:
                     tile_pos.dist_to(player.pos))
                 for wall_tile in wall_tiles:
-                    block_movement(wall_tile, start_pos, player)
+                    block_movement(Tile.get_bounding_box(wall_tile),
+                                   start_pos, player)
                 tile_coords_touching = player.get_tiles_touched()
+            wall_entities = [
+                entity for entity in world.entities
+                if entity.blocks_movement
+                and player.is_touching(entity)]
+            if wall_entities:
+                wall_entities.sort(
+                    key=lambda wall_entity:
+                    wall_entity.pos.dist_to(player.pos))
+                for wall_entity in wall_entities:
+                    block_movement(wall_entity.get_bounding_box(),
+                                   start_pos, player)
             tile_coords_moved_on = [
                 tile_coord for tile_coord in tile_coords_touching
                 if tile_coord not in start_tiles]

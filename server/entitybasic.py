@@ -19,6 +19,7 @@ class Entity:
         self.velocity = velocity
         self.facing = facing
         self.uuid = uuid.uuid4()
+        self.blocks_movement = True
 
     def move(self, offset):
         """Move the entity by the given displacement vector."""
