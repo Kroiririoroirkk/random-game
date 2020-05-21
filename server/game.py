@@ -65,3 +65,9 @@ class Game:
     async def send_dialogue_end(ws, uuid):
         """See the dialogueend message under PROTOCOL.md for explanation."""
         await ws.send(f"dialogueend|{uuid.hex}")
+
+    async def send_tag(self, tagging_player, tagged_player):
+        """See the tag message under PROTOCOL.md for explanation."""
+        message = f"tag|{tagging_player}|{tagged_player}"
+        await self.get_player(tagging_player).ws.send(message)
+        await self.get_player(tagged_player).ws.send(message)

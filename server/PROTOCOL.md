@@ -99,3 +99,9 @@ This is one of three possible messages sent when the player interacts with an NP
 Parameters (1): `uuid`
 
 This is one of three possible messages sent when the player interacts with an NPC with dialogue lines (possibly in response to the [interact](#interact) message). It indicates that the previous message the NPC with UUID `uuid` sent was its last line.
+
+### tag
+
+Parameters (2): `tagging_player`, `tagged_player`
+
+This message is sent when a player with username `tagging_player` sends an `interact` message while touching the player with username `tagged_player`. The message is sent both to the tagging player and to the tagged player.

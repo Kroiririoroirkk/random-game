@@ -103,6 +103,11 @@ async def parseMessage(message, username, ws):
         for entity_interacted in player.get_entities_can_interact(world):
             await entity_interacted.on_interact(
                 running_game, ws, username, player)
+        for p_username, player_in_game in running_game.player_objs.items():
+            if (player_in_game.world_id == player.world_id
+                    and player_in_game.is_touching(player)
+                    and p_username != username):
+                await running_game.send_tag(username, p_username)
     elif message.startswith("getupdates"):
         await running_game.send_players(ws, username, player.world_id)
         await running_game.send_entities(ws, player.world_id)

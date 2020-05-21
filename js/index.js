@@ -940,6 +940,17 @@ function handleWSMessage(e) {
   } else if (e.data.startsWith("dialogueend")) {
     game.contextMenu = contextMenus.MAP;
     game.dialogueBox.endDialogue();
+  } else if (e.data.startsWith("tag")) {
+    let parts = e.data.split("|"),
+        tagging_player = parts[1],
+        tagged_player = parts[2];
+    if (game.username === tagging_player) {
+      game.gameLog.addMsg("You tagged " + tagged_player + "!");
+    } else if (game.username === tagged_player) {
+      game.gameLog.addMsg("You were tagged by " + tagging_player + "!");
+    } else {
+      game.gameLog.addMsg(tagging_player + " tagged " + tagged_player + "!");
+    }
   }
 }
 
