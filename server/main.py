@@ -3,6 +3,7 @@ import asyncio
 from signal import signal, SIGINT
 import sys
 import time
+import uuid
 import websockets
 
 from config import (
@@ -87,21 +88,34 @@ async def parseMessage(message, username, ws):
                 tile_coord for tile_coord in tile_coords_touching
                 if tile_coord not in start_tiles]
             for tile_coord in tile_coords_moved_on:
-                tile = world.get_tile(tile_coord)
-                await tile.on_move_on(running_game, ws, username,
-                                      player, start_pos, tile_coord.to_pos())
+                tile_moved_on = world.get_tile(tile_coord)
+                await tile_moved_on.on_move_on(
+                    running_game, ws, username,
+                    player, start_pos, tile_coord.to_pos())
             running_game.set_player(username, player)
             await running_game.send_moved_to(ws, player.pos)
     elif message.startswith("interact"):
         for tile_coord in player.get_tiles_touched():
-            tile = world.get_tile(tile_coord)
-            await tile.on_interact(running_game, ws, username,
-                                   player, tile_coord.to_pos())
-        for entity in player.get_entities_can_interact(world):
-            await entity.on_interact(running_game, ws, username, player)
+            tile_interacted = world.get_tile(tile_coord)
+            await tile_interacted.on_interact(
+                running_game, ws, username,
+                player, tile_coord.to_pos())
+        for entity_interacted in player.get_entities_can_interact(world):
+            await entity_interacted.on_interact(
+                running_game, ws, username, player)
     elif message.startswith("getupdates"):
         await running_game.send_players(ws, username, player.world_id)
         await running_game.send_entities(ws, player.world_id)
+    elif message.startswith("dialoguechoose"):
+        parts = message.split("|")
+        entity_uuid = uuid.UUID(hex=parts[1])
+        entity_speaking_to = world.get_entity(entity_uuid)
+        try:
+            await entity_speaking_to.on_dialogue_choose(
+                running_game, ws, username,
+                player, int(parts[2]))
+        except ValueError:
+            pass
 
 
 async def update_loop():
@@ -114,8 +128,8 @@ async def update_loop():
         for world_id in set(
                 p.world_id for p in running_game.player_objs.values()):
             world = World.get_world_by_id(world_id)
-            for entity in world.entities:
-                entity.update(dt)
+            for ent in world.entities:
+                ent.update(dt)
         await asyncio.sleep(UPDATE_DT)
 
 start_server = websockets.serve(run, "0.0.0.0", WSPORT)

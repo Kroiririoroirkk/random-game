@@ -31,6 +31,9 @@ class Entity:
     async def on_interact(self, game, ws, username, player):
         """Triggered whenever the player interacts with the entity."""
 
+    async def on_dialogue_choose(self, game, ws, username, player, choice):
+        """Triggered on dialoguechoose (see PROTOCOL.md for details)."""
+
     def set_x(self, new_x):
         """Set the entity's x position."""
         self.pos = Vec(new_x, self.pos.y)

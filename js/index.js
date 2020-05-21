@@ -234,6 +234,7 @@ class Entity {
     this.pos = pos;
     this.velocity = velocity;
     this.facing = facing;
+    this.height = BLOCK_WIDTH;
   }
 
   render() {
@@ -247,7 +248,7 @@ class Entity {
       } else {
         drawRect(game.canvasCtx, pos, this.constructor._fillStyle);
       }
-    }).bind(this), this.pos.y)];
+    }).bind(this), this.pos.y + this.height)];
   }
 
   move(offset) {
@@ -291,6 +292,9 @@ function entityFromJSON(obj) {
 
 class Walker extends Entity {}
 registerEntity("walker", Walker);
+
+class Stander extends Entity {}
+registerEntity("stander", Stander);
 
 // ----------- TILE -----------
 var tiles = new Map();
@@ -742,43 +746,94 @@ class Menu {
 }
 
 // ----------- DIALOGUE BOX -----------
+const dialogueState = Object.freeze({TEXT:1, CHOOSE:2});
+
 class DialogueBox {
   constructor(width, height) {
     this.width = width;
     this.height = height;
+    this.state = null;
     this.text = null;
+    this.options = null;
     this.lineStart = 0;
+    this.currentlySelected = 0;
     this.wrappedText = [];
+    this.entityUuid = null;
   }
 
-  setText(text) {
+  setText(text, entityUuid) {
+    this.options = null;
     this.text = text;
+    this.state = dialogueState.TEXT;
+    this.entityUuid = entityUuid;
     this.lineStart = 0;
     const ctx = game.canvasCtx;
     ctx.font = "20px sans-serif";
     this.wrappedText = wrapText(ctx, text, this.width);
   }
 
-  endDialogue() {
+  setOptions(options, entityUuid) {
     this.text = null;
+    this.options = options;
+    this.lineStart = 0;
+    this.state = dialogueState.CHOOSE;
+    this.entityUuid = entityUuid;
+    this.currentlySelected = 0;
+    this.redrawOptions();
   }
 
-  scrollUp() {
-    this.lineStart--;
-    if (this.lineStart < 0) {
-      this.lineStart = 0;
+  redrawOptions() {
+    const ctx = game.canvasCtx;
+    ctx.font = "20px sans-serif";
+    this.wrappedText = wrapText(ctx,
+      this.options.map((option, i) =>
+        i === this.currentlySelected ?
+          ">" + option :
+          option).join(" \n "), this.width);
+  }
+
+  getOptionSelected() {
+    return this.currentlySelected;
+  }
+
+  endDialogue() {
+    this.text = null;
+    this.options = null;
+    this.state = null;
+  }
+
+  onUpArrow() {
+    if (this.state === dialogueState.TEXT) {
+      this.lineStart--;
+      if (this.lineStart < 0) {
+        this.lineStart = 0;
+      }
+    } else if (this.state === dialogueState.CHOOSE) {
+      this.currentlySelected --;
+      if (this.currentlySelected < 0) {
+        this.currentlySelected = 0;
+      }
+      this.redrawOptions();
     }
   }
 
-  scrollDown() {
-    this.lineStart++;
-    if (this.lineStart > this.wrappedText.length-1) {
-      this.lineStart = this.wrappedText.length-1;
+  onDownArrow() {
+    if (this.state === dialogueState.TEXT) {
+      this.lineStart++;
+      if (this.lineStart > this.wrappedText.length-1) {
+        this.lineStart = this.wrappedText.length-1;
+      }
+    } else if (this.state === dialogueState.CHOOSE) {
+      this.currentlySelected++;
+      if (this.currentlySelected > this.wrappedText.length-1) {
+        this.currentlySelected = this.wrappedText.length-1;
+      }
+      this.redrawOptions();
     }
   }
 
   render() {
-    if (this.text !== null) {
+    if (this.state !== null) {
       const LINE_HEIGHT  = 24,
             ctx          = game.canvasCtx,
             renderedText = this.wrappedText.slice(this.lineStart),
@@ -819,6 +874,7 @@ function initialize() {
 }
 
 function handleWSMessage(e) {
+  console.log(e);
   if (e.data.startsWith("world|")) {
     const VERSION = "0.1.0",
           parts   = e.data.split("|"),
@@ -871,9 +927,16 @@ function handleWSMessage(e) {
                          .map(e => entityFromJSON(JSON.parse(e)));
   } else if (e.data.startsWith("dialogue|")) {
     let parts = e.data.split("|"),
-        text = parts.slice(1).join("|");
+        uuid = parts[1],
+        text = parts.slice(2).join("|");
     game.contextMenu = contextMenus.DIALOGUE;
-    game.dialogueBox.setText(text);
+    game.dialogueBox.setText(text, uuid);
+  } else if (e.data.startsWith("dialoguechoice|")) {
+    let parts = e.data.split("|"),
+        uuid = parts[1],
+        textOptions = parts.slice(2);
+    game.contextMenu = contextMenus.DIALOGUE;
+    game.dialogueBox.setOptions(textOptions, uuid);
   } else if (e.data.startsWith("dialogueend")) {
     game.contextMenu = contextMenus.MAP;
     game.dialogueBox.endDialogue();
@@ -952,15 +1015,21 @@ function update(dt) {
     }
   } else if (game.contextMenu === contextMenus.DIALOGUE) {
     if (game.pressedKeys.has(KEY_UP)) {
-      game.dialogueBox.scrollUp();
+      game.dialogueBox.onUpArrow();
       game.pressedKeys.delete(KEY_UP);
     }
     if (game.pressedKeys.has(KEY_DOWN)) {
-      game.dialogueBox.scrollDown();
+      game.dialogueBox.onDownArrow();
       game.pressedKeys.delete(KEY_DOWN);
     }
     if (game.pressedKeys.has(SPACE)) {
-      game.ws.send("interact");
+      if (game.dialogueBox.state === dialogueState.CHOOSE) {
+        let option = game.dialogueBox.getOptionSelected(),
+            uuid   = game.dialogueBox.entityUuid;
+        game.ws.send("dialoguechoose|"+uuid+"|"+option.toString());
+      } else {
+        game.ws.send("interact");
+      }
       game.pressedKeys.delete(SPACE);
     }
   }

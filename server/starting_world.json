@@ -1417,6 +1417,13 @@
       "pos": {"x": 320, "y": 320},
       "velocity": {"x": 80, "y": 0},
       "facing": "r"
+    },
+    {
+      "uuid": "9b6a02bf0fad4b08b8c1660d19c6c52a",
+      "entity_id": "stander",
+      "pos": {"x": 288, "y": 368},
+      "velocity": {"x": 0, "y": 0},
+      "facing": "d"
     }
   ],
   "spawn_points": {

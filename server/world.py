@@ -28,6 +28,15 @@ class World:
         except IndexError:
             return Empty()
 
+    def get_entity(self, uuid):
+        """Get the entity with the given UUID."""
+        try:
+            return next(
+                entity for entity in self.entities
+                if entity.uuid == uuid)
+        except StopIteration:
+            raise ValueError
+
     @staticmethod
     def from_json(world_dict):
         """Convert a dict representing a JSON object into a world."""
@@ -108,7 +117,7 @@ class World:
             raise ValueError
         return world
 
-    def get_tile_id(self):
+    def get_world_id(self):
         """Get the world_id of a World."""
         try:
             return next(

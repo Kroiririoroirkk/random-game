@@ -46,13 +46,13 @@ class Walker(Entity):
         """Send dialogue when player interacts with Walker."""
         self.velocity = Vec(0, 0)
         if player in self.conv_progress:
+            self.conv_progress[player] += 1
             try:
-                self.conv_progress[player] += 1
                 await game.send_dialogue(
-                    ws, self.dialogue[self.conv_progress[player]])
+                    ws, self.uuid, self.dialogue[self.conv_progress[player]])
             except IndexError:
                 del self.conv_progress[player]
-                await game.send_dialogue_end(ws)
+                await game.send_dialogue_end(ws, self.uuid)
                 if not self.conv_progress:
                     if self.facing is Direction.LEFT:
                         self.velocity = Vec(-self.speed, 0)
@@ -61,8 +61,77 @@ class Walker(Entity):
         else:
             self.conv_progress[player] = 0
             await game.send_dialogue(
-                ws, self.dialogue[self.conv_progress[player]])
+                ws, self.uuid, self.dialogue[self.conv_progress[player]])
 
     def get_bounding_box(self):
         """Walker's bounding box is same as player's."""
+        return super().get_bounding_box_of_width(PLAYER_WIDTH)
+
+
+@register_entity("stander")
+class Stander(Entity):
+    """A basic Entity that has dialogue and player interaction.
+
+    It asks a question, lets the player respond yes or no, and then
+    gives an answer based on the player's response.
+    """
+
+    def __init__(self, pos, velocity, facing):
+        """Initialize the Stander with certain default properties.
+
+        Set velocity to 0.
+        Set dialogue.
+        """
+        super().__init__(pos, velocity, facing)
+        self.velocity = Vec(0, 0)
+        self.dialogue = [
+            "Don't get so close, scum! Do you know who my father is?",
+            ["Yes", "No"],
+            {0: "That makes one of us...", 1: "Me neither..."},
+        ]
+        self.conv_progress = {}
+
+    async def send_line(self, game, ws, line):
+        """Send a line of dialogue, which can be a string or list."""
+        if isinstance(line, list):
+            await game.send_dialogue_choices(ws, self.uuid, line)
+        elif isinstance(line, str):
+            await game.send_dialogue(ws, self.uuid, line)
+        else:
+            raise ValueError
+
+    async def on_interact(self, game, ws, username, player):
+        """Send dialogue when player interacts with Stander."""
+        if player in self.conv_progress:
+            self.conv_progress[player] += 1
+            try:
+                await self.send_line(
+                    game, ws, self.dialogue[self.conv_progress[player]])
+            except IndexError:
+                del self.conv_progress[player]
+                await game.send_dialogue_end(ws, self.uuid)
+            except ValueError:
+                del self.conv_progress[player]
+                await self.on_interact(game, ws, username, player)
+        else:
+            self.conv_progress[player] = 0
+            await self.send_line(
+                game, ws, self.dialogue[self.conv_progress[player]])
+
+    async def on_dialogue_choose(self, game, ws, username, player, choice):
+        """Respond to player choosing dialogue."""
+        if player in self.conv_progress:
+            self.conv_progress[player] += 1
+            try:
+                await self.send_line(
+                    game, ws, self.dialogue[
+                        self.conv_progress[player]].get(choice))
+            except IndexError:
+                del self.conv_progress[player]
+                await game.send_dialogue_end(ws, self.uuid)
+            except ValueError:
+                self.conv_progress[player] -= 1
+
+    def get_bounding_box(self):
+        """Stander's bounding box is same as player's."""
         return super().get_bounding_box_of_width(PLAYER_WIDTH)
