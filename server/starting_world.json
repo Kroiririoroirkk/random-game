@@ -1304,7 +1304,6 @@
       {"tile_id": "sign",
        "tile_data": {
          "text": "Enter the portal!",
-         "ground_tile": {"tile_id": "grass"},
          "ground_tile": {"tile_id": "grass"}
        }
       },
