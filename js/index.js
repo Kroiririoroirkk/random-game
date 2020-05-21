@@ -19,8 +19,8 @@ const SCALE_FACTOR = 2;
 const PLAYER_SPEED = BLOCK_WIDTH*3;
 const SPEED_MULTIPLIER = 2;
 
-const MIN_SAMPLE_RATE = 0.5;
-const MAX_SAMPLE_RATE = 15;
+const MIN_SAMPLE_RATE = 0.1;
+const MAX_SAMPLE_RATE = 20;
 const DEFAULT_SAMPLE_RATE = 3;
 
 // ----------- GAME -----------
