@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Terrekin</title>
-    <script type="text/javascript" src="js/index.js"></script>
+    <script type="module" src="js/index.mjs"></script>
     <link rel="stylesheet" href="style/index.css" type="text/css">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
   </head>
@@ -11,7 +11,7 @@
     <div>
       <p>Enter a username:</p>
       <input type="text" id="username" name="username"><br>
-      <input type="button" value="Get to playing!" onclick="startGame()">
+      <input type="button" id="playbutton" value="Get to playing!">
       <p>Or check out the <a href="compendium.html">Compendium</a> or the <a href="tilemapeditor.html">Tile Map Editor</a>!</p>
       <p>Game controls: Arrow keys to move, shift + arrow keys to run, Z to interact with objects.</p>
       <p>Use the slider to adjust how smoothly objects move (to the left = less smooth, faster webpage; to the right = more smooth, slower webpage).</p>
