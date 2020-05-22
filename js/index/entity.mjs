@@ -1,8 +1,8 @@
 "use strict";
 
-import {BLOCK_WIDTH} from "/js/index/config.js";
-import {Dir, Vec} from "/js/index/geometry.js";
-import {Images, Render} from "/js/index/render.js";
+import {BLOCK_WIDTH} from "/js/index/config.mjs";
+import {Dir, Vec} from "/js/index/geometry.mjs";
+import {Images, Render} from "/js/index/render.mjs";
 
 var entities = new Map();
 

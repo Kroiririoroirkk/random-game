@@ -2,16 +2,16 @@
 
 import {BLOCK_WIDTH, DEFAULT_SAMPLE_RATE, PLAYER_SPEED,
         SCALE_FACTOR, SPEED_MULTIPLIER, SERVER_URL}
-        from "/js/index/config.js";
-import {ContextMenus} from "/js/index/contextmenu.js";
-import {Entity} from "/js/index/entity.js";
-import {Dir, Vec} from "/js/index/geometry.js";
-import {Player, OtherPlayer} from "/js/index/player.js";
-import {Render} from "/js/index/render.js";
-import {SampleRateSlider} from "/js/index/slider.js";
+        from "/js/index/config.mjs";
+import {ContextMenus} from "/js/index/contextmenu.mjs";
+import {Entity} from "/js/index/entity.mjs";
+import {Dir, Vec} from "/js/index/geometry.mjs";
+import {Player, OtherPlayer} from "/js/index/player.mjs";
+import {Render} from "/js/index/render.mjs";
+import {SampleRateSlider} from "/js/index/slider.mjs";
 import {UsernameNotice, GameLog, MenuItem, Menu,
-        DialogueState, DialogueBox} from "/js/index/textbox.js";
-import {Tile} from "/js/index/tile.js";
+        DialogueState, DialogueBox} from "/js/index/textbox.mjs";
+import {Tile} from "/js/index/tile.mjs";
 
 const SHIFT = 16;
 const KEY_LEFT = 37;

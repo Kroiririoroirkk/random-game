@@ -1,6 +1,6 @@
 "use strict";
 
-import {MIN_SAMPLE_RATE, MAX_SAMPLE_RATE} from "/js/index/config.js";
+import {MIN_SAMPLE_RATE, MAX_SAMPLE_RATE} from "/js/index/config.mjs";
 
 class SampleRateSlider {
   constructor(game) {

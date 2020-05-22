@@ -1,6 +1,6 @@
 "use strict";
 
-import {Animation, Frame, Images, Render} from "/js/index/render.js";
+import {Animation, Frame, Images, Render} from "/js/index/render.mjs";
 
 var tiles = new Map();
 
