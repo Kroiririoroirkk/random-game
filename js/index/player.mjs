@@ -1,9 +1,9 @@
 "use strict";
 
-import {PLAYER_WIDTH} from "/js/index/config.mjs";
-import {Entity} from "/js/index/entity.mjs";
-import {Dir} from "/js/index/geometry.mjs";
-import {Animation, Frame, Images, Render} from "/js/index/render.mjs";
+import {PLAYER_WIDTH} from "./config.mjs";
+import {Entity} from "./entity.mjs";
+import {Dir} from "./geometry.mjs";
+import {Animation, Frame, Images, Render} from "./render.mjs";
 
 class Player extends Entity {
   constructor(pos) {

@@ -1,6 +1,6 @@
 "use strict";
 
-import {BLOCK_WIDTH} from "/js/index/config.mjs";
+import {BLOCK_WIDTH} from "./config.mjs";
 
 class Render {
   constructor(render, groundY) {
