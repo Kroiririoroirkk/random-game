@@ -1,6 +1,6 @@
 "use strict";
 
-import {ContextMenus} from "/js/index/contextmenu.mjs";
+import {ContextMenus} from "/js/index/contextmenu.js";
 
 function wrapText(ctx, text, maxWidth) {
   let words = text.split(" "),
