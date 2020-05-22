@@ -1,4 +1,7 @@
 """Defines classes for various tiles."""
+import asyncio
+import random
+
 from tilebasic import (
     Tile, TilePlus, TileMetadata,
     register_tile, register_tile_plus)
@@ -13,6 +16,16 @@ class Grass(Tile):
 @register_tile("wild_grass")
 class WildGrass(Tile):
     """Class for the wild grass tile."""
+
+    async def on_move_on(self, game, ws, username,
+                         player, player_start_pos, tile_pos):
+        """30% chance of triggering a wild encounter."""
+        if random.random() < 0.3 and not player.in_battle:
+            player.in_battle = True
+            await game.send_battle_start(ws)
+            await asyncio.sleep(5)
+            player.in_battle = False
+            await game.send_battle_end(ws)
 
 
 @register_tile("wall")

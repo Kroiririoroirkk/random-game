@@ -61,6 +61,8 @@ async def parseMessage(message, username, ws):
     player = running_game.get_player(username)
     world = World.get_world_by_id(player.world_id)
     if message.startswith("move|") or message.startswith("fastmove|"):
+        if player.in_battle or player.talking_to:
+            return
         multiplier = 1
         if message.startswith("fastmove|"):
             multiplier = SPEED_MULTIPLIER
@@ -113,6 +115,8 @@ async def parseMessage(message, username, ws):
             running_game.set_player(username, player)
             await running_game.send_moved_to(ws, player.pos)
     elif message.startswith("interact"):
+        if player.in_battle:
+            return
         if player.talking_to:
             await player.talking_to.on_interact(
                 running_game, ws, username, player)
@@ -131,9 +135,13 @@ async def parseMessage(message, username, ws):
                         and p_username != username):
                     await running_game.send_tag(username, p_username)
     elif message.startswith("getupdates"):
+        if player.in_battle:
+            return
         await running_game.send_players(ws, username, player.world_id)
         await running_game.send_entities(ws, player.world_id)
     elif message.startswith("dialoguechoose"):
+        if player.in_battle:
+            return
         parts = message.split("|")
         entity_uuid = uuid.UUID(hex=parts[1])
         entity_speaking_to = world.get_entity(entity_uuid)

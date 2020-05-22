@@ -78,3 +78,13 @@ class Game:
             await self.get_player(tagged_player).ws.send(message)
         except ConnectionClosed:
             pass
+
+    @staticmethod
+    async def send_battle_start(ws):
+        """See the battlestart message under PROTOCOL.md for explanation."""
+        await ws.send("battlestart")
+
+    @staticmethod
+    async def send_battle_end(ws):
+        """See the battleend message under PROTOCOL.md for explanation."""
+        await ws.send("battleend")

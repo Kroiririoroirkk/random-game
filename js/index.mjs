@@ -203,6 +203,10 @@ function handleWSMessage(e) {
     } else {
       game.gameLog.addMsg(game, tagging_player + " tagged " + tagged_player + "!");
     }
+  } else if (e.data.startsWith("battlestart")) {
+    game.contextMenu = ContextMenus.BATTLE;
+  } else if (e.data.startsWith("battleend")) {
+    game.contextMenu = ContextMenus.MAP;
   }
 }
 
@@ -296,7 +300,8 @@ function update(dt) {
       game.pressedKeys.delete(Z_KEY);
     }
   }
-  if (game.contextMenu !== ContextMenus.DIALOGUE) {
+  if (game.contextMenu !== ContextMenus.DIALOGUE
+      && game.contextMenu !== ContextMenus.BATTLE) {
     if (game.pressedKeys.has(A_KEY)) {
       if (game.contextMenu === ContextMenus.LOG) {
         game.contextMenu = ContextMenus.MAP;
@@ -343,30 +348,34 @@ function render(dt) {
 
   game.scale();
 
-  if (game.playerObj) {
-    let renderList = [];
-    for (let j = 0; j < game.map.length; j++) {
-      for (let i = 0; i < game.map[j].length; i++) {
-        let tile = game.map[j][i];
-        renderList.push(...tile.render(game));
-        tile.animate(dt);
+  if (game.contextMenu === ContextMenus.BATTLE) {
+    
+  } else {
+    if (game.playerObj) {
+      let renderList = [];
+      for (let j = 0; j < game.map.length; j++) {
+        for (let i = 0; i < game.map[j].length; i++) {
+          let tile = game.map[j][i];
+          renderList.push(...tile.render(game));
+          tile.animate(dt);
+        }
       }
-    }
-    for (const entity of game.entities) {
-      renderList.push(...entity.render(game));
-    }
-    for (const obj of game.otherPlayerObjs) {
-      renderList.push(...obj.render(game));
-    }
-    renderList.push(...game.playerObj.render(game));
-    Render.renders(renderList);
+      for (const entity of game.entities) {
+        renderList.push(...entity.render(game));
+      }
+      for (const obj of game.otherPlayerObjs) {
+        renderList.push(...obj.render(game));
+      }
+      renderList.push(...game.playerObj.render(game));
+      Render.renders(renderList);
 
-    game.unscale();
-    game.usernameNotice.render(game);
-    game.gameLog.render(game);
-    game.menu.render(game);
-    game.dialogueBox.render(game);
-    game.sampleRateSlider.render(game);
+      game.unscale();
+      game.usernameNotice.render(game);
+      game.gameLog.render(game);
+      game.menu.render(game);
+      game.dialogueBox.render(game);
+      game.sampleRateSlider.render(game);
+    }
   }
 }
 

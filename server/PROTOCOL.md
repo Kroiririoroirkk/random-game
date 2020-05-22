@@ -105,3 +105,15 @@ This is one of three possible messages sent when the player interacts with an NP
 Parameters (2): `tagging_player`, `tagged_player`
 
 This message is sent when a player with username `tagging_player` sends an `interact` message while touching the player with username `tagged_player`. The message is sent both to the tagging player and to the tagged player.
+
+### battlestart
+
+No parameters.
+
+This message is sent when the player is engaged in a battle, e.g. in a wild-grass encounter.
+
+### battleend
+
+No parameters.
+
+This message is sent when the battle that the player is engaged in ends.
