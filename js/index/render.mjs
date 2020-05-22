@@ -36,7 +36,7 @@ const LOADING = "LOADING";
 function loadImage(filename) {
   const image = new Image();
   image.onload = function(){images.set(filename, image);};
-  image.src = "../../data/img/" + filename;
+  image.src = "data/img/" + filename;
   images.set(filename, LOADING);
 }
 
