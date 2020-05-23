@@ -50,6 +50,12 @@ No parameters.
 
 This message retrieves the usernames of other players and their locations, as well as the state of the entities in the game. See [players](#players) and [entities](#entities) for details on the response.
 
+### battlemove
+
+Parameters (1): `move_num`
+
+This message tells the server what move to use after the client has received a [battlemoverequest](#battlemoverequest) message. The parameter `move_num` is a zero-indexed number (i.e. to pick the first move listed, the client should send `0`).
+
 ## Messages sent by the server
 
 ### world
@@ -111,6 +117,18 @@ This message is sent when a player with username `tagging_player` sends an `inte
 No parameters.
 
 This message is sent when the player is engaged in a battle, e.g. in a wild-grass encounter.
+
+### battlemovereq
+
+Parameters (Variable number, given by number of moves): `move1`, `move2`, etc.
+
+This message is sent when the server is waiting for the player to choose a move. A [battlemove](#battlemove) message should be sent back.
+
+### battlestatus
+
+Parameters (2): `player_hp`, `enemy_hp`
+
+This message is sent after a player makes a move to indicate the HPs of the combatants. THIS MESSAGE IS VERY LIKELY TO CHANGE AS NEW FEATURES GET ADDED.
 
 ### battleend
 

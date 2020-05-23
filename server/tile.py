@@ -1,10 +1,11 @@
 """Defines classes for various tiles."""
-import asyncio
 import random
 
+from battle import RandomMoveAICombatant
 from tilebasic import (
     Tile, TilePlus, TileMetadata,
     register_tile, register_tile_plus)
+from util import Util
 from world import World
 
 
@@ -17,15 +18,18 @@ class Grass(Tile):
 class WildGrass(Tile):
     """Class for the wild grass tile."""
 
-    async def on_move_on(self, game, ws, username,
-                         player, player_start_pos, tile_pos):
+    async def on_move_on(self, event_ctx, player_start_pos):
         """30% chance of triggering a wild encounter."""
-        if random.random() < 0.3 and not player.in_battle:
-            player.in_battle = True
-            await game.send_battle_start(ws)
-            await asyncio.sleep(5)
-            player.in_battle = False
-            await game.send_battle_end(ws)
+        if random.random() < 0.8:
+            try:
+                await event_ctx.world.create_battle(
+                    event_ctx.username,
+                    event_ctx.ws,
+                    event_ctx.player,
+                    RandomMoveAICombatant()
+                )
+            except ValueError:
+                pass
 
 
 @register_tile("wall")
@@ -68,17 +72,16 @@ class PortalData(TileMetadata):
 class Portal(TilePlus):
     """Class for the portal tile."""
 
-    async def on_move_on(self, game, ws, username,
-                         player, player_start_pos, tile_pos):
+    async def on_move_on(self, event_ctx, player_start_pos):
         """Teleport players that move into the portal."""
         world_id = self.data.world_id
         world = World.get_world_by_id(world_id)
         spawn_id = self.data.spawn_id
-        player.world_id = world_id
-        player.pos = world.spawn_points[spawn_id].to_spawn_pos()
-        game.set_player(username, player)
-        await game.send_world(ws, world, player.pos)
-        await game.send_players(ws, username, world_id)
+        event_ctx.player.world_id = world_id
+        event_ctx.player.pos = world.spawn_points[spawn_id].to_spawn_pos()
+        await Util.send_world(event_ctx.ws, world, event_ctx.player.pos)
+        await Util.send_players(
+            event_ctx.game, event_ctx.ws, event_ctx.username, world_id)
 
 
 class SignData(TileMetadata):
@@ -108,6 +111,6 @@ class SignData(TileMetadata):
 class Sign(TilePlus):
     """Class for the sign tile."""
 
-    async def on_interact(self, game, ws, username, player, tile_pos):
+    async def on_interact(self, event_ctx):
         """Send the sign's text when player interacts with sign."""
-        await game.send_sign(ws, self)
+        await Util.send_sign(event_ctx.ws, self)

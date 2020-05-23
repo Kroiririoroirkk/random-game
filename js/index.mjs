@@ -1,5 +1,6 @@
 "use strict";
 
+import {Battle, BattleMenu} from "./index/battle.mjs";
 import {BLOCK_WIDTH, DEFAULT_SAMPLE_RATE, PLAYER_SPEED,
         SCALE_FACTOR, SPEED_MULTIPLIER, SERVER_URL}
         from "./index/config.mjs";
@@ -40,6 +41,7 @@ class Game {
     this.menu = null;
     this.dialogueBox = null;
     this.sampleRateSlider = null;
+    this.battleMenu = null;
     this.scaled = false;
     this.contextMenu = ContextMenus.MAP;
     this.sampleRate = DEFAULT_SAMPLE_RATE;
@@ -205,8 +207,20 @@ function handleWSMessage(e) {
     }
   } else if (e.data.startsWith("battlestart")) {
     game.contextMenu = ContextMenus.BATTLE;
+    game.battle = new Battle();
+  } else if (e.data.startsWith("battlemovereq")) {
+    let parts = e.data.split("|"),
+        moves = parts.slice(1);
+    game.battleMenu = new BattleMenu(game, moves);
+  } else if (e.data.startsWith("battlestatus")) {
+    let parts = e.data.split("|"),
+        playerHp = parseInt(parts[1]),
+        enemyHp = parseInt(parts[2]);
+    game.battle.playerHp = playerHp;
+    game.battle.enemyHp = enemyHp;
   } else if (e.data.startsWith("battleend")) {
     game.contextMenu = ContextMenus.MAP;
+    game.battle = null;
   }
 }
 
@@ -299,6 +313,21 @@ function update(dt) {
       }
       game.pressedKeys.delete(Z_KEY);
     }
+  } else if (game.contextMenu === ContextMenus.BATTLE) {
+    if (game.pressedKeys.has(KEY_UP)) {
+      game.battleMenu.cursorUp(game);
+      game.pressedKeys.delete(KEY_UP);
+    }
+    if (game.pressedKeys.has(KEY_DOWN)) {
+      game.battleMenu.cursorDown(game);
+      game.pressedKeys.delete(KEY_DOWN);
+    }
+    if (game.pressedKeys.has(Z_KEY)) {
+      let option = game.battleMenu.getOptionSelected();
+      game.ws.send("battlemove|"+option.toString());
+      game.battleMenu.resetSelected();
+      game.pressedKeys.delete(Z_KEY);
+    }
   }
   if (game.contextMenu !== ContextMenus.DIALOGUE
       && game.contextMenu !== ContextMenus.BATTLE) {
@@ -346,12 +375,12 @@ function render(dt) {
   ctx.fillStyle = "rgb(0, 0, 0)";
   ctx.fillRect(0, 0, width, height);
 
-  game.scale();
-
   if (game.contextMenu === ContextMenus.BATTLE) {
-    
+    game.battle.render(game);
+    game.battleMenu.render(game);
   } else {
     if (game.playerObj) {
+      game.scale();
       let renderList = [];
       for (let j = 0; j < game.map.length; j++) {
         for (let i = 0; i < game.map[j].length; i++) {

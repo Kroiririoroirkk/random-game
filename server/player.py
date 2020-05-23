@@ -1,23 +1,26 @@
 """Defines the Player class."""
 import math
 
+from battle import Combatant
 from config import BLOCK_WIDTH, PLAYER_WIDTH
 from entitybasic import Entity
-from geometry import Direction
+from geometry import Direction, Vec
+from world import World
 
 
-class Player(Entity):
+class Player(Entity, Combatant):
     """Represents an in-game player."""
 
-    def __init__(self, pos, velocity, facing, ws, world_id):
+    def __init__(self, username, pos, velocity, facing, ws, world_id):
         """Initialize player and delete UUID (players don't have UUIDs)."""
-        super().__init__(pos, velocity, facing)
+        Entity.__init__(self, pos, velocity, facing)
+        Combatant.__init__(self)
+        self.username = username
         self.world_id = world_id
         self.ws = ws
         self.online = True
         self.uuid = None
         self.talking_to = None
-        self.in_battle = False
         self.time_of_last_move = 0
 
     def get_entities_can_interact(self, world):
@@ -46,3 +49,13 @@ class Player(Entity):
     def get_bounding_box(self):
         """Get bounding box the size of a player."""
         return super().get_bounding_box_of_width(PLAYER_WIDTH)
+
+    def respawn(self):
+        """Reset player's location and other properties."""
+        world_id = "starting_world"
+        spawn_id = "center_spawn"
+        world = World.get_world_by_id(world_id)
+        spawn_pos = world.spawn_points[spawn_id].to_spawn_pos()
+        Player.__init__(
+            self, self.username, spawn_pos, Vec(0, 0),
+            Direction.DOWN, self.ws, world_id)

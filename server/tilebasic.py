@@ -1,4 +1,5 @@
 """Defines the Tile, TilePlus, TileMetadata, and Empty classes."""
+from collections import namedtuple
 from typing import Any, Dict
 
 from config import BLOCK_WIDTH
@@ -6,6 +7,15 @@ from geometry import BoundingBox, Vec
 
 
 _tiles: Dict[str, Any] = {}  # Maps tile_ids to Tile classes.
+
+TileEventContext = namedtuple("TileEventContext", [
+    "game",
+    "ws",
+    "username",
+    "world",
+    "player",
+    "tile_pos"
+])
 
 
 class Tile:
@@ -19,11 +29,10 @@ class Tile:
         self.blocks_movement = False
         self.data = None
 
-    async def on_move_on(self, game, ws, username,
-                         player, player_start_pos, tile_pos):
+    async def on_move_on(self, event_ctx, player_start_pos):
         """Triggered whenever the player moves onto the tile."""
 
-    async def on_interact(self, game, ws, username, player, tile_pos):
+    async def on_interact(self, event_ctx):
         """Triggered whenever the player interacts while touching the tile."""
 
     @staticmethod
