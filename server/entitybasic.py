@@ -11,6 +11,13 @@ from tilecoord import TileCoord
 _entities: Dict[str, Any] = {}  # Maps entity_ids to Entity classes.
 
 
+EntityUpdateContext = namedtuple("EntityUpdateContext", [
+    "game",
+    "world",
+    "dt"
+])
+
+
 EntityEventContext = namedtuple("EntityEventContext", [
     "game",
     "ws",
@@ -35,9 +42,9 @@ class Entity:
         """Move the entity by the given displacement vector."""
         self.pos += offset
 
-    def update(self, dt):
+    def update(self, update_ctx):
         """Update the entity's position. Called every update loop."""
-        self.move(self.velocity * dt)
+        self.move(self.velocity * update_ctx.dt)
 
     async def on_interact(self, event_ctx):
         """Triggered whenever the player interacts with the entity."""

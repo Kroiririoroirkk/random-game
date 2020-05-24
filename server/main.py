@@ -11,7 +11,7 @@ from battle import BattleState
 from collision import block_movement
 from config import (
     MAX_MOVE_DT, PLAYER_SPEED, SPEED_MULTIPLIER, UPDATE_DT, WSPORT)
-from entitybasic import EntityEventContext
+from entitybasic import EntityEventContext, EntityUpdateContext
 import game
 from geometry import Direction, Vec
 from player import Player
@@ -217,7 +217,10 @@ async def update_loop():
                 p.world_id for p in running_game.players):
             world = World.get_world_by_id(world_id)
             for ent in world.entities:
-                ent.update(dt)
+                ent.update(EntityUpdateContext(
+                    game=running_game,
+                    world=world,
+                    dt=dt))
         await asyncio.sleep(UPDATE_DT)
 
 start_server = websockets.serve(run, "0.0.0.0", WSPORT)

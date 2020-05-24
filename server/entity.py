@@ -1,4 +1,5 @@
 """The Walker class, which subclasses Entity."""
+from collision import block_movement
 from config import BLOCK_WIDTH, PLAYER_WIDTH
 from entitybasic import Entity, register_entity
 from geometry import Direction, Vec
@@ -31,9 +32,10 @@ class Walker(Entity):
         ]
         self.conv_progress = {}
 
-    def update(self, dt):
-        """Move and turn if min_x or max_x reached."""
-        super().update(dt)
+    def update(self, update_ctx):
+        """Move and turn if min_x or max_x reached. Check for collision."""
+        start_pos = self.pos
+        super().update(update_ctx)
         if self.pos.x > self.max_x:
             self.facing = Direction.LEFT
             self.set_x(self.max_x - (self.pos.x - self.max_x))
@@ -42,6 +44,18 @@ class Walker(Entity):
             self.facing = Direction.RIGHT
             self.set_x(self.min_x + (self.min_x - self.pos.x))
             self.velocity = Vec(self.speed, 0)
+
+        wall_entities = [
+            entity for entity in update_ctx.world.entities
+            if entity.blocks_movement
+            and self.is_touching(entity)]
+        if wall_entities:
+            wall_entities.sort(
+                key=lambda wall_entity:
+                wall_entity.pos.dist_to(self.pos))
+            for wall_entity in wall_entities:
+                block_movement(wall_entity.get_bounding_box(),
+                               start_pos, self)
 
     async def on_interact(self, event_ctx):
         """Send dialogue when player interacts with Walker."""
