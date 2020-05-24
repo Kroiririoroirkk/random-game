@@ -72,19 +72,23 @@ class PlayerAIBattle:
         return self.process_moves(
             player_move, self.ai_combatant.next_move(self))
 
-    def process_moves(self, move1, move2):
+    def process_moves(self, player_move, ai_move):
         """Given the combatant moves, update and return the BattleState."""
         if (self.player_combatant.is_faster_than(self.ai_combatant)
                 or (self.player_combatant.speed == self.ai_combatant.speed
                     and random.random() < 0.5)):
             faster_combatant = BattleCombatants.PLAYER
+            faster_move = player_move
             slower_combatant = BattleCombatants.AI
+            slower_move = ai_move
         else:
             faster_combatant = BattleCombatants.AI
+            faster_move = ai_move
             slower_combatant = BattleCombatants.PLAYER
-        battle_state = self.process_move(faster_combatant, move1)
+            slower_move = player_move
+        battle_state = self.process_move(faster_combatant, faster_move)
         if battle_state is BattleState.ONGOING:
-            return self.process_move(slower_combatant, move2)
+            return self.process_move(slower_combatant, slower_move)
         return battle_state
 
     def process_move(self, combatant, move):
