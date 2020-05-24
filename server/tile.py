@@ -22,7 +22,7 @@ class WildGrass(Tile):
         """30% chance of triggering a wild encounter."""
         if random.random() < 0.8:
             try:
-                await event_ctx.world.create_battle(
+                await event_ctx.game.create_battle(
                     event_ctx.username,
                     event_ctx.ws,
                     event_ctx.player,

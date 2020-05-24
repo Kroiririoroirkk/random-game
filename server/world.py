@@ -1,11 +1,9 @@
 """Defines the World class."""
 from typing import Dict
 
-from battle import PlayerAIBattle
 from entitybasic import Entity
 from tilebasic import Empty, Tile
 from tilecoord import TileCoord
-from util import Util
 
 
 _worlds: Dict[str, "World"] = {}
@@ -22,7 +20,6 @@ class World:
         self.tiles = tiles
         self.entities = entities
         self.spawn_points = spawn_points
-        self.battles = []
 
     def get_tile(self, tile_coord):
         """Get the tile positioned at the given TileCoord."""
@@ -135,32 +132,3 @@ class World:
         if world_id in _worlds:
             raise ValueError
         _worlds[world_id] = world
-
-    def player_in_battle(self, username):
-        """Check if a player is in a battle."""
-        for battle in self.battles:
-            if battle.player_combatant.username == username:
-                return True
-        return False
-
-    def get_battle_by_username(self, username):
-        """Get the battle that the player with the given username is in."""
-        for battle in self.battles:
-            if battle.player_combatant.username == username:
-                return battle
-
-    def del_battle_by_username(self, username):
-        """Delete the battle that the player with the given username is in."""
-        self.battles = [b for b in self.battles
-                        if b.player_combatant.username != username]
-
-    async def create_battle(self, username, ws, player, ai):
-        """Create a battle with the given player and AI."""
-        if self.player_in_battle(username):
-            raise ValueError
-        battle = PlayerAIBattle(player, ai)
-        self.battles.append(battle)
-        await Util.send_battle_start(ws)
-        await Util.send_battle_status(
-            ws, player.hp, ai.hp)
-        await Util.send_move_request(ws, player.moves)

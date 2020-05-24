@@ -65,7 +65,7 @@ async def parseMessage(message, username, ws):
     player = running_game.get_player(username)
     world = World.get_world_by_id(player.world_id)
     if message.startswith("move|") or message.startswith("fastmove|"):
-        if world.player_in_battle(username) or player.talking_to:
+        if running_game.player_in_battle(username) or player.talking_to:
             return
         multiplier = 1
         if message.startswith("fastmove|"):
@@ -122,7 +122,7 @@ async def parseMessage(message, username, ws):
                     tile_pos=tile_coord.to_pos()), start_pos)
             await Util.send_moved_to(ws, player.pos)
     elif message.startswith("interact"):
-        if world.player_in_battle(username):
+        if running_game.player_in_battle(username):
             return
         if player.talking_to:
             await player.talking_to.on_interact(EntityEventContext(
@@ -155,12 +155,12 @@ async def parseMessage(message, username, ws):
                     await Util.send_tag(
                         running_game, username, player_in_game.username)
     elif message.startswith("getupdates"):
-        if world.player_in_battle(username):
+        if running_game.player_in_battle(username):
             return
         await Util.send_players(running_game, ws, username, player.world_id)
         await Util.send_entities(ws, world)
     elif message.startswith("dialoguechoose"):
-        if world.player_in_battle(username):
+        if running_game.player_in_battle(username):
             return
         parts = message.split("|")
         entity_uuid = uuid.UUID(hex=parts[1])
@@ -176,12 +176,12 @@ async def parseMessage(message, username, ws):
         except ValueError:
             pass
     elif message.startswith("battlemove"):
-        if not world.player_in_battle(username):
+        if not running_game.player_in_battle(username):
             return
         parts = message.split("|")
         try:
             move_choice = player.moves[int(parts[1])]
-            battle = world.get_battle_by_username(username)
+            battle = running_game.get_battle_by_username(username)
             battle_state = battle.process_player_move(move_choice)
             if battle_state is BattleState.ONGOING:
                 await Util.send_move_request(ws, player.moves)
@@ -189,10 +189,10 @@ async def parseMessage(message, username, ws):
                     ws, player.hp, battle.ai_combatant.hp)
             elif battle_state is BattleState.PLAYER_WIN:
                 await Util.send_battle_end(ws)
-                world.del_battle_by_username(username)
+                running_game.del_battle_by_username(username)
             elif battle_state is BattleState.AI_WIN:
                 await Util.send_battle_end(ws)
-                world.del_battle_by_username(username)
+                running_game.del_battle_by_username(username)
                 player.respawn()
                 await Util.send_world(
                     ws, World.get_world_by_id(player.world_id), player.pos)
