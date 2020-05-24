@@ -32,6 +32,10 @@ class Game:
                 return True
         return False
 
+    def get_players_by_world(self, world_id):
+        """Get all the players in the game with the given world_id."""
+        return [p for p in self.players if p.world_id == world_id]
+
     def get_battle_by_username(self, username):
         """Get the battle that the player with the given username is in."""
         for battle in self.battles:

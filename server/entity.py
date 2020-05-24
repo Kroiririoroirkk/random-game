@@ -49,12 +49,18 @@ class Walker(Entity):
             entity for entity in update_ctx.world.entities
             if entity.blocks_movement
             and self.is_touching(entity)]
-        if wall_entities:
-            wall_entities.sort(
-                key=lambda wall_entity:
-                wall_entity.pos.dist_to(self.pos))
-            for wall_entity in wall_entities:
-                block_movement(wall_entity.get_bounding_box(),
+        wall_players = [
+            player for player in
+            update_ctx.game.get_players_by_world(
+                update_ctx.world.get_world_id())
+            if self.is_touching(player)]
+        walls = wall_entities + wall_players
+        if walls:
+            walls.sort(
+                key=lambda wall:
+                wall.pos.dist_to(self.pos))
+            for wall in walls:
+                block_movement(wall.get_bounding_box(),
                                start_pos, self)
 
     async def on_interact(self, event_ctx):
