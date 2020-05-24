@@ -198,6 +198,7 @@ async def parseMessage(message, username, ws):
                 running_game.del_battle_by_username(username)
             elif battle_state is BattleState.AI_WIN:
                 await Util.send_battle_end(ws)
+                await Util.send_death(ws)
                 running_game.del_battle_by_username(username)
                 player.respawn()
                 await Util.send_world(

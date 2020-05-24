@@ -5,6 +5,7 @@ import {BLOCK_WIDTH, DEFAULT_SAMPLE_RATE, PLAYER_SPEED,
         SCALE_FACTOR, SPEED_MULTIPLIER, SERVER_URL}
         from "./index/config.mjs";
 import {ContextMenus} from "./index/contextmenu.mjs";
+import {DeathScreen} from "./index/death.mjs";
 import {Entity} from "./index/entity.mjs";
 import {Dir, Vec} from "./index/geometry.mjs";
 import {Player, OtherPlayer} from "./index/player.mjs";
@@ -42,6 +43,7 @@ class Game {
     this.dialogueBox = null;
     this.sampleRateSlider = null;
     this.battleMenu = null;
+    this.deathScreen = null;
     this.scaled = false;
     this.contextMenu = ContextMenus.MAP;
     this.sampleRate = DEFAULT_SAMPLE_RATE;
@@ -125,6 +127,7 @@ function initialize() {
   game.menu.addItem(game, new MenuItem("Inventory"));
   game.dialogueBox = new DialogueBox(500, 100);
   game.sampleRateSlider = new SampleRateSlider(game);
+  game.deathScreen = new DeathScreen(game);
 }
 
 function handleWSMessage(e) {
@@ -221,6 +224,8 @@ function handleWSMessage(e) {
   } else if (e.data.startsWith("battleend")) {
     game.contextMenu = ContextMenus.MAP;
     game.battle = null;
+  } else if (e.data.startsWith("death")) {
+    game.contextMenu = ContextMenus.DEATH;
   }
 }
 
@@ -330,6 +335,11 @@ function update(dt) {
         game.pressedKeys.delete(Z_KEY);
       }
     }
+  } else if (game.contextMenu === ContextMenus.DEATH) {
+    if (game.pressedKeys.has(Z_KEY)) {
+      game.contextMenu = ContextMenus.MAP;
+      game.pressedKeys.delete(Z_KEY)
+    }
   }
   if (game.contextMenu !== ContextMenus.DIALOGUE
       && game.contextMenu !== ContextMenus.BATTLE) {
@@ -382,6 +392,8 @@ function render(dt) {
     if (game.battleMenu) {
       game.battleMenu.render(game);
     }
+  } else if (game.contextMenu === ContextMenus.DEATH) {
+    game.deathScreen.render(game);
   } else {
     if (game.playerObj) {
       game.scale();

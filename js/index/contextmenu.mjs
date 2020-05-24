@@ -6,6 +6,7 @@ class ContextMenus {
   static MENU = 3;
   static DIALOGUE = 4;
   static BATTLE = 5;
+  static DEATH = 6;
 }
 
 export {ContextMenus};

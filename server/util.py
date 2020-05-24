@@ -89,3 +89,8 @@ class Util:
     async def send_battle_end(ws):
         """See the battleend message under PROTOCOL.md for explanation."""
         await ws.send("battleend")
+
+    @staticmethod
+    async def send_death(ws):
+        """See the death message under PROTOCOL.md for explanation."""
+        await ws.send("death")

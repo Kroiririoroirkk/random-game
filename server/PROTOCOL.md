@@ -135,3 +135,9 @@ This message is sent after a player makes a move to indicate the HPs of the comb
 No parameters.
 
 This message is sent when the battle that the player is engaged in ends.
+
+### death
+
+No parameters.
+
+This message is sent when the player dies.
