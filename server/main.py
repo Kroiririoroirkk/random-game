@@ -43,6 +43,12 @@ async def run(ws, path):
         player.online = True
         world = World.get_world_by_id(player.world_id)
         await Util.send_world(ws, world, player.pos)
+        if running_game.player_in_battle(username):
+            battle = running_game.get_battle_by_username(username)
+            await Util.send_battle_start(ws)
+            await Util.send_battle_status(
+                ws, battle.player_combatant.hp, battle.ai_combatant.hp)
+            await Util.send_move_request(ws, player.moves)
     except ValueError:
         print("New user: " + username)
         world_id = "starting_world"
