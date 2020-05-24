@@ -161,7 +161,7 @@ class Menu {
   cursorUp(game) {
     this.currentlySelected--;
     if (this.currentlySelected < 0) {
-      this.currentlySelected = 0;
+      this.currentlySelected += this.items.length;
     }
     this.focus(game);
   }
@@ -169,7 +169,7 @@ class Menu {
   cursorDown(game) {
     this.currentlySelected++;
     if (this.currentlySelected >= this.items.length) {
-      this.currentlySelected = this.items.length - 1;
+      this.currentlySelected -= this.items.length;
     }
     this.focus(game);
   }
@@ -260,7 +260,7 @@ class DialogueBox {
     } else if (this.state === DialogueState.CHOOSE) {
       this.currentlySelected --;
       if (this.currentlySelected < 0) {
-        this.currentlySelected = 0;
+        this.currentlySelected += this.options.length;
       }
       this.redrawOptions(game);
     }
@@ -274,8 +274,8 @@ class DialogueBox {
       }
     } else if (this.state === DialogueState.CHOOSE) {
       this.currentlySelected++;
-      if (this.currentlySelected > this.wrappedText.length-1) {
-        this.currentlySelected = this.wrappedText.length-1;
+      if (this.currentlySelected >= this.options.length) {
+        this.currentlySelected -= this.options.length;
       }
       this.redrawOptions(game);
     }

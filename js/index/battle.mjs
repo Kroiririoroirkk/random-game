@@ -59,7 +59,7 @@ class BattleMenu {
   cursorUp(game) {
     this.currentlySelected--;
     if (this.currentlySelected < 0) {
-      this.currentlySelected = 0;
+      this.currentlySelected += this.moves.length;
     }
     this.redraw(game);
   }
@@ -67,7 +67,7 @@ class BattleMenu {
   cursorDown(game) {
     this.currentlySelected++;
     if (this.currentlySelected >= this.moves.length) {
-      this.currentlySelected = this.moves.length - 1;
+      this.currentlySelected -= this.moves.length;
     }
     this.redraw(game);
   }
