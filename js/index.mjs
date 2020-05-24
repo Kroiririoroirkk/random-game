@@ -314,19 +314,21 @@ function update(dt) {
       game.pressedKeys.delete(Z_KEY);
     }
   } else if (game.contextMenu === ContextMenus.BATTLE) {
-    if (game.pressedKeys.has(KEY_UP)) {
-      game.battleMenu.cursorUp(game);
-      game.pressedKeys.delete(KEY_UP);
-    }
-    if (game.pressedKeys.has(KEY_DOWN)) {
-      game.battleMenu.cursorDown(game);
-      game.pressedKeys.delete(KEY_DOWN);
-    }
-    if (game.pressedKeys.has(Z_KEY)) {
-      let option = game.battleMenu.getOptionSelected();
-      game.ws.send("battlemove|"+option.toString());
-      game.battleMenu.resetSelected();
-      game.pressedKeys.delete(Z_KEY);
+    if (game.battleMenu) {
+      if (game.pressedKeys.has(KEY_UP)) {
+        game.battleMenu.cursorUp(game);
+        game.pressedKeys.delete(KEY_UP);
+      }
+      if (game.pressedKeys.has(KEY_DOWN)) {
+        game.battleMenu.cursorDown(game);
+        game.pressedKeys.delete(KEY_DOWN);
+      }
+      if (game.pressedKeys.has(Z_KEY)) {
+        let option = game.battleMenu.getOptionSelected();
+        game.ws.send("battlemove|"+option.toString());
+        game.battleMenu.resetSelected();
+        game.pressedKeys.delete(Z_KEY);
+      }
     }
   }
   if (game.contextMenu !== ContextMenus.DIALOGUE
