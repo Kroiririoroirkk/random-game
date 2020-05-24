@@ -379,7 +379,9 @@ function render(dt) {
 
   if (game.contextMenu === ContextMenus.BATTLE) {
     game.battle.render(game);
-    game.battleMenu.render(game);
+    if (game.battleMenu) {
+      game.battleMenu.render(game);
+    }
   } else {
     if (game.playerObj) {
       game.scale();

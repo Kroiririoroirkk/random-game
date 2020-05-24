@@ -94,9 +94,9 @@ class PlayerAIBattle:
     def process_move(self, combatant, move):
         """Given a combatant and move, update and return the BattleState."""
         if combatant is BattleCombatants.PLAYER:
-            self.player_combatant.hp -= move.damage
-        elif combatant is BattleCombatants.AI:
             self.ai_combatant.hp -= move.damage
+        elif combatant is BattleCombatants.AI:
+            self.player_combatant.hp -= move.damage
         return self.get_battle_state()
 
     def get_battle_state(self):
