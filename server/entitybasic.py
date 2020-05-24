@@ -1,4 +1,5 @@
 """Defines the Entity class and register_entity."""
+from collections import namedtuple
 from typing import Any, Dict
 import uuid
 
@@ -8,6 +9,15 @@ from tilecoord import TileCoord
 
 
 _entities: Dict[str, Any] = {}  # Maps entity_ids to Entity classes.
+
+
+EntityEventContext = namedtuple("EntityEventContext", [
+    "game",
+    "ws",
+    "username",
+    "world",
+    "player"
+])
 
 
 class Entity:
@@ -29,10 +39,10 @@ class Entity:
         """Update the entity's position. Called every update loop."""
         self.move(self.velocity * dt)
 
-    async def on_interact(self, game, ws, username, player):
+    async def on_interact(self, event_ctx):
         """Triggered whenever the player interacts with the entity."""
 
-    async def on_dialogue_choose(self, game, ws, username, player, choice):
+    async def on_dialogue_choose(self, event_ctx, choice):
         """Triggered on dialoguechoose (see PROTOCOL.md for details)."""
 
     def set_x(self, new_x):

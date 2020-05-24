@@ -11,6 +11,7 @@ from battle import BattleState
 from collision import block_movement
 from config import (
     MAX_MOVE_DT, PLAYER_SPEED, SPEED_MULTIPLIER, UPDATE_DT, WSPORT)
+from entitybasic import EntityEventContext
 import game
 from geometry import Direction, Vec
 from player import Player
@@ -124,8 +125,12 @@ async def parseMessage(message, username, ws):
         if world.player_in_battle(username):
             return
         if player.talking_to:
-            await player.talking_to.on_interact(
-                running_game, ws, username, player)
+            await player.talking_to.on_interact(EntityEventContext(
+                game=running_game,
+                ws=ws,
+                username=username,
+                world=world,
+                player=player))
         else:
             for tile_coord in player.get_tiles_touched():
                 tile_interacted = world.get_tile(tile_coord)
@@ -137,8 +142,12 @@ async def parseMessage(message, username, ws):
                     player=player,
                     tile_pos=tile_coord.to_pos()))
             for entity_interacted in player.get_entities_can_interact(world):
-                await entity_interacted.on_interact(
-                    running_game, ws, username, player)
+                await entity_interacted.on_interact(EntityEventContext(
+                    game=running_game,
+                    ws=ws,
+                    username=username,
+                    world=world,
+                    player=player))
             for player_in_game in running_game.players:
                 if (player_in_game.world_id == player.world_id
                         and player_in_game.is_touching(player)
@@ -157,9 +166,13 @@ async def parseMessage(message, username, ws):
         entity_uuid = uuid.UUID(hex=parts[1])
         entity_speaking_to = world.get_entity(entity_uuid)
         try:
-            await entity_speaking_to.on_dialogue_choose(
-                running_game, ws, username,
-                player, int(parts[2]))
+            await entity_speaking_to.on_dialogue_choose(EntityEventContext(
+                game=running_game,
+                ws=ws,
+                username=username,
+                world=world,
+                player=player
+            ), int(parts[2]))
         except ValueError:
             pass
     elif message.startswith("battlemove"):

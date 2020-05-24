@@ -2,6 +2,7 @@
 from config import BLOCK_WIDTH, PLAYER_WIDTH
 from entitybasic import Entity, register_entity
 from geometry import Direction, Vec
+from util import Util
 
 
 @register_entity("walker")
@@ -42,29 +43,31 @@ class Walker(Entity):
             self.set_x(self.min_x + (self.min_x - self.pos.x))
             self.velocity = Vec(self.speed, 0)
 
-    async def on_interact(self, game, ws, username, player):
+    async def on_interact(self, event_ctx):
         """Send dialogue when player interacts with Walker."""
         self.velocity = Vec(0, 0)
-        if player in self.conv_progress:
-            self.conv_progress[player] += 1
+        if event_ctx.username in self.conv_progress:
+            self.conv_progress[event_ctx.username] += 1
             try:
-                await game.send_dialogue(
-                    ws, self.uuid, self.dialogue[self.conv_progress[player]])
-                player.talking_to = self
+                await Util.send_dialogue(
+                    event_ctx.ws, self.uuid,
+                    self.dialogue[self.conv_progress[event_ctx.username]])
+                event_ctx.player.talking_to = self
             except IndexError:
-                del self.conv_progress[player]
-                await game.send_dialogue_end(ws, self.uuid)
-                player.talking_to = None
+                del self.conv_progress[event_ctx.username]
+                await Util.send_dialogue_end(event_ctx.ws, self.uuid)
+                event_ctx.player.talking_to = None
                 if not self.conv_progress:
                     if self.facing is Direction.LEFT:
                         self.velocity = Vec(-self.speed, 0)
                     elif self.facing is Direction.RIGHT:
                         self.velocity = Vec(self.speed, 0)
         else:
-            self.conv_progress[player] = 0
-            await game.send_dialogue(
-                ws, self.uuid, self.dialogue[self.conv_progress[player]])
-            player.talking_to = self
+            self.conv_progress[event_ctx.username] = 0
+            await Util.send_dialogue(
+                event_ctx.ws, self.uuid,
+                self.dialogue[self.conv_progress[event_ctx.username]])
+            event_ctx.player.talking_to = self
 
     def get_bounding_box(self):
         """Walker's bounding box is same as player's."""
@@ -94,51 +97,54 @@ class Stander(Entity):
         ]
         self.conv_progress = {}
 
-    async def send_line(self, game, ws, line):
+    async def send_line(self, ws, line):
         """Send a line of dialogue, which can be a string or list."""
         if isinstance(line, list):
-            await game.send_dialogue_choices(ws, self.uuid, line)
+            await Util.send_dialogue_choices(ws, self.uuid, line)
         elif isinstance(line, str):
-            await game.send_dialogue(ws, self.uuid, line)
+            await Util.send_dialogue(ws, self.uuid, line)
         else:
             raise ValueError
 
-    async def on_interact(self, game, ws, username, player):
+    async def on_interact(self, event_ctx):
         """Send dialogue when player interacts with Stander."""
-        if player in self.conv_progress:
-            self.conv_progress[player] += 1
+        if event_ctx.username in self.conv_progress:
+            self.conv_progress[event_ctx.username] += 1
             try:
                 await self.send_line(
-                    game, ws, self.dialogue[self.conv_progress[player]])
-                player.talking_to = self
+                    event_ctx.ws,
+                    self.dialogue[self.conv_progress[event_ctx.username]])
+                event_ctx.player.talking_to = self
             except IndexError:
-                del self.conv_progress[player]
-                await game.send_dialogue_end(ws, self.uuid)
-                player.talking_to = None
+                del self.conv_progress[event_ctx.username]
+                await Util.send_dialogue_end(event_ctx.ws, self.uuid)
+                event_ctx.player.talking_to = None
             except ValueError:
-                del self.conv_progress[player]
-                await self.on_interact(game, ws, username, player)
+                del self.conv_progress[event_ctx.username]
+                await self.on_interact(event_ctx)
         else:
-            self.conv_progress[player] = 0
+            self.conv_progress[event_ctx.username] = 0
             await self.send_line(
-                game, ws, self.dialogue[self.conv_progress[player]])
-            player.talking_to = self
+                event_ctx.ws,
+                self.dialogue[self.conv_progress[event_ctx.username]])
+            event_ctx.player.talking_to = self
 
-    async def on_dialogue_choose(self, game, ws, username, player, choice):
+    async def on_dialogue_choose(self, event_ctx, choice):
         """Respond to player choosing dialogue."""
-        if player in self.conv_progress:
-            self.conv_progress[player] += 1
+        if event_ctx.username in self.conv_progress:
+            self.conv_progress[event_ctx.username] += 1
             try:
                 await self.send_line(
-                    game, ws, self.dialogue[
-                        self.conv_progress[player]].get(choice))
-                player.talking_to = self
+                    event_ctx.ws,
+                    self.dialogue[self.conv_progress[event_ctx.username]].get(
+                        choice))
+                event_ctx.player.talking_to = self
             except IndexError:
-                del self.conv_progress[player]
-                await game.send_dialogue_end(ws, self.uuid)
-                player.talking_to = None
+                del self.conv_progress[event_ctx.username]
+                await Util.send_dialogue_end(event_ctx.ws, self.uuid)
+                event_ctx.player.talking_to = None
             except ValueError:
-                self.conv_progress[player] -= 1
+                self.conv_progress[event_ctx.username] -= 1
 
     def get_bounding_box(self):
         """Stander's bounding box is same as player's."""
