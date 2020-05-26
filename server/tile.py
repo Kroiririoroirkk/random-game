@@ -114,3 +114,38 @@ class Sign(TilePlus):
     async def on_interact(self, event_ctx):
         """Send the sign's text when player interacts with sign."""
         await Util.send_sign(event_ctx.ws, self)
+
+
+@register_tile("deep_water")
+class DeepWater(Tile):
+    """Class for the deep water tile."""
+
+    def __init__(self):
+        """Initialize with the ability to block player movement."""
+        super().__init__()
+        self.blocks_movement = True
+
+
+@register_tile("shallow_water")
+class ShallowWater(Tile):
+    """Class for the shallow water tile."""
+
+
+@register_tile("dirt")
+class Dirt(Tile):
+    """Class for the dirt tile."""
+
+
+@register_tile("desert")
+class Desert(Tile):
+    """Class for the desert tile."""
+
+
+@register_tile("lava")
+class Lava(Tile):
+    """Class for the lava tile."""
+
+    def __init__(self):
+        """Initialize with the ability to block player movement."""
+        super().__init__()
+        self.blocks_movement = True

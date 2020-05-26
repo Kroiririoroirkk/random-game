@@ -147,5 +147,21 @@ class Sign extends TilePlus {
 }
 Tile.register("sign", Sign, "sign.png", "rgb(255, 255, 0)");
 
+class DeepWater extends Tile {}
+Tile.register("deep_water", DeepWater, "deep-water.png", "rgb(0, 10, 190)");
+
+class ShallowWater extends Tile {}
+Tile.register("shallow_water", ShallowWater, "shallow-water.png", "rgb(0, 90, 120)");
+
+class Dirt extends Tile {}
+Tile.register("dirt", Dirt, "dirt.png", "rgb(100, 90, 40)");
+
+class Desert extends Tile {}
+Tile.register("desert", Desert, "desert.png", "rgb(190, 170, 70)");
+
+class Lava extends Tile {}
+Tile.register("lava", Lava, "lava.png", "rgb(255, 150, 0)");
+
 export {Tile, TilePlus, Empty, Grass, WildGrass, Wall,
-        PortalData, Portal, SignData, Sign};
+        PortalData, Portal, SignData, Sign,
+        DeepWater, ShallowWater, Dirt, Desert, Lava};
