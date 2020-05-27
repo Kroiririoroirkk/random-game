@@ -71,8 +71,6 @@ class Entity {
 class Walker extends Entity {}
 Entity.register("walker", Walker);
 
-const STANDER_SPRITE_WIDTH = 56;
-const STANDER_SPRITE_HEIGHT = 56;
 class Stander extends Entity {
   render(game) {
     return [new Render((function() {
@@ -81,8 +79,8 @@ class Stander extends Entity {
             spr = this.constructor._sprite,
             img = spr ? Images.getImage(spr) : null;
       if (img) {
-        ctx.drawImage(img, pos.x - (STANDER_SPRITE_WIDTH - BLOCK_WIDTH)/2,
-                           pos.y - (STANDER_SPRITE_HEIGHT - BLOCK_WIDTH));
+        ctx.drawImage(img, pos.x - (img.naturalWidth - BLOCK_WIDTH)/2,
+                           pos.y - (img.naturalHeight - BLOCK_WIDTH));
       } else {
         Render.drawRect(ctx, pos, this.constructor._fillStyle);
       }

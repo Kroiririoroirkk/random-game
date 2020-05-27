@@ -5,8 +5,6 @@ import {Entity} from "./entity.mjs";
 import {Dir} from "./geometry.mjs";
 import {Animation, Frame, Images, Render} from "./render.mjs";
 
-const PLAYER_SPRITE_WIDTH = 56;
-const PLAYER_SPRITE_HEIGHT = 56;
 class Player extends Entity {
   constructor(pos) {
     super(null, pos, null, Dir.DOWN);
@@ -84,8 +82,8 @@ class Player extends Entity {
             pos = game.getPlayerDrawPos(),
             img = this.getSprite();
       if (img) {
-        ctx.drawImage(img, pos.x - (PLAYER_SPRITE_WIDTH - BLOCK_WIDTH)/2,
-                           pos.y - (PLAYER_SPRITE_HEIGHT - BLOCK_WIDTH));
+        ctx.drawImage(img, pos.x - (img.naturalWidth - BLOCK_WIDTH)/2,
+                           pos.y - (img.naturalHeight - BLOCK_WIDTH));
       } else {
         ctx.fillStyle = "rgb(0, 0, 0)";
         ctx.fillRect(pos.x, pos.y, PLAYER_WIDTH, PLAYER_WIDTH);
