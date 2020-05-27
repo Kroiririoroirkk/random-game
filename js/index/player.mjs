@@ -48,9 +48,9 @@ class Player extends Entity {
       return this.getAnimation().getSprite();
     } else {
       if (this.facing === Dir.LEFT)  {return Images.getImage("char-left-still.png", "char-down-still1.png");}
-      if (this.facing === Dir.UP)    {return Images.getImage("char-up-still1.png", "char-down-still1.png");}
+      if (this.facing === Dir.UP)    {return Images.getImage("char-up-still1.png", "char-up-still2.png", "char-down-still1.png");}
       if (this.facing === Dir.RIGHT) {return Images.getImage("char-right-still.png", "char-down-still1.png");}
-      if (this.facing === Dir.DOWN)  {return Images.getImage("char-down-still1.png");}
+      if (this.facing === Dir.DOWN)  {return Images.getImage("char-down-still1.png", "char-down-still2.png");}
     }
   }
 
@@ -82,7 +82,7 @@ class Player extends Entity {
             pos = game.getPlayerDrawPos(),
             img = this.getSprite();
       if (img) {
-        ctx.drawImage(img, pos.x, pos.y);
+        ctx.drawImage(img, pos.x - PLAYER_WIDTH/2, pos.y - PLAYER_WIDTH);
       } else {
         ctx.fillStyle = "rgb(0, 0, 0)";
         ctx.fillRect(pos.x, pos.y, PLAYER_WIDTH, PLAYER_WIDTH);

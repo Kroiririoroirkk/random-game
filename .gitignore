@@ -4,3 +4,5 @@
 /pyvenv.cfg
 /share/
 /server/__pycache__
+runserver
+runwebserver
