@@ -170,12 +170,14 @@ function handleWSMessage(e) {
   } else if (e.data.startsWith("players|")) {
     let parts = e.data.split("|");
     game.otherPlayerObjs = [];
-    for (let i = 1; i < parts.length; i += 3) {
-      let username = parts[i],
-          posX     = parseFloat(parts[i+1]),
-          posY     = parseFloat(parts[i+2]),
-          pos      = new Vec(posX, posY);
-      game.otherPlayerObjs.push(new OtherPlayer(pos, username));
+    if (parts[1]) {
+      for (let i = 1; i < parts.length; i += 3) {
+        let username = parts[i],
+            posX     = parseFloat(parts[i+1]),
+            posY     = parseFloat(parts[i+2]),
+            pos      = new Vec(posX, posY);
+        game.otherPlayerObjs.push(new OtherPlayer(pos, username));
+      }
     }
   } else if (e.data.startsWith("entities|")) {
     let parts = e.data.split("|");
