@@ -22,7 +22,8 @@ class Entity {
             spr = this.constructor._sprite,
             img = spr ? Images.getImage(spr) : null;
       if (img) {
-        ctx.drawImage(img, pos.x, pos.y);
+        ctx.drawImage(img, pos.x - (img.naturalWidth - BLOCK_WIDTH)/2,
+                           pos.y - (img.naturalHeight - BLOCK_WIDTH));
       } else {
         Render.drawRect(ctx, pos, this.constructor._fillStyle);
       }
@@ -71,22 +72,7 @@ class Entity {
 class Walker extends Entity {}
 Entity.register("walker", Walker);
 
-class Stander extends Entity {
-  render(game) {
-    return [new Render((function() {
-      const ctx = game.canvasCtx,
-            pos = this.pos.relToPlayer(game),
-            spr = this.constructor._sprite,
-            img = spr ? Images.getImage(spr) : null;
-      if (img) {
-        ctx.drawImage(img, pos.x - (img.naturalWidth - BLOCK_WIDTH)/2,
-                           pos.y - (img.naturalHeight - BLOCK_WIDTH));
-      } else {
-        Render.drawRect(ctx, pos, this.constructor._fillStyle);
-      }
-    }).bind(this), this.pos.y + this.height)];
-  }
-}
+class Stander extends Entity {}
 Entity.register("stander", Stander, "npc-2-still.png");
 
 export {Entity, Walker, Stander};
