@@ -9,14 +9,23 @@ class Tile {
     this.pos = pos;
   }
 
+  getSprite() {
+    const spr = this.sprite || this.constructor._sprite;
+    if (Object.prototype.toString.call(spr) === '[object String]') {
+      return spr ? Images.getImage(spr) : null;
+    } else if (Array.isArray(spr)) {
+      this.sprite = spr[Math.floor(Math.random() * spr.length)];
+      return this.getSprite();
+    }
+  }
+
   render(game) {
     return [new Render((function() {
       const ctx = game.canvasCtx,
             pos = this.pos.relToPlayer(game),
-            spr = this.constructor._sprite,
-            img = spr ? Images.getImage(spr) : null;
-      if (img) {
-        ctx.drawImage(img, pos.x, pos.y);
+            spr = this.getSprite();
+      if (spr) {
+        ctx.drawImage(spr, pos.x, pos.y);
       } else {
         Render.drawRect(game.canvasCtx, pos, this.constructor._fillStyle);
       }
@@ -113,17 +122,13 @@ class Portal extends TilePlus {
     this.animation.animate(dt);
   }
 
+  getSprite() {
+    return this.animation.getSprite();
+  }
+
   render(game) {
-    return [...this.data.groundTile.render(game), new Render((function() {
-      const ctx = game.canvasCtx,
-            pos = this.pos.relToPlayer(game),
-            img = this.animation.getSprite();
-      if (img) {
-        ctx.drawImage(img, pos.x, pos.y);
-      } else {
-        Render.drawRect(game.canvasCtx, pos, this.constructor._fillStyle);
-      }
-    }).bind(this), this.pos.y)];
+    return [...this.data.groundTile.render(game),
+            ...super.render(game)];
   }
 }
 Tile.register("portal", Portal, null, "rgb(0, 0, 0)");
@@ -162,6 +167,16 @@ Tile.register("desert", Desert, "desert.png", "rgb(190, 170, 70)");
 class Lava extends Tile {}
 Tile.register("lava", Lava, "lava.png", "rgb(255, 150, 0)");
 
+class Floor extends Tile {}
+Tile.register("floor", Floor, ["floor1.png", "floor2.png"], "rgb(140, 100, 60)");
+
+class IndoorWall extends Tile {}
+Tile.register("indoor_wall", IndoorWall, "indoor_wall.png", "rgb(0, 50, 0)");
+
+class Barrier extends Tile {}
+Tile.register("barrier", Barrier, null, "rgb(0, 0, 0)");
+
 export {Tile, TilePlus, Empty, Grass, WildGrass, Wall,
         PortalData, Portal, SignData, Sign,
-        DeepWater, ShallowWater, Dirt, Desert, Lava};
+        DeepWater, ShallowWater, Dirt, Desert, Lava,
+        Floor, IndoorWall, Barrier};

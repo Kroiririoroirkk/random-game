@@ -1,0 +1,44 @@
+{
+  "version":"0.1.0",
+  "tiles":[
+    [
+      {"tile_id":"barrier"},
+      {"tile_id":"indoor_wall"},
+      {"tile_id":"indoor_wall"},
+      {"tile_id":"barrier"}
+    ],
+    [
+      {"tile_id":"barrier"},
+      {"tile_id":"floor"},
+      {"tile_id":"floor"},
+      {"tile_id":"barrier"}
+    ],
+    [
+      {"tile_id":"barrier"},
+      {"tile_id":"floor"},
+      {"tile_id":"floor"},
+      {"tile_id":"barrier"}
+    ],
+    [
+      {"tile_id":"barrier"},
+      {"tile_id":"barrier"},
+      {"tile_id":"portal",
+       "tile_data": {
+         "world_id":"starting_world",
+         "spawn_id":"player_home_spawn",
+         "ground_tile": {"tile_id": "floor"}
+      }},
+      {"tile_id":"barrier"}
+    ],
+    [
+      {"tile_id":"barrier"},
+      {"tile_id":"barrier"},
+      {"tile_id":"barrier"},
+      {"tile_id":"barrier"}
+    ]
+  ],
+  "entities": [],
+  "spawn_points":{
+    "bottom_door":{"block_x":2,"block_y":3}
+  }
+}

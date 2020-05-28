@@ -1187,7 +1187,13 @@
       {"tile_id": "grass"},
       {"tile_id": "grass"},
       {"tile_id": "grass"},
-      {"tile_id": "grass"},
+      {"tile_id": "portal",
+       "tile_data": {
+         "world_id": "player_home",
+         "spawn_id": "bottom_door",
+         "ground_tile": {"tile_id": "grass"}
+       }
+      },
       {"tile_id": "grass"},
       {"tile_id": "grass"},
       {"tile_id": "grass"},
@@ -1429,6 +1435,10 @@
     "center_spawn": {
       "block_x": 18,
       "block_y": 18
+    },
+    "player_home_spawn": {
+      "block_x": 17,
+      "block_y": 30
     },
     "bottom_portal": {
       "block_x": 18,

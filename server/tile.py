@@ -149,3 +149,28 @@ class Lava(Tile):
         """Initialize with the ability to block player movement."""
         super().__init__()
         self.blocks_movement = True
+
+
+@register_tile("floor")
+class Floor(Tile):
+    """Class for the floor tile."""
+
+
+@register_tile("indoor_wall")
+class IndoorWall(Tile):
+    """Class for the indoor wall tile."""
+
+    def __init__(self):
+        """Initialize with the ability to block player movement."""
+        super().__init__()
+        self.blocks_movement = True
+
+
+@register_tile("barrier")
+class Barrier(Tile):
+    """Class for the barrier tile."""
+
+    def __init__(self):
+        """Initialize with the ability to block player movement."""
+        super().__init__()
+        self.blocks_movement = True
