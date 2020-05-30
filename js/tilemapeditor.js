@@ -3,15 +3,48 @@
 var map;
 window.onload = function() {
   document.getElementById("map").addEventListener("click", handleClick, false);
+  initializeToolbar();
 };
 
 const TILE_COLORS = {
   "empty": "#000000",
-  "grass": "#00ff00"
+  "grass": "#00FF00",
+  "wild_grass": "#00B400",
+  "wall": "#D2691E",
+  "portal": "#000000",
+  "sign": "#FFFF00",
+  "deep_water": "#000ABE",
+  "shallow_water": "#005A78",
+  "dirt": "#645A28",
+  "desert": "#BEAA46",
+  "lava": "#FF9600",
+  "floor": "#8C643C",
+  "indoor_wall": "#003200",
+  "barrier": "#000000"
 };
 
+const DEFAULT_TILE = "grass";
+
+function initializeToolbar() {
+  let toolbar = document.getElementById("toolbardiv"),
+      tilesDiv = document.createElement("DIV");
+  for (const tileId of Object.keys(TILE_COLORS)) {
+    let button = document.createElement("INPUT");
+    button.type = "button";
+    button.value = tileId;
+    button.addEventListener("click", function(e) {
+      let tile_id = document.getElementById("tile_id"),
+          tile_color = document.getElementById("tile_color");
+      tile_id.value = tileId;
+      tile_color.value = TILE_COLORS[tileId];
+    }, false);
+    tilesDiv.append(button);
+  }
+  toolbar.append(tilesDiv);
+}
+
 class Tile {
-  constructor(tileId, color="#ff00ff", tileData=undefined) {
+  constructor(tileId, color="#FF00FF", tileData=undefined) {
     this.tileId = tileId;
     this.color = color;
     this.tileData = tileData;
@@ -51,10 +84,10 @@ class Map {
   }
 
   addTile(rowNum) {
-    this.tiles[rowNum].push(new Tile("grass", "#00ff00"));
+    this.tiles[rowNum].push(new Tile(DEFAULT_TILE, TILE_COLORS[DEFAULT_TILE]));
     let row = this.getRow(rowNum),
         elem = document.createElement("TD");
-    elem.style.backgroundColor = "#00ff00";
+    elem.style.backgroundColor = TILE_COLORS[DEFAULT_TILE];
     row.appendChild(elem);
   }
 
