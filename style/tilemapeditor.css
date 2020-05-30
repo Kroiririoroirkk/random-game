@@ -7,8 +7,9 @@ body {
   background-color: purple;
 }
 
-div {
-  width: 50%;
+div.main {
+  width: 80%;
+  max-height: 800px;
   margin: 5px auto;
   padding: 5%;
   border: 1px solid black;
@@ -16,8 +17,30 @@ div {
   background-color: pink;
   color: purple;
   font: 20px sans-serif;
+  text-align: center;
 }
 
-code {
-  background-color: rgb(200, 200, 200);
+input[type="number"] {
+  width: 50px;
+}
+
+#mapdiv {
+  overflow: auto;
+}
+
+#map {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 1px;
+}
+
+#map td {
+  width: 16px;
+  height: 16px;
+  border: 1px solid black;
+}
+
+#output {
+  height: 200px;
+  width: 100%;
 }
