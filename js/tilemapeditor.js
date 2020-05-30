@@ -5,22 +5,31 @@ window.onload = function() {
   document.getElementById("map").addEventListener("click", handleClick, false);
 };
 
+const TILE_COLORS = {
+  "empty": "#000000",
+  "grass": "#00ff00"
+};
+
 class Tile {
-  constructor(tileId, color, toJSON=this.defaultJSON) {
+  constructor(tileId, color="#ff00ff", tileData=undefined) {
     this.tileId = tileId;
     this.color = color;
-    this.toJSON = toJSON;
+    this.tileData = tileData;
   }
 
-  defaultJSON() {
+  toJSON() {
+    if (this.tileData) {
+      return {"tile_id": this.tileId, "tile_data": this.tileData};
+    }
     return {"tile_id": this.tileId};
   }
 }
 
 class Map {
-  constructor(width, height) {
+  constructor(width=0, height=0) {
     this.tiles = [];
     this.mapElem = document.getElementById("map");
+    document.getElementById("toolbardiv").style.display = "block";
     document.getElementById("mapdiv").style.display = "block";
     this.mapElem.innerHTML = "";
     for (let i = 0; i < height; i++) {
@@ -72,6 +81,24 @@ function handleClick(e) {
   map.setTile(rowNum, colNum, tile);
 }
 
+function importMap() {
+  let mapJson = document.getElementById("import").value,
+      mapArr = JSON.parse(mapJson),
+      tiles = [];
+  map = new Map();
+  for (let row = 0; row < mapArr.length; row++) {
+    map.addRow()
+    for (let col = 0; col < mapArr[row].length; col++) {
+      let tile = mapArr[row][col],
+          tileId = tile["tile_id"],
+          tileData = tile["tile_data"],
+          tileColor = TILE_COLORS[tileId];
+      map.addTile(row);
+      map.setTile(row, col, new Tile(tileId, tileColor, tileData));
+    }
+  }
+}
+
 function makeMap() {
   const width = parseInt(document.getElementById("width").value),
         height = parseInt(document.getElementById("height").value);
@@ -83,6 +110,5 @@ function makeOutput() {
         outputBox = document.getElementById("output");
   outputDiv.style.display = "block";
   let jsonTiles = map.tiles.map(row => row.map(tile => tile.toJSON()));
-
   outputBox.value = JSON.stringify(jsonTiles);
 }
