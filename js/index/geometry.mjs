@@ -24,11 +24,6 @@ class Vec {
 }
 
 class Dir {
-  static LEFT = 1;
-  static UP = 2;
-  static RIGHT = 3;
-  static DOWN = 4;
-
   static strToDir(d) {
     if (d === "l") {return Dir.LEFT;}
     if (d === "u") {return Dir.UP;}
@@ -36,5 +31,9 @@ class Dir {
     if (d === "d") {return Dir.DOWN;}
   }
 }
+Dir.LEFT = 1;
+Dir.UP = 2;
+Dir.RIGHT = 3;
+Dir.DOWN = 4;
 
 export {Vec, Dir};
