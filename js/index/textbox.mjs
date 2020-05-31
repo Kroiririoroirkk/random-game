@@ -192,10 +192,9 @@ class Menu {
   }
 }
 
-class DialogueState {
-  static TEXT = 1;
-  static CHOOSE = 2;
-}
+class DialogueState {}
+DialogueState.TEXT = 1;
+DialogueState.CHOOSE = 2;
 
 class DialogueBox {
   constructor(width, height) {
