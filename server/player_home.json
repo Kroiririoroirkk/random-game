@@ -9,7 +9,12 @@
     ],
     [
       {"tile_id":"barrier"},
-      {"tile_id":"floor"},
+      {"tile_id":"portal",
+       "tile_data": {
+         "world_id": "backyard",
+         "spawn_id": "main",
+         "ground_tile": {"tile_id": "floor"}
+         }},
       {"tile_id":"floor"},
       {"tile_id":"barrier"}
     ],
@@ -39,6 +44,7 @@
   ],
   "entities": [],
   "spawn_points":{
+    "top_door":{"block_x":1,"block_y":1},
     "bottom_door":{"block_x":2,"block_y":3}
   }
 }

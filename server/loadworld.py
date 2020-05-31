@@ -20,3 +20,4 @@ def load_worlds():
     load_file("starting_world")
     load_file("second_world")
     load_file("player_home")
+    load_file("backyard")
