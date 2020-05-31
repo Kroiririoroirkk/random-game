@@ -290,7 +290,8 @@
       {"tile_id": "grass"},
       {"tile_id": "grass"},
       {"tile_id": "grass"},
-      {"tile_id": "grass"},
+      {"tile_id": "portal",
+      "tile_data":{"world_id": "maze", "spawn_id": "top_left", "ground_tile":{"tile_id": "grass"}}},
       {"tile_id": "grass"},
       {"tile_id": "grass"},
       {"tile_id": "grass"},
@@ -1455,6 +1456,10 @@
     "bottom_right_portal": {
       "block_x": 29,
       "block_y": 26
+    },
+    "maze_entrance": {
+      "block_x": 22,
+      "block_y": 7
     }
   }
 }
