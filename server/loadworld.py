@@ -11,7 +11,7 @@ def load_world(world_id, world_dict):
 
 def load_file(world_id):
     """Register the world with the given world_id from a JSON file."""
-    with open(f"{world_id}.json") as file:
+    with open(f"worlds/{world_id}.json") as file:
         load_world(world_id, json.load(file))
 
 
