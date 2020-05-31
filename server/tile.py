@@ -19,8 +19,8 @@ class WildGrass(Tile):
     """Class for the wild grass tile."""
 
     async def on_move_on(self, event_ctx, player_start_pos):
-        """30% chance of triggering a wild encounter."""
-        if random.random() < 0.8:
+        """Chance of triggering a wild encounter."""
+        if random.random() < 0.1:
             try:
                 await event_ctx.game.create_battle(
                     event_ctx.username,

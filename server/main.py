@@ -39,6 +39,8 @@ async def run(ws, path):
     try:
         player = running_game.get_player(username)
         print("Returning user: " + username)
+        print("Connecting from: "
+              + ws.remote_address[0] + ":" + str(ws.remote_address[1]))
         player.ws = ws
         player.online = True
         world = World.get_world_by_id(player.world_id)
@@ -51,6 +53,8 @@ async def run(ws, path):
             await Util.send_move_request(ws, player.moves)
     except ValueError:
         print("New user: " + username)
+        print("Connecting from: "
+              + ws.remote_address[0] + ":" + str(ws.remote_address[1]))
         world_id = "starting_world"
         spawn_id = "center_spawn"
         world = World.get_world_by_id(world_id)
