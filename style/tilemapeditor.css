@@ -24,8 +24,26 @@ input[type="number"] {
   width: 50px;
 }
 
+button[onclick="makeOutput()"] {
+  background-color: purple;
+  color: #eee;
+}
+
+#toolbardiv p {
+  margin-left: 40%;
+  text-align: left;
+}
+
+#toolbardiv button {
+  margin-left: 5px;
+  padding: 10px;
+  border: 0px;
+  border-radius: 15px;
+}
+
 #mapdiv {
   overflow: auto;
+  text-align: left;
 }
 
 #map {

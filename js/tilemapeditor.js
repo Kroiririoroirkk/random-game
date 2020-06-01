@@ -9,18 +9,18 @@ window.onload = function() {
 const TILE_COLORS = {
   "empty": "#000000",
   "grass": "#00FF00",
-  "wild_grass": "#00B400",
-  "wall": "#D2691E",
-  "portal": "#000000",
+  "wild_grass": "#3DB846",
+  "wall": "#606060",
+  "portal": "#C996FF",
   "sign": "#FFFF00",
-  "deep_water": "#000ABE",
-  "shallow_water": "#005A78",
+  "deep_water": "#0000A0",
+  "shallow_water": "#64B3F4",
   "dirt": "#645A28",
-  "desert": "#BEAA46",
-  "lava": "#FF9600",
-  "floor": "#8C643C",
-  "indoor_wall": "#003200",
-  "barrier": "#000000"
+  "desert": "#DAD79C",
+  "lava": "#EC731C",
+  "floor": "#DDDDDD",
+  "indoor_wall": "#00711A",
+  "barrier": "#B0B0B0"
 };
 
 const DEFAULT_TILE = "grass";
@@ -29,9 +29,15 @@ function initializeToolbar() {
   let toolbar = document.getElementById("toolbardiv"),
       tilesDiv = document.createElement("DIV");
   for (const tileId of Object.keys(TILE_COLORS)) {
-    let button = document.createElement("INPUT");
-    button.type = "button";
+    let button = document.createElement("BUTTON");
+    button.innerHTML = tileId.replace("_", " ");
     button.value = tileId;
+    if (/[0-9A].[0-9A].[0-9A]./.test(TILE_COLORS[tileId])) {
+      button.style = `color: white; background-color: ${TILE_COLORS[tileId]};`;
+    }
+    else {
+      button.style = `color: black; background-color: ${TILE_COLORS[tileId]};`;
+    }
     button.addEventListener("click", function(e) {
       let tile_id = document.getElementById("tile_id"),
           tile_color = document.getElementById("tile_color");
