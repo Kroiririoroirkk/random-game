@@ -13,18 +13,22 @@
       <p>Or return to the <a href="index.html">homepage</a>?</p>
       <p>Enter the size of your map:</p>
       <input type="number" id="height" name="height"> tiles tall and <input type="number" id="width" name="width"> tiles wide<br>
-      <input type="button" value="Make my map!" onclick="makeMap()">
+      <button onclick="makeMap()">Make my map!"</button>
       <p>Or... import a map!</p>
       <textarea id="import"></textarea>
-      <input type="button" value="Import a map!" onclick="importMap()">
+      <button onclick="importMap()">Import a map!</button>
     </div>
     <div id="toolbardiv" class="main" style="display: none;">
-      <input type="color" value="#000000" id="tile_color">
-      <input type="text" value="empty" id="tile_id">
-      <input type="button" value="Generate code!" onclick="makeOutput()">
+      <button onclick="makeOutput()">Generate code!</button>
+      <p>
+        CURRENT TILE<br>
+        Color: <input type="color" value="#000000" id="tile_color"><br>
+        Value: <input type="text" value="empty" id="tile_id">
+      </p>
+
     </div>
     <div id="mapdiv" class="main" style="display: none;">
-      <table id="map"></table>
+      <table id="map"></table><br>
     </div>
     <div id="outputdiv" class="main" style="display: none;">
       <p>Output:</p>

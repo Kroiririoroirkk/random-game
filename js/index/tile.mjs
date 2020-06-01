@@ -86,16 +86,16 @@ class TilePlus extends Tile {
 }
 
 class Empty extends Tile {}
-Tile.register("empty", Empty, null, "rgb(0, 0, 0)");
+Tile.register("empty", Empty, null, "#000000");
 
 class Grass extends Tile {}
-Tile.register("grass", Grass, "grass.png", "rgb(0, 255, 0)");
+Tile.register("grass", Grass, "grass.png", "#00FF00");
 
 class WildGrass extends Tile {}
-Tile.register("wild_grass", WildGrass, "wild-grass.png", "rgb(0, 180, 0)");
+Tile.register("wild_grass", WildGrass, "wild-grass.png", "#3DB846");
 
 class Wall extends Tile {}
-Tile.register("wall", Wall, "wall.png", "rgb(210, 105, 30)");
+Tile.register("wall", Wall, "wall.png", "#606060");
 
 class PortalData {
   constructor(groundTile) {
@@ -131,7 +131,7 @@ class Portal extends TilePlus {
             ...super.render(game)];
   }
 }
-Tile.register("portal", Portal, null, "rgb(0, 0, 0)");
+Tile.register("portal", Portal, null, "#C996FF");
 
 class SignData {
   constructor(groundTile) {
@@ -150,31 +150,31 @@ class Sign extends TilePlus {
             ...(super.render(game).map(r => r.withY(this.pos.y + SIGN_HEIGHT)))];
   }
 }
-Tile.register("sign", Sign, "sign.png", "rgb(255, 255, 0)");
+Tile.register("sign", Sign, "sign.png", "#FFFF00");
 
 class DeepWater extends Tile {}
-Tile.register("deep_water", DeepWater, "deep-water.png", "rgb(0, 10, 190)");
+Tile.register("deep_water", DeepWater, "deep-water.png", "#0000FF");
 
 class ShallowWater extends Tile {}
-Tile.register("shallow_water", ShallowWater, "shallow-water.png", "rgb(0, 90, 120)");
+Tile.register("shallow_water", ShallowWater, "shallow-water.png", "#64B3F4");
 
 class Dirt extends Tile {}
-Tile.register("dirt", Dirt, "dirt.png", "rgb(100, 90, 40)");
+Tile.register("dirt", Dirt, "dirt.png", "#645A28");
 
 class Desert extends Tile {}
-Tile.register("desert", Desert, "desert.png", "rgb(190, 170, 70)");
+Tile.register("desert", Desert, "desert.png", "#DAD79C");
 
 class Lava extends Tile {}
-Tile.register("lava", Lava, "lava.png", "rgb(255, 150, 0)");
+Tile.register("lava", Lava, "lava.png", "#EC731C");
 
 class Floor extends Tile {}
-Tile.register("floor", Floor, ["floor1.png", "floor2.png"], "rgb(140, 100, 60)");
+Tile.register("floor", Floor, ["floor1.png", "floor2.png"], "#DDDDDD");
 
 class IndoorWall extends Tile {}
-Tile.register("indoor_wall", IndoorWall, "indoor_wall.png", "rgb(0, 50, 0)");
+Tile.register("indoor_wall", IndoorWall, "indoor_wall.png", "#00711A");
 
 class Barrier extends Tile {}
-Tile.register("barrier", Barrier, null, "rgb(0, 0, 0)");
+Tile.register("barrier", Barrier, null, "#B0B0B0");
 
 export {Tile, TilePlus, Empty, Grass, WildGrass, Wall,
         PortalData, Portal, SignData, Sign,
