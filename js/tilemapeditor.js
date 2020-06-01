@@ -30,6 +30,7 @@ function initializeToolbar() {
       tilesDiv = document.createElement("FORM");
   for (const tileId of Object.keys(TILE_COLORS)) {
     let button = document.createElement("BUTTON");
+    button.type = "button";
     button.innerHTML = tileId.replace("_", " ");
     button.value = tileId;
     if (/[0-9A].[0-9A].[0-9A]./.test(TILE_COLORS[tileId])) {
