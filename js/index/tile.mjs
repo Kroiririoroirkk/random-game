@@ -39,7 +39,7 @@ class Tile {
   animate() {}
 
   static register(tileId, tileClass,
-                        sprite=null, fillStyle="rgb(50, 50, 50)") {
+                        sprite=null, fillStyle="#000000") {
     if (tiles.has(tileId)) {
       throw new Error(`Tile ID ${tileId} is already in use.`);
     } else {
@@ -86,7 +86,7 @@ class TilePlus extends Tile {
 }
 
 class Empty extends Tile {}
-Tile.register("empty", Empty, null, "#000000");
+Tile.register("empty", Empty);
 
 class Grass extends Tile {}
 Tile.register("grass", Grass, "grass.png", "#00FF00");
@@ -174,7 +174,7 @@ class IndoorWall extends Tile {}
 Tile.register("indoor_wall", IndoorWall, "indoor_wall.png", "#00711A");
 
 class Barrier extends Tile {}
-Tile.register("barrier", Barrier, null, "#B0B0B0");
+Tile.register("barrier", Barrier);
 
 export {Tile, TilePlus, Empty, Grass, WildGrass, Wall,
         PortalData, Portal, SignData, Sign,
