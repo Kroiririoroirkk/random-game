@@ -17,7 +17,11 @@ div.main {
   background-color: pink;
   color: purple;
   font: 20px sans-serif;
-  text-align: center;
+  text-align: left;
+}
+
+form {
+  margin: 25px auto;
 }
 
 input[type="number"] {
@@ -27,11 +31,6 @@ input[type="number"] {
 button[onclick="makeOutput()"] {
   background-color: purple;
   color: #eee;
-}
-
-#toolbardiv p {
-  margin-left: 40%;
-  text-align: left;
 }
 
 #toolbardiv button {

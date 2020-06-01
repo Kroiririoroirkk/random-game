@@ -27,7 +27,7 @@ const DEFAULT_TILE = "grass";
 
 function initializeToolbar() {
   let toolbar = document.getElementById("toolbardiv"),
-      tilesDiv = document.createElement("DIV");
+      tilesDiv = document.createElement("FORM");
   for (const tileId of Object.keys(TILE_COLORS)) {
     let button = document.createElement("BUTTON");
     button.innerHTML = tileId.replace("_", " ");
