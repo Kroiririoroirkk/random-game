@@ -8,6 +8,7 @@ import {ContextMenus} from "./index/contextmenu.mjs";
 import {DeathScreen} from "./index/death.mjs";
 import {Entity} from "./index/entity.mjs";
 import {Dir, Vec} from "./index/geometry.mjs";
+import {KeyBinding} from "./index/keybinding.mjs";
 import {Player, OtherPlayer} from "./index/player.mjs";
 import {Render} from "./index/render.mjs";
 import {SampleRateSlider} from "./index/slider.mjs";
@@ -31,7 +32,6 @@ class Game {
   constructor(ws, username) {
     this.ws = ws;
     this.canvasCtx = this.makePage(username);
-    this.pressedKeys = new Set();
     this.playerObj = null;
     this.otherPlayerObjs = [];
     this.map = [];
@@ -44,10 +44,10 @@ class Game {
     this.sampleRateSlider = null;
     this.battleMenu = null;
     this.deathScreen = null;
+    this.keyBinding = new KeyBinding();
     this.scaled = false;
     this.contextMenu = ContextMenus.MAP;
     this.sampleRate = DEFAULT_SAMPLE_RATE;
-    this.registerKeyListeners();
   }
 
   makePage() {
@@ -62,11 +62,6 @@ class Game {
     document.body.style.overflow = "hidden";
     document.body.appendChild(canvas);
     return ctx;
-  }
-
-  registerKeyListeners() {
-    addEventListener("keydown", e => this.pressedKeys.add(e.keyCode), false);
-    addEventListener("keyup", e => this.pressedKeys.delete(e.keyCode), false);
   }
 
   clearMap() {
@@ -128,6 +123,19 @@ function initialize() {
   game.dialogueBox = new DialogueBox(500, 100);
   game.sampleRateSlider = new SampleRateSlider(game);
   game.deathScreen = new DeathScreen(game);
+  game.keyBinding.addKeyBind("moveleft", "ArrowLeft");
+  game.keyBinding.addKeyBind("moveup", "ArrowUp");
+  game.keyBinding.addKeyBind("moveright", "ArrowRight");
+  game.keyBinding.addKeyBind("movedown", "ArrowDown");
+  game.keyBinding.addKeyBind("scrollup", "ArrowUp");
+  game.keyBinding.addKeyBind("scrolldown", "ArrowDown");
+  game.keyBinding.addKeyBind("fastmove", "ShiftRight");
+  game.keyBinding.addKeyBind("openlog", "KeyA");
+  game.keyBinding.addKeyBind("clearlog", "KeyX");
+  game.keyBinding.addKeyBind("openmenu", "KeyC");
+  game.keyBinding.addKeyBind("tag", "KeyZ");
+  game.keyBinding.addKeyBind("interact", "KeyZ");
+  game.keyBinding.addKeyBind("primarykey", "KeyZ");
 }
 
 function handleWSMessage(e) {
@@ -237,27 +245,27 @@ function update(dt) {
       let moveStr = "",
           multiplier = 1,
           fastmove = false;
-      if (game.pressedKeys.has(SHIFT)) {
+      if (game.keyBinding.checkIfPressed("fastmove")) {
         multiplier = SPEED_MULTIPLIER;
         fastmove = true;
       }
 
-      if (game.pressedKeys.has(KEY_LEFT)) {
+      if (game.keyBinding.checkIfPressed("moveleft")) {
         moveStr += "l";
         game.playerObj.move(new Vec(-PLAYER_SPEED*dt*multiplier, 0));
         game.playerObj.facing = Dir.LEFT;
       }
-      if (game.pressedKeys.has(KEY_RIGHT)) {
+      if (game.keyBinding.checkIfPressed("moveright")) {
         moveStr += "r";
         game.playerObj.move(new Vec(PLAYER_SPEED*dt*multiplier, 0));
         game.playerObj.facing = Dir.RIGHT;
       }
-      if (game.pressedKeys.has(KEY_UP)) {
+      if (game.keyBinding.checkIfPressed("moveup")) {
         moveStr += "u";
         game.playerObj.move(new Vec(0, -PLAYER_SPEED*dt*multiplier));
         game.playerObj.facing = Dir.UP;
       }
-      if (game.pressedKeys.has(KEY_DOWN)) {
+      if (game.keyBinding.checkIfPressed("movedown")) {
         moveStr += "d";
         game.playerObj.move(new Vec(0, PLAYER_SPEED*dt*multiplier));
         game.playerObj.facing = Dir.DOWN;
@@ -274,43 +282,43 @@ function update(dt) {
       } else {
         game.playerObj.stopMoving();
       }
-      if (game.pressedKeys.has(Z_KEY)) {
+      if (game.keyBinding.checkIfPressed("interact")) {
         game.ws.send("interact");
-        game.pressedKeys.delete(Z_KEY);
+        game.keyBinding.consume("interact");
       }
     }
   } else if (game.contextMenu === ContextMenus.LOG) {
-    if (game.pressedKeys.has(KEY_UP)) {
+    if (game.keyBinding.checkIfPressed("scrollup")) {
       game.gameLog.scrollUp();
-      game.pressedKeys.delete(KEY_UP);
+      game.keyBinding.consume("scrollup");
     }
-    if (game.pressedKeys.has(KEY_DOWN)) {
+    if (game.keyBinding.checkIfPressed("scrolldown")) {
       game.gameLog.scrollDown();
-      game.pressedKeys.delete(KEY_DOWN);
+      game.keyBinding.consume("scrolldown");
     }
-    if (game.pressedKeys.has(X_KEY)) {
+    if (game.keyBinding.checkIfPressed("clearlog")) {
       game.gameLog.clear(game);
-      game.pressedKeys.delete(X_KEY);
+      game.keyBinding.consume("clearlog");
     }
   } else if (game.contextMenu === ContextMenus.MENU) {
-    if (game.pressedKeys.has(KEY_UP)) {
+    if (game.keyBinding.checkIfPressed("scrollup")) {
       game.menu.cursorUp(game);
-      game.pressedKeys.delete(KEY_UP);
+      game.keyBinding.consume("scrollup");
     }
-    if (game.pressedKeys.has(KEY_DOWN)) {
+    if (game.keyBinding.checkIfPressed("scrolldown")) {
       game.menu.cursorDown(game);
-      game.pressedKeys.delete(KEY_DOWN);
+      game.keyBinding.consume("scrolldown");
     }
   } else if (game.contextMenu === ContextMenus.DIALOGUE) {
-    if (game.pressedKeys.has(KEY_UP)) {
+    if (game.keyBinding.checkIfPressed("scrollup")) {
       game.dialogueBox.onUpArrow(game);
-      game.pressedKeys.delete(KEY_UP);
+      game.keyBinding.consume("scrollup");
     }
-    if (game.pressedKeys.has(KEY_DOWN)) {
+    if (game.keyBinding.checkIfPressed("scrolldown")) {
       game.dialogueBox.onDownArrow(game);
-      game.pressedKeys.delete(KEY_DOWN);
+      game.keyBinding.consume("scrolldown");
     }
-    if (game.pressedKeys.has(Z_KEY)) {
+    if (game.keyBinding.checkIfPressed("primarykey")) {
       if (game.dialogueBox.state === DialogueState.CHOOSE) {
         let option = game.dialogueBox.getOptionSelected(),
             uuid   = game.dialogueBox.entityUuid;
@@ -318,34 +326,34 @@ function update(dt) {
       } else {
         game.ws.send("interact");
       }
-      game.pressedKeys.delete(Z_KEY);
+      game.keyBinding.consume("primarykey");
     }
   } else if (game.contextMenu === ContextMenus.BATTLE) {
     if (game.battleMenu) {
-      if (game.pressedKeys.has(KEY_UP)) {
+      if (game.keyBinding.checkIfPressed("scrollup")) {
         game.battleMenu.cursorUp(game);
-        game.pressedKeys.delete(KEY_UP);
+        game.keyBinding.consume("scrollup");
       }
-      if (game.pressedKeys.has(KEY_DOWN)) {
+      if (game.keyBinding.checkIfPressed("scrolldown")) {
         game.battleMenu.cursorDown(game);
-        game.pressedKeys.delete(KEY_DOWN);
+        game.keyBinding.consume("scrolldown");
       }
-      if (game.pressedKeys.has(Z_KEY)) {
+      if (game.keyBinding.checkIfPressed("primarykey")) {
         let option = game.battleMenu.getOptionSelected();
         game.ws.send("battlemove|"+option.toString());
         game.battleMenu.resetSelected();
-        game.pressedKeys.delete(Z_KEY);
+        game.keyBinding.consume("primarykey");
       }
     }
   } else if (game.contextMenu === ContextMenus.DEATH) {
-    if (game.pressedKeys.has(Z_KEY)) {
+    if (game.keyBinding.checkIfPressed("primarykey")) {
       game.contextMenu = ContextMenus.MAP;
-      game.pressedKeys.delete(Z_KEY)
+      game.keyBinding.consume("primarykey");
     }
   }
   if (game.contextMenu !== ContextMenus.DIALOGUE
       && game.contextMenu !== ContextMenus.BATTLE) {
-    if (game.pressedKeys.has(A_KEY)) {
+    if (game.keyBinding.checkIfPressed("openlog")) {
       if (game.contextMenu === ContextMenus.LOG) {
         game.contextMenu = ContextMenus.MAP;
         game.gameLog.unfocus(game);
@@ -356,8 +364,8 @@ function update(dt) {
         game.contextMenu = ContextMenus.LOG;
         game.gameLog.focus(game);
       }
-      game.pressedKeys.delete(A_KEY);
-    } else if (game.pressedKeys.has(C_KEY)) {
+      game.keyBinding.consume("openlog");
+    } else if (game.keyBinding.checkIfPressed("openmenu")) {
       if (game.contextMenu === ContextMenus.MENU) {
         game.contextMenu = ContextMenus.MAP;
         game.menu.unfocus(game);
@@ -368,7 +376,7 @@ function update(dt) {
         game.contextMenu = ContextMenus.MENU;
         game.menu.focus(game);
       }
-      game.pressedKeys.delete(C_KEY);
+      game.keyBinding.consume("openmenu");
     }
   }
 }
