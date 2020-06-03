@@ -35,7 +35,10 @@ load_worlds()
 async def run(ws, path):
     """Run the WebSocket server."""
     del path  # Unused
-    username = await ws.recv()
+    try:
+        username = await ws.recv()
+    except ConnectionClosed:
+        return
     try:
         player = running_game.get_player(username)
         print("Returning user: " + username)
