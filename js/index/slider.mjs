@@ -26,7 +26,7 @@ class SampleRateSlider {
   }
 
   registerKeyListeners(game) {
-    addEventListener("mousedown", e => {
+    document.addEventListener("mousedown", e => {
       const width = game.getScaledWidth(),
             height = game.getScaledHeight();
       if (e.clientX >= width + this.startX
@@ -36,7 +36,7 @@ class SampleRateSlider {
         this.active = true;
       }
     }, false);
-    addEventListener("mousemove", e => {
+    document.addEventListener("mousemove", e => {
       if (this.active) {
         let sliderX = e.clientX;
         const width = game.getScaledWidth();
@@ -45,7 +45,7 @@ class SampleRateSlider {
         this.setSliderX(game, sliderX);
       }
     }, false);
-    addEventListener("mouseup", e => {this.active = false;}, false);
+    document.addEventListener("mouseup", e => {this.active = false;}, false);
   }
 
   render(game) {

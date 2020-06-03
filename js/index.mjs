@@ -31,12 +31,12 @@ var game;
 class Game {
   constructor(ws, username) {
     this.ws = ws;
-    this.canvasCtx = this.makePage(username);
+    this.username = username;
+    this.canvasCtx = null;
     this.playerObj = null;
     this.otherPlayerObjs = [];
     this.map = [];
     this.entities = [];
-    this.username = username;
     this.usernameNotice = null;
     this.gameLog = null;
     this.menu = null;
@@ -48,6 +48,7 @@ class Game {
     this.scaled = false;
     this.contextMenu = ContextMenus.MAP;
     this.sampleRate = DEFAULT_SAMPLE_RATE;
+    this.makePage();
   }
 
   makePage() {
@@ -58,10 +59,9 @@ class Game {
     canvas.width = document.body.clientWidth;
     canvas.height = document.body.clientHeight;
     document.body.innerHTML = "";
-    document.body.style.backgroundColor = "white";
     document.body.style.overflow = "hidden";
     document.body.appendChild(canvas);
-    return ctx;
+    this.canvasCtx = ctx;
   }
 
   clearMap() {
@@ -115,14 +115,6 @@ document.getElementById("playbutton").addEventListener("click", startGame, false
 
 // ----------- GAME LOGIC -----------
 function initialize() {
-  game.usernameNotice = new UsernameNotice(game);
-  game.gameLog = new GameLog(game, 250);
-  game.menu = new Menu(game, 250);
-  game.menu.addItem(game, new MenuItem("Profile"));
-  game.menu.addItem(game, new MenuItem("Inventory"));
-  game.dialogueBox = new DialogueBox(500, 100);
-  game.sampleRateSlider = new SampleRateSlider(game);
-  game.deathScreen = new DeathScreen(game);
   game.keyBinding.addKeyBind("moveleft", "ArrowLeft");
   game.keyBinding.addKeyBind("moveup", "ArrowUp");
   game.keyBinding.addKeyBind("moveright", "ArrowRight");
@@ -136,6 +128,15 @@ function initialize() {
   game.keyBinding.addKeyBind("tag", "KeyZ");
   game.keyBinding.addKeyBind("interact", "KeyZ");
   game.keyBinding.addKeyBind("primarykey", "KeyZ");
+  game.usernameNotice = new UsernameNotice(game);
+  game.gameLog = new GameLog(game, 250);
+  game.menu = new Menu(game, 250);
+  game.menu.addItem(game, new MenuItem("Profile", function(){}));
+  game.menu.addItem(game, new MenuItem("Inventory", function(){}));
+  game.menu.addItem(game, new MenuItem("Controls", function(){game.keyBinding.createPage(game);}))
+  game.dialogueBox = new DialogueBox(500, 100);
+  game.sampleRateSlider = new SampleRateSlider(game);
+  game.deathScreen = new DeathScreen(game);
 }
 
 function handleWSMessage(e) {
@@ -308,6 +309,10 @@ function update(dt) {
     if (game.keyBinding.checkIfPressed("scrolldown")) {
       game.menu.cursorDown(game);
       game.keyBinding.consume("scrolldown");
+    }
+    if (game.keyBinding.checkIfPressed("primarykey")) {
+      game.menu.handlePress();
+      game.keyBinding.consume("primarykey");
     }
   } else if (game.contextMenu === ContextMenus.DIALOGUE) {
     if (game.keyBinding.checkIfPressed("scrollup")) {

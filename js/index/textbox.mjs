@@ -51,11 +51,7 @@ class GameLog {
 
   addMsg(game, msg) {
     this.messageLog.unshift(msg);
-    if (game.contextMenu === ContextMenus.LOG) {
-      this.focus(game);
-    } else {
-      this.unfocus(game);
-    }
+    this.redrawText(game);
   }
 
   scrollUp() {
@@ -76,7 +72,9 @@ class GameLog {
     const ctx = game.canvasCtx;
     ctx.font = "20px sans-serif";
     this.wrappedText = wrapText(ctx,
-      ["Press A to exit the log, X to clear, and arrow keys to scroll.",
+      [`Press ${game.keyBinding.getKeyBind("openlog")} to exit the log,`
+       + ` ${game.keyBinding.getKeyBind("clearlog")} to clear,`
+       + ` and ${game.keyBinding.getKeyBind("scrollup")} and ${game.keyBinding.getKeyBind("scrolldown")} to scroll.`,
       ...this.messageLog]
         .join(" \n ----- \n "), this.width);
   }
@@ -84,12 +82,20 @@ class GameLog {
   unfocus(game) {
     const ctx = game.canvasCtx;
     ctx.font = "20px sans-serif";
-    const openMsg = "Press A to open the log!";
+    const openMsg = `Press ${game.keyBinding.getKeyBind("openlog")} to open the log!`;
     const text = this.messageLog.length > 0 ?
       `${openMsg} \n ----- \n ${this.messageLog[0]}` :
       openMsg;
     this.wrappedText = wrapText(ctx, text, this.width);
     this.lineStart = 0;
+  }
+
+  redrawText(game) {
+    if (game.contextMenu === ContextMenus.LOG) {
+      this.focus(game);
+    } else {
+      this.unfocus(game);
+    }
   }
 
   clear(game) {
@@ -117,8 +123,9 @@ class GameLog {
 }
 
 class MenuItem {
-  constructor(text) {
+  constructor(text, onPress) {
     this.text = text;
+    this.onPress = onPress;
   }
 }
 
@@ -133,18 +140,20 @@ class Menu {
 
   addItem(game, item) {
     this.items.push(item);
-    if (game.contextMenu === ContextMenus.MENU) {
-      this.focus(game);
-    } else {
-      this.unfocus(game);
-    }
+    this.redrawText(game);
+  }
+
+  getSelectedItem() {
+    return this.items[this.currentlySelected];
   }
 
   focus(game) {
     const ctx = game.canvasCtx;
     ctx.font = "20px sans-serif";
     this.wrappedText = wrapText(ctx,
-      ["Press C to close the menu, arrow keys to pick an option, and Z to choose.",
+      [`Press ${game.keyBinding.getKeyBind("openmenu")} to close the menu,`
+       + ` ${game.keyBinding.getKeyBind("scrollup")} and ${game.keyBinding.getKeyBind("scrolldown")} to pick an option,`
+       + ` and ${game.keyBinding.getKeyBind("primarykey")} to choose.`,
       ...this.items.map((item, i) =>
         i === this.currentlySelected ?
           ">" + item.text :
@@ -155,7 +164,7 @@ class Menu {
     const ctx = game.canvasCtx;
     ctx.font = "20px sans-serif";
     this.wrappedText = wrapText(ctx,
-      "Press C to open the menu!", this.width);
+      `Press ${game.keyBinding.getKeyBind("openmenu")} to open the menu!`, this.width);
   }
 
   cursorUp(game) {
@@ -172,6 +181,18 @@ class Menu {
       this.currentlySelected -= this.items.length;
     }
     this.focus(game);
+  }
+
+  redrawText(game) {
+    if (game.contextMenu === ContextMenus.MENU) {
+      this.focus(game);
+    } else {
+      this.unfocus(game);
+    }
+  }
+
+  handlePress() {
+    this.getSelectedItem().onPress();
   }
 
   render(game) {
