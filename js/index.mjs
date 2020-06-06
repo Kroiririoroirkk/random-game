@@ -109,6 +109,9 @@ function startGame() {
   let username = document.getElementById("username").value;
   let ws = new WebSocket(SERVER_URL);
   game = new Game(ws, username);
+  ws.onclose = function(){
+    alert("The server has been reloaded! Please refresh.");
+  };
   main();
 }
 document.getElementById("playbutton").addEventListener("click", startGame, false);
