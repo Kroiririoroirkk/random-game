@@ -26,12 +26,96 @@ const TILE_COLORS = {
 
 const DEFAULT_TILE = "grass";
 
-const Contexts = {
+class TileCoord {
+  constructor(rowNum, colNum) {
+    this.rowNum = rowNum;
+    this.colNum = colNum;
+  }
+}
+
+class Selection {
+  constructor(upperLeft, lowerRight) {
+    this.upperLeft = upperLeft;
+    this.lowerRight = lowerRight;
+  }
+}
+
+class Context {
+  constructor() {
+    this.mode = ContextModes.DRAW;
+    this.selection = null;
+  }
+
+  setSelection(s) {
+    this.clearSelection();
+    this.selection = s;
+    for (let colNum = s.upperLeft.colNum;
+         colNum <= s.lowerRight.colNum;
+         colNum++) {
+      map.getTileHTML(s.upperLeft.rowNum, colNum).classList.add("top");
+      if (s.upperLeft.rowNum > 0) {
+        map.getTileHTML(s.upperLeft.rowNum-1, colNum).classList.add("bottom");
+      }
+      map.getTileHTML(s.lowerRight.rowNum, colNum).classList.add("bottom");
+      if (s.lowerRight.rowNum < map.tiles.length-1) {
+        map.getTileHTML(s.lowerRight.rowNum+1, colNum).classList.add("top");
+      }
+    }
+    for (let rowNum = s.upperLeft.rowNum;
+         rowNum <= s.lowerRight.rowNum;
+         rowNum++) {
+      map.getTileHTML(rowNum, s.upperLeft.colNum).classList.add("left");
+      if (s.upperLeft.colNum > 0) {
+        map.getTileHTML(rowNum, s.upperLeft.colNum-1).classList.add("right");
+      }
+      map.getTileHTML(rowNum, s.lowerRight.colNum).classList.add("right");
+      if (s.upperLeft.colNum < map.tiles[0].length-1) {
+        map.getTileHTML(rowNum, s.lowerRight.colNum+1).classList.add("left");
+      }
+    }
+  }
+
+  clearSelection() {
+    if (!this.selection) {return;}
+    const s = this.selection;
+    for (let colNum = s.upperLeft.colNum;
+         colNum <= s.lowerRight.colNum;
+         colNum++) {
+      map.getTileHTML(s.upperLeft.rowNum, colNum).classList.remove("top");
+      if (s.upperLeft.rowNum > 0) {
+        map.getTileHTML(s.upperLeft.rowNum-1, colNum).classList.remove("bottom");
+      }
+      map.getTileHTML(s.lowerRight.rowNum, colNum).classList.remove("bottom");
+      if (s.lowerRight.rowNum < map.tiles.length-1) {
+        map.getTileHTML(s.lowerRight.rowNum+1, colNum).classList.remove("top");
+      }
+    }
+    for (let rowNum = s.upperLeft.rowNum;
+         rowNum <= s.lowerRight.rowNum;
+         rowNum++) {
+      map.getTileHTML(rowNum, s.upperLeft.colNum).classList.remove("left");
+      if (s.upperLeft.colNum > 0) {
+        map.getTileHTML(rowNum, s.upperLeft.colNum-1).classList.remove("right");
+      }
+      map.getTileHTML(rowNum, s.lowerRight.colNum).classList.remove("right");
+      if (s.upperLeft.colNum < map.tiles[0].length-1) {
+        map.getTileHTML(rowNum, s.lowerRight.colNum+1).classList.remove("left");
+      }
+    }
+    this.selection = null;
+  }
+}
+
+const ContextModes = {
   DRAW: 1,
-  PICKER: 2
+  PICKER: 2,
+  SELECT_ONE: 3,
+  SELECT_TWO: 4,
+  FILL: 5
 };
 
 function initializeToolbar() {
+  context = new Context();
   let toolbar = document.getElementById("toolbardiv"),
       tilesDiv = document.createElement("FORM");
   for (const tileId of Object.keys(TILE_COLORS)) {
@@ -49,7 +133,7 @@ function initializeToolbar() {
           tile_color = document.getElementById("tile_color");
       tile_id.value = tileId;
       tile_color.value = TILE_COLORS[tileId];
-      context = Contexts.DRAW;
+      context.mode = ContextModes.DRAW;
     }, false);
     tilesDiv.append(button);
   }
@@ -59,9 +143,33 @@ function initializeToolbar() {
   tilePicker.type = "button";
   tilePicker.innerHTML = "Pick a tile!";
   tilePicker.addEventListener("click", function(e) {
-    context = Contexts.PICKER;
+    context.mode = ContextModes.PICKER;
   }, false);
   toolbar.append(tilePicker);
+
+  let selectButton = document.createElement("BUTTON");
+  selectButton.type = "button";
+  selectButton.innerHTML = "Select a region!";
+  selectButton.addEventListener("click", function(e) {
+    context.mode = ContextModes.SELECT_ONE;
+  }, false);
+  toolbar.append(selectButton);
+
+  let clearSelectionButton = document.createElement("BUTTON");
+  clearSelectionButton.type = "button";
+  clearSelectionButton.innerHTML = "Clear selection!";
+  clearSelectionButton.addEventListener("click", function(e) {
+    context.clearSelection();
+  }, false);
+  toolbar.append(clearSelectionButton);
+
+  let fillSelectionButton = document.createElement("BUTTON");
+  fillSelectionButton.type = "button";
+  fillSelectionButton.innerHTML = "Fill selection!";
+  fillSelectionButton.addEventListener("click", function(e) {
+    fillSelection();
+  }, false);
+  toolbar.append(fillSelectionButton);
 }
 
 class Tile {
@@ -100,13 +208,13 @@ class Map {
     this.mapElem.appendChild(row);
   }
 
-  getRow(rowNum) {
+  getRowHTML(rowNum) {
     return this.mapElem.children[rowNum];
   }
 
   addTile(rowNum) {
     this.tiles[rowNum].push(new Tile(DEFAULT_TILE, TILE_COLORS[DEFAULT_TILE]));
-    let row = this.getRow(rowNum),
+    let row = this.getRowHTML(rowNum),
         elem = document.createElement("TD");
     elem.style.backgroundColor = TILE_COLORS[DEFAULT_TILE];
     row.appendChild(elem);
@@ -133,18 +241,44 @@ function handleClick(e) {
       table = rowClicked.parentNode,
       colNum = Array.from(rowClicked.children).indexOf(cellClicked),
       rowNum = Array.from(table.children).indexOf(rowClicked);
-  if (context === Contexts.DRAW) {
+  if (context.mode === ContextModes.DRAW) {
     let tileId = document.getElementById("tile_id").value,
         tileColor = document.getElementById("tile_color").value,
         tile = new Tile(tileId, tileColor);
     map.setTile(rowNum, colNum, tile);
-  } else if (context === Contexts.PICKER) {
+  } else if (context.mode === ContextModes.PICKER) {
     let tile = map.getTile(rowNum, colNum),
         tileId = document.getElementById("tile_id"),
         tileColor = document.getElementById("tile_color");
     tileId.value = tile.tileId;
     tileColor.value = tile.color;
-    context = Contexts.DRAW;
+    context.mode = ContextModes.DRAW;
+  } else if (context.mode === ContextModes.SELECT_ONE) {
+    let clickedTileCoord = new TileCoord(rowNum, colNum);
+    context.setSelection(new Selection(clickedTileCoord, clickedTileCoord));
+    context.mode = ContextModes.SELECT_TWO;
+  } else if (context.mode === ContextModes.SELECT_TWO) {
+    if (context.selection) {
+      let clickedTileCoord = new TileCoord(rowNum, colNum);
+      context.setSelection(new Selection(context.selection.upperLeft, clickedTileCoord));
+    }
+  }
+}
+
+function fillSelection() {
+  let tileId = document.getElementById("tile_id").value,
+  tileColor = document.getElementById("tile_color").value,
+  tile = new Tile(tileId, tileColor);
+  if (context.selection) {
+    for (let rowNum = context.selection.upperLeft.rowNum;
+         rowNum <= context.selection.lowerRight.rowNum;
+         rowNum++) {
+      for (let colNum = context.selection.upperLeft.colNum;
+           colNum <= context.selection.lowerRight.colNum;
+           colNum++) {
+        map.setTile(rowNum, colNum, tile);
+      }
+    }
   }
 }
 

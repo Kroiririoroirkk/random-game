@@ -57,6 +57,22 @@ button[onclick="makeOutput()"] {
   border: 1px solid black;
 }
 
+#map td.top {
+  border-top: 1px dashed black;
+}
+
+#map td.bottom {
+  border-bottom: 1px dashed black;
+}
+
+#map td.left {
+  border-left: 1px dashed black;
+}
+
+#map td.right {
+  border-right: 1px dashed black;
+}
+
 #output {
   height: 200px;
   width: 100%;
