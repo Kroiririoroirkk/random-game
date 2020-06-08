@@ -1,6 +1,7 @@
 "use strict";
 
 var map;
+var context;
 window.onload = function() {
   document.getElementById("map").addEventListener("click", handleClick, false);
   initializeToolbar();
@@ -25,6 +26,11 @@ const TILE_COLORS = {
 
 const DEFAULT_TILE = "grass";
 
+const Contexts = {
+  DRAW: 1,
+  PICKER: 2
+};
+
 function initializeToolbar() {
   let toolbar = document.getElementById("toolbardiv"),
       tilesDiv = document.createElement("FORM");
@@ -32,7 +38,6 @@ function initializeToolbar() {
     let button = document.createElement("BUTTON");
     button.type = "button";
     button.innerHTML = tileId.replace("_", " ");
-    button.value = tileId;
     if (/[0-9A].[0-9A].[0-9A]./.test(TILE_COLORS[tileId])) {
       button.style = `color: white; background-color: ${TILE_COLORS[tileId]};`;
     }
@@ -44,10 +49,19 @@ function initializeToolbar() {
           tile_color = document.getElementById("tile_color");
       tile_id.value = tileId;
       tile_color.value = TILE_COLORS[tileId];
+      context = Contexts.DRAW;
     }, false);
     tilesDiv.append(button);
   }
   toolbar.append(tilesDiv);
+
+  let tilePicker = document.createElement("BUTTON");
+  tilePicker.type = "button";
+  tilePicker.innerHTML = "Pick a tile!";
+  tilePicker.addEventListener("click", function(e) {
+    context = Contexts.PICKER;
+  }, false);
+  toolbar.append(tilePicker);
 }
 
 class Tile {
@@ -99,11 +113,15 @@ class Map {
   }
 
   getTile(rowNum, colNum) {
+    return this.tiles[rowNum][colNum];
+  }
+
+  getTileHTML(rowNum, colNum) {
     return this.mapElem.children[rowNum].children[colNum];
   }
 
   setTile(rowNum, colNum, tile) {
-    let elem = this.getTile(rowNum, colNum);
+    let elem = this.getTileHTML(rowNum, colNum);
     elem.style.backgroundColor = tile.color;
     this.tiles[rowNum][colNum] = tile;
   }
@@ -114,11 +132,20 @@ function handleClick(e) {
       rowClicked = cellClicked.parentNode,
       table = rowClicked.parentNode,
       colNum = Array.from(rowClicked.children).indexOf(cellClicked),
-      rowNum = Array.from(table.children).indexOf(rowClicked),
-      tileId = document.getElementById("tile_id").value,
-      tileColor = document.getElementById("tile_color").value,
-      tile = new Tile(tileId, tileColor);
-  map.setTile(rowNum, colNum, tile);
+      rowNum = Array.from(table.children).indexOf(rowClicked);
+  if (context === Contexts.DRAW) {
+    let tileId = document.getElementById("tile_id").value,
+        tileColor = document.getElementById("tile_color").value,
+        tile = new Tile(tileId, tileColor);
+    map.setTile(rowNum, colNum, tile);
+  } else if (context === Contexts.PICKER) {
+    let tile = map.getTile(rowNum, colNum),
+        tileId = document.getElementById("tile_id"),
+        tileColor = document.getElementById("tile_color");
+    tileId.value = tile.tileId;
+    tileColor.value = tile.color;
+    context = Contexts.DRAW;
+  }
 }
 
 function importMap() {
