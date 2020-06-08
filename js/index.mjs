@@ -136,7 +136,10 @@ function initialize() {
   game.menu = new Menu(game, 250);
   game.menu.addItem(game, new MenuItem("Profile", function(){}));
   game.menu.addItem(game, new MenuItem("Inventory", function(){}));
-  game.menu.addItem(game, new MenuItem("Controls", function(){game.keyBinding.createPage(game);}))
+  game.menu.addItem(game, new MenuItem("Controls", function(){
+    game.contextMenu = ContextMenus.NONE;
+    game.keyBinding.createPage(game);
+  }));
   game.dialogueBox = new DialogueBox(500, 100);
   game.sampleRateSlider = new SampleRateSlider(game);
   game.deathScreen = new DeathScreen(game);
@@ -359,8 +362,9 @@ function update(dt) {
       game.keyBinding.consume("primarykey");
     }
   }
-  if (game.contextMenu !== ContextMenus.DIALOGUE
-      && game.contextMenu !== ContextMenus.BATTLE) {
+  if (game.contextMenu === ContextMenus.LOG
+      || game.contextMenu === ContextMenus.MENU
+      || game.contextMenu === ContextMenus.MAP) {
     if (game.keyBinding.checkIfPressed("openlog")) {
       if (game.contextMenu === ContextMenus.LOG) {
         game.contextMenu = ContextMenus.MAP;
@@ -390,9 +394,8 @@ function update(dt) {
 }
 
 function render(dt) {
-  let ctx = game.canvasCtx;
-
-  let width  = document.body.clientWidth,
+  let ctx = game.canvasCtx,
+      width  = document.body.clientWidth,
       height = document.body.clientHeight;
   if (ctx.canvas.width != width) {
     ctx.canvas.width = width;

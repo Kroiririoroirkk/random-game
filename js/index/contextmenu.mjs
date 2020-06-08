@@ -8,5 +8,6 @@ ContextMenus.MENU = 3;
 ContextMenus.DIALOGUE = 4;
 ContextMenus.BATTLE = 5;
 ContextMenus.DEATH = 6;
+ContextMenus.NONE = 7;
 
 export {ContextMenus};

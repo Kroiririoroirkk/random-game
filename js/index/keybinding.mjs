@@ -1,5 +1,7 @@
 "use strict";
 
+import {ContextMenus} from "./contextmenu.mjs";
+
 class KeyBinding {
   constructor() {
     this.pressedKeys = new Set();
@@ -38,6 +40,7 @@ class KeyBinding {
     button.type = "button";
     button.innerHTML = "Take me back to the game!";
     button.onclick = e => {
+      game.contextMenu = ContextMenus.MENU;
       game.makePage();
       game.gameLog.redrawText(game);
       game.menu.redrawText(game);
