@@ -23,3 +23,4 @@ def load_worlds():
     load_file("backyard")
     load_file("maze")
     load_file("lava_maze")
+    load_file("sam2")
