@@ -104,72 +104,116 @@ class Context {
     }
     this.selection = null;
   }
+
+  setDrawTile(tile) {
+    let tileId = document.getElementById("tile_id"),
+        tileColor = document.getElementById("tile_color");
+    tileId.value = tile.tileId;
+    tileColor.value = tile.color;
+  }
+
+  drawPixel(rowNum, colNum) {
+    let tileId = document.getElementById("tile_id").value,
+        tileColor = document.getElementById("tile_color").value,
+        tile = new Tile(tileId, tileColor);
+    map.setTile(rowNum, colNum, tile);
+  }
+
+  fillSelection() {
+    if (context.selection) {
+      for (let rowNum = context.selection.upperLeft.rowNum;
+           rowNum <= context.selection.lowerRight.rowNum;
+           rowNum++) {
+        for (let colNum = context.selection.upperLeft.colNum;
+             colNum <= context.selection.lowerRight.colNum;
+             colNum++) {
+          this.drawPixel(rowNum, colNum);
+        }
+      }
+    }
+  }
+
+  drawLine(coord1, coord2) {
+    let x1 = coord1.colNum,
+        y1 = coord1.rowNum,
+        x2 = coord2.colNum,
+        y2 = coord2.rowNum,
+        dx = Math.abs(x2 - x1),
+        dy = Math.abs(y2 - y1),
+        sx = (x1 < x2) ? 1 : -1,
+        sy = (y1 < y2) ? 1 : -1,
+        err = dx - dy;
+    while (true) {
+      this.drawPixel(y1, x1);
+      if ((x1 === x2) && (y1 === y2)) {break;}
+      let e2 = 2*err;
+      if (e2 > -dy) {
+        err -= dy;
+        x1  += sx;
+      }
+      if (e2 < dx) {
+        err += dx;
+        y1  += sy;
+      }
+    }
+  }
 }
 
-const ContextModes = {
-  DRAW: 1,
-  PICKER: 2,
-  SELECT_ONE: 3,
-  SELECT_TWO: 4,
-  FILL: 5
-};
+class ContextModes {}
+
+ContextModes.DRAW = 1;
+ContextModes.PICKER = 2;
+ContextModes.SELECT_ONE = 3;
+ContextModes.SELECT_TWO = 4;
+ContextModes.FILL = 5;
+ContextModes.LINE_ONE = 6;
+ContextModes.LINE_TWO = 7;
+
+function createToolbarButton(label, callback) {
+  let b = document.createElement("BUTTON");
+  b.type = "button";
+  b.innerHTML = label;
+  b.addEventListener("click", callback, false);
+  return b;
+}
 
 function initializeToolbar() {
   context = new Context();
   let toolbar = document.getElementById("toolbardiv"),
       tilesDiv = document.createElement("FORM");
   for (const tileId of Object.keys(TILE_COLORS)) {
-    let button = document.createElement("BUTTON");
-    button.type = "button";
-    button.innerHTML = tileId.replace("_", " ");
+    let button = createToolbarButton(tileId.replace("_", " "), function(e) {
+      let tile_id = document.getElementById("tile_id"),
+          tile_color = document.getElementById("tile_color");
+      tile_id.value = tileId;
+      tile_color.value = TILE_COLORS[tileId];
+      context.mode = ContextModes.DRAW;
+    });
     if (/[0-9A].[0-9A].[0-9A]./.test(TILE_COLORS[tileId])) {
       button.style = `color: white; background-color: ${TILE_COLORS[tileId]};`;
     }
     else {
       button.style = `color: black; background-color: ${TILE_COLORS[tileId]};`;
     }
-    button.addEventListener("click", function(e) {
-      let tile_id = document.getElementById("tile_id"),
-          tile_color = document.getElementById("tile_color");
-      tile_id.value = tileId;
-      tile_color.value = TILE_COLORS[tileId];
-      context.mode = ContextModes.DRAW;
-    }, false);
     tilesDiv.append(button);
   }
   toolbar.append(tilesDiv);
 
-  let tilePicker = document.createElement("BUTTON");
-  tilePicker.type = "button";
-  tilePicker.innerHTML = "Pick a tile!";
-  tilePicker.addEventListener("click", function(e) {
+  toolbar.append(createToolbarButton("Pick a tile!", function(e) {
     context.mode = ContextModes.PICKER;
-  }, false);
-  toolbar.append(tilePicker);
-
-  let selectButton = document.createElement("BUTTON");
-  selectButton.type = "button";
-  selectButton.innerHTML = "Select a region!";
-  selectButton.addEventListener("click", function(e) {
+  }));
+  toolbar.append(createToolbarButton("Select a region!", function(e) {
     context.mode = ContextModes.SELECT_ONE;
-  }, false);
-  toolbar.append(selectButton);
-
-  let clearSelectionButton = document.createElement("BUTTON");
-  clearSelectionButton.type = "button";
-  clearSelectionButton.innerHTML = "Clear selection!";
-  clearSelectionButton.addEventListener("click", function(e) {
+  }));
+  toolbar.append(createToolbarButton("Clear selection!", function(e) {
     context.clearSelection();
-  }, false);
-  toolbar.append(clearSelectionButton);
-
-  let fillSelectionButton = document.createElement("BUTTON");
-  fillSelectionButton.type = "button";
-  fillSelectionButton.innerHTML = "Fill selection!";
-  fillSelectionButton.addEventListener("click", function(e) {
-    fillSelection();
-  }, false);
-  toolbar.append(fillSelectionButton);
+  }));
+  toolbar.append(createToolbarButton("Fill selection!", function(e) {
+    context.fillSelection();
+  }));
+  toolbar.append(createToolbarButton("Draw a line!", function(e) {
+    context.mode = ContextModes.LINE_ONE;
+  }));
 }
 
 class Tile {
@@ -242,16 +286,10 @@ function handleClick(e) {
       colNum = Array.from(rowClicked.children).indexOf(cellClicked),
       rowNum = Array.from(table.children).indexOf(rowClicked);
   if (context.mode === ContextModes.DRAW) {
-    let tileId = document.getElementById("tile_id").value,
-        tileColor = document.getElementById("tile_color").value,
-        tile = new Tile(tileId, tileColor);
-    map.setTile(rowNum, colNum, tile);
+    context.drawPixel(rowNum, colNum);
   } else if (context.mode === ContextModes.PICKER) {
-    let tile = map.getTile(rowNum, colNum),
-        tileId = document.getElementById("tile_id"),
-        tileColor = document.getElementById("tile_color");
-    tileId.value = tile.tileId;
-    tileColor.value = tile.color;
+    let tile = map.getTile(rowNum, colNum);
+    context.setDrawTile(tile);
     context.mode = ContextModes.DRAW;
   } else if (context.mode === ContextModes.SELECT_ONE) {
     let clickedTileCoord = new TileCoord(rowNum, colNum);
@@ -262,23 +300,18 @@ function handleClick(e) {
       let clickedTileCoord = new TileCoord(rowNum, colNum);
       context.setSelection(new Selection(context.selection.upperLeft, clickedTileCoord));
     }
-  }
-}
-
-function fillSelection() {
-  let tileId = document.getElementById("tile_id").value,
-  tileColor = document.getElementById("tile_color").value,
-  tile = new Tile(tileId, tileColor);
-  if (context.selection) {
-    for (let rowNum = context.selection.upperLeft.rowNum;
-         rowNum <= context.selection.lowerRight.rowNum;
-         rowNum++) {
-      for (let colNum = context.selection.upperLeft.colNum;
-           colNum <= context.selection.lowerRight.colNum;
-           colNum++) {
-        map.setTile(rowNum, colNum, tile);
-      }
+    context.mode = ContextModes.SELECT_ONE;
+  } else if (context.mode === ContextModes.LINE_ONE) {
+    let clickedTileCoord = new TileCoord(rowNum, colNum);
+    context.setSelection(new Selection(clickedTileCoord, clickedTileCoord));
+    context.mode = ContextModes.LINE_TWO;
+  } else if (context.mode === ContextModes.LINE_TWO) {
+    if (context.selection) {
+      let startCoord = context.selection.upperLeft,
+          endCoord = new TileCoord(rowNum, colNum);
+      context.drawLine(startCoord, endCoord);
     }
+    context.mode = ContextModes.LINE_ONE;
   }
 }
 
