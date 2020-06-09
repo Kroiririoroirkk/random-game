@@ -124,7 +124,7 @@ function initialize() {
   game.keyBinding.addKeyBind("movedown", "ArrowDown");
   game.keyBinding.addKeyBind("scrollup", "ArrowUp");
   game.keyBinding.addKeyBind("scrolldown", "ArrowDown");
-  game.keyBinding.addKeyBind("fastmove", "ShiftRight");
+  game.keyBinding.addKeyBind("fastmove", "ShiftLeft");
   game.keyBinding.addKeyBind("openlog", "KeyA");
   game.keyBinding.addKeyBind("clearlog", "KeyX");
   game.keyBinding.addKeyBind("openmenu", "KeyC");
