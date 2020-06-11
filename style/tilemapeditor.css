@@ -34,7 +34,7 @@ button {
 }
 
 button:hover {
-  filter: brightness(80%);
+  filter: brightness(92%);
 }
 
 button[onclick="makeOutput()"] {
@@ -47,6 +47,10 @@ button[onclick="makeOutput()"] {
   padding: 10px;
   border: 0px;
   border-radius: 15px;
+}
+
+#toolbardiv button:hover, #mapdiv button:hover {
+  filter: brightness(80%);
 }
 
 #mapdiv {
