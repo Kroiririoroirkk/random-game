@@ -28,6 +28,14 @@ input[type="number"] {
   width: 50px;
 }
 
+button {
+  cursor: pointer;
+}
+
+button:hover {
+  transform: scale(1.1);
+}
+
 button[onclick="makeOutput()"] {
   background-color: purple;
   color: #eee;
@@ -42,13 +50,50 @@ button[onclick="makeOutput()"] {
 
 #mapdiv {
   overflow: auto;
-  text-align: left;
+}
+
+#mapdivcontainer {
+  display: grid;
+  grid-template-columns: 40px auto;
+  column-gap: 0;
+  row-gap: 0;
+  height: 800px;
+}
+
+.arrow, .arrow svg {
+  height: 33px;
+  width: 33px;
+  border: none;
+  background: none;
+  padding: 0;
+}
+
+#arrowstop {
+  grid-column: 2;
+  grid-row: 1;
+  height: 33px;
+}
+
+#arrowstop div {
+  height: 33px;
+}
+
+#arrowsleft {
+  grid-column: 1;
+  grid-row: 2;
+  width: 33px;
+}
+
+#arrowsleft div {
+  width: 33px;
 }
 
 #map {
   border-collapse: collapse;
   table-layout: fixed;
-  width: 1px;
+  width: 100%;
+  grid-column: 2;
+  grid-row: 2;
 }
 
 #map td {

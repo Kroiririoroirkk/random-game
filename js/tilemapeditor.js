@@ -24,7 +24,7 @@ const TILE_COLORS = {
   "barrier": "#B0B0B0"
 };
 
-const DEFAULT_TILE = "grass";
+const DEFAULT_TILE_ID = "grass";
 
 class TileCoord {
   constructor(rowNum, colNum) {
@@ -235,8 +235,8 @@ class Map {
   constructor(width=0, height=0) {
     this.tiles = [];
     this.mapElem = document.getElementById("map");
-    document.getElementById("toolbardiv").style.display = "block";
-    document.getElementById("mapdiv").style.display = "block";
+    document.getElementById("toolbardiv").style.display = "";
+    document.getElementById("mapdiv").style.display = "";
     this.mapElem.innerHTML = "";
     for (let i = 0; i < height; i++) {
       this.addRow();
@@ -246,10 +246,46 @@ class Map {
     }
   }
 
+  get width() {
+    if (this.tiles.length > 0) {
+      return this.tiles[0].length;
+    } else {
+      return 0;
+    }
+  }
+
+  get height() {
+    if (this.tiles.length > 0) {
+      return this.tiles.length;
+    } else {
+      return 0;
+    }
+  }
+
+  static makeDefaultTile() {
+    return new Tile(DEFAULT_TILE_ID, TILE_COLORS[DEFAULT_TILE_ID]);
+  }
+
   addRow() {
     this.tiles.push([]);
     let row = document.createElement("TR");
     this.mapElem.appendChild(row);
+  }
+
+  popRow() {
+    this.tiles.pop();
+    this.mapElem.removeChild(this.mapElem.lastChild);
+  }
+
+  addRowTop() {
+    this.tiles.unshift([]);
+    let row = document.createElement("TR");
+    this.mapElem.prepend(row);
+  }
+
+  popRowTop() {
+    this.tiles.unshift();
+    this.mapElem.removeChild(this.mapElem.firstChild);
   }
 
   getRowHTML(rowNum) {
@@ -257,11 +293,33 @@ class Map {
   }
 
   addTile(rowNum) {
-    this.tiles[rowNum].push(new Tile(DEFAULT_TILE, TILE_COLORS[DEFAULT_TILE]));
+    let tile = Map.makeDefaultTile();
+    this.tiles[rowNum].push(tile);
     let row = this.getRowHTML(rowNum),
         elem = document.createElement("TD");
-    elem.style.backgroundColor = TILE_COLORS[DEFAULT_TILE];
+    elem.style.backgroundColor = tile.color;
     row.appendChild(elem);
+  }
+
+  popTile(rowNum) {
+    this.tiles[rowNum].pop();
+    let row = this.getRowHTML(rowNum);
+    row.removeChild(row.lastChild);
+  }
+
+  addTileLeft(rowNum) {
+    let tile = Map.makeDefaultTile();
+    this.tiles[rowNum].unshift(tile);
+    let row = this.getRowHTML(rowNum),
+        elem = document.createElement("TD");
+    elem.style.backgroundColor = tile.color;
+    row.prepend(elem);
+  }
+
+  popTileLeft(rowNum) {
+    this.tiles[rowNum].shift();
+    let row = this.getRowHTML(rowNum);
+    row.removeChild(row.firstChild);
   }
 
   getTile(rowNum, colNum) {
@@ -315,6 +373,69 @@ function handleClick(e) {
   }
 }
 
+function expandLeft() {
+  if (map.height == 0) {
+    map.addRow();
+  }
+  for (let i = 0; i < map.height; i++) {
+    map.addTileLeft(i);
+  }
+}
+
+function shrinkLeft() {
+  if (map.width > 0) {
+    for (let i = 0; i < map.height; i++) {
+      map.popTileLeft(i);
+    }
+  }
+}
+
+function expandRight() {
+  if (map.height == 0) {
+    map.addRow();
+  }
+  for (let i = 0; i < map.height; i++) {
+    map.addTile(i);
+  }
+}
+
+function shrinkRight() {
+  if (map.width > 0) {
+    for (let i = 0; i < map.height; i++) {
+      map.popTile(i);
+    }
+  }
+}
+
+function expandTop() {
+  let w = Math.max(1, map.width);
+  map.addRowTop();
+  for (let i = 0; i < w; i++) {
+    map.addTile(0);
+  }
+}
+
+function shrinkTop() {
+  if (map.height > 0) {
+    map.popRowTop();
+  }
+}
+
+function expandBottom() {
+  let w = Math.max(1, map.width),
+      h = map.height;
+  map.addRow();
+  for (let i = 0; i < w; i++) {
+    map.addTile(h);
+  }
+}
+
+function shrinkBottom() {
+  if (map.height > 0) {
+    map.popRow();
+  }
+}
+
 function importMap() {
   let mapJson = document.getElementById("import").value,
       mapArr = JSON.parse(mapJson),
@@ -342,7 +463,7 @@ function makeMap() {
 function makeOutput() {
   const outputDiv = document.getElementById("outputdiv"),
         outputBox = document.getElementById("output");
-  outputDiv.style.display = "block";
+  outputDiv.style.display = "";
   let jsonTiles = map.tiles.map(row => row.map(tile => tile.toJSON()));
   outputBox.value = JSON.stringify(jsonTiles);
 }
