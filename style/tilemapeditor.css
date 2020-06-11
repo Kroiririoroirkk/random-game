@@ -30,10 +30,11 @@ input[type="number"] {
 
 button {
   cursor: pointer;
+  filter: brightness(100%);
 }
 
 button:hover {
-  transform: scale(1.1);
+  filter: brightness(80%);
 }
 
 button[onclick="makeOutput()"] {
