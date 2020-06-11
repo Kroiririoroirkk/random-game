@@ -4,6 +4,7 @@ var map;
 var context;
 window.onload = function() {
   document.getElementById("map").addEventListener("click", handleClick, false);
+  document.getElementById("spawnpointmap").addEventListener("click", handleClick, false);
   initializeToolbar();
 };
 
@@ -31,6 +32,17 @@ class TileCoord {
     this.rowNum = rowNum;
     this.colNum = colNum;
   }
+
+  static fromJSON(obj) {
+    return new TileCoord(obj["block_y"], obj["block_x"]);
+  }
+
+  toJSON() {
+    return {
+      "block_x": colNum,
+      "block_y": rowNum
+    };
+  }
 }
 
 class Selection {
@@ -42,8 +54,29 @@ class Selection {
 
 class Context {
   constructor() {
-    this.mode = ContextModes.DRAW;
+    this._viewMode = DisplayMode.MAP;
+    this._mode = ContextMode.DRAW;
     this.selection = null;
+  }
+
+  get viewMode() {
+    return this._viewMode;
+  }
+
+  set viewMode(m) {
+    this._viewMode.onexit();
+    this._viewMode = m;
+    this._viewMode.onenter();
+  }
+
+  get mode() {
+    return this._mode;
+  }
+
+  set mode(m) {
+    this._mode.onexit();
+    this._mode = m;
+    this._mode.onenter();
   }
 
   setSelection(s) {
@@ -159,15 +192,54 @@ class Context {
   }
 }
 
-class ContextModes {}
+class DisplayMode {
+  constructor(name, onenter=function(){}, onexit=function(){}) {
+    this.name = name;
+    this.onenter = onenter;
+    this.onexit = onexit;
+  }
+}
 
-ContextModes.DRAW = 1;
-ContextModes.PICKER = 2;
-ContextModes.SELECT_ONE = 3;
-ContextModes.SELECT_TWO = 4;
-ContextModes.FILL = 5;
-ContextModes.LINE_ONE = 6;
-ContextModes.LINE_TWO = 7;
+DisplayMode.MAP = new DisplayMode("map",
+  function() {
+    document.getElementById("map").style.display = "";
+  },
+  function() {
+    document.getElementById("map").style.display = "none";
+  });
+DisplayMode.SPAWNPOINTS = new DisplayMode("spawnpoints",
+  function() {
+    document.getElementById("spawnpointmap").style.display = "";
+  },
+  function() {
+    document.getElementById("spawnpointmap").style.display = "none";
+  });
+
+class ContextMode {
+  constructor(name, onenter=function(){}, onexit=function(){}) {
+    this.name = name;
+    this.onenter = onenter;
+    this.onexit = onexit;
+  }
+}
+
+ContextMode.DRAW = new ContextMode("draw");
+ContextMode.PICKER = new ContextMode("picker");
+ContextMode.SELECT_ONE = new ContextMode("selectOne");
+ContextMode.SELECT_TWO = new ContextMode("selectTwo");
+ContextMode.FILL = new ContextMode("fill");
+ContextMode.LINE_ONE = new ContextMode("lineOne");
+ContextMode.LINE_TWO = new ContextMode("lineTwo");
+ContextMode.ADD_SPAWNPOINT = new ContextMode("addSpawnpoint",
+  function() {
+    document.getElementById("tooloptionsdiv").style.display = "block";
+    document.getElementById("spawnpointoptions").style.display = "block";
+  },
+  function() {
+    document.getElementById("tooloptionsdiv").style.display = "none";
+    document.getElementById("spawnpointoptions").style.display = "none";
+  });
+ContextMode.REMOVE_SPAWNPOINT = new ContextMode("removeSpawnpoint");
 
 function createToolbarButton(label, callback) {
   let b = document.createElement("BUTTON");
@@ -187,7 +259,7 @@ function initializeToolbar() {
           tile_color = document.getElementById("tile_color");
       tile_id.value = tileId;
       tile_color.value = TILE_COLORS[tileId];
-      context.mode = ContextModes.DRAW;
+      context.mode = ContextMode.DRAW;
     });
     if (/[0-9A].[0-9A].[0-9A]./.test(TILE_COLORS[tileId])) {
       button.style = `color: white; background-color: ${TILE_COLORS[tileId]};`;
@@ -199,20 +271,32 @@ function initializeToolbar() {
   }
   toolbar.append(tilesDiv);
 
-  toolbar.append(createToolbarButton("Pick a tile!", function(e) {
-    context.mode = ContextModes.PICKER;
+  toolbar.append(createToolbarButton("Pick a tile", function(e) {
+    context.mode = ContextMode.PICKER;
   }));
-  toolbar.append(createToolbarButton("Select a region!", function(e) {
-    context.mode = ContextModes.SELECT_ONE;
+  toolbar.append(createToolbarButton("Select a region", function(e) {
+    context.mode = ContextMode.SELECT_ONE;
   }));
-  toolbar.append(createToolbarButton("Clear selection!", function(e) {
+  toolbar.append(createToolbarButton("Clear selection", function(e) {
     context.clearSelection();
   }));
-  toolbar.append(createToolbarButton("Fill selection!", function(e) {
+  toolbar.append(createToolbarButton("Fill selection", function(e) {
     context.fillSelection();
   }));
-  toolbar.append(createToolbarButton("Draw a line!", function(e) {
-    context.mode = ContextModes.LINE_ONE;
+  toolbar.append(createToolbarButton("Draw a line", function(e) {
+    context.mode = ContextMode.LINE_ONE;
+  }));
+  toolbar.append(createToolbarButton("Add spawnpoint", function(e) {
+    context.mode = ContextMode.ADD_SPAWNPOINT;
+  }));
+  toolbar.append(createToolbarButton("Remove spawnpoint", function(e) {
+    context.mode = ContextMode.REMOVE_SPAWNPOINT;
+  }));
+  toolbar.append(createToolbarButton("View spawnpoints", function(e) {
+    context.viewMode = DisplayMode.SPAWNPOINTS;
+  }));
+  toolbar.append(createToolbarButton("View map", function(e) {
+    context.viewMode = DisplayMode.MAP;
   }));
 }
 
@@ -231,13 +315,16 @@ class Tile {
   }
 }
 
-class Map {
+class World {
   constructor(width=0, height=0) {
     this.tiles = [];
     this.mapElem = document.getElementById("map");
+    this.spawnpointMapElem = document.getElementById("spawnpointmap");
     document.getElementById("toolbardiv").style.display = "";
     document.getElementById("mapdiv").style.display = "";
     this.mapElem.innerHTML = "";
+    this.spawnpointMapElem.innerHTML = "";
+    this.spawnpoints = new Map();
     for (let i = 0; i < height; i++) {
       this.addRow();
       for (let j = 0; j < width; j++) {
@@ -270,56 +357,76 @@ class Map {
     this.tiles.push([]);
     let row = document.createElement("TR");
     this.mapElem.appendChild(row);
+    let spawnpointRow = document.createElement("TR");
+    this.spawnpointMapElem.appendChild(spawnpointRow);
   }
 
   popRow() {
     this.tiles.pop();
     this.mapElem.removeChild(this.mapElem.lastChild);
+    this.spawnpointMapElem.removeChild(this.spawnpointMapElem.lastChild);
   }
 
   addRowTop() {
     this.tiles.unshift([]);
     let row = document.createElement("TR");
     this.mapElem.prepend(row);
+    let spawnpointRow = document.createElement("TR");
+    this.spawnpointMapElem.prepend(spawnpointRow);
   }
 
   popRowTop() {
     this.tiles.unshift();
     this.mapElem.removeChild(this.mapElem.firstChild);
+    this.spawnpointMapElem.removeChild(this.spawnpointMapElem.firstChild);
   }
 
   getRowHTML(rowNum) {
     return this.mapElem.children[rowNum];
   }
 
+  getSpawnpointRowHTML(rowNum) {
+    return this.spawnpointMapElem.children[rowNum];
+  }
+
   addTile(rowNum) {
-    let tile = Map.makeDefaultTile();
+    let tile = World.makeDefaultTile();
     this.tiles[rowNum].push(tile);
     let row = this.getRowHTML(rowNum),
         elem = document.createElement("TD");
     elem.style.backgroundColor = tile.color;
     row.appendChild(elem);
+    let spawnpointRow = this.getSpawnpointRowHTML(rowNum),
+        spawnpointElem = document.createElement("TD");
+    spawnpointRow.appendChild(spawnpointElem);
   }
 
   popTile(rowNum) {
     this.tiles[rowNum].pop();
     let row = this.getRowHTML(rowNum);
     row.removeChild(row.lastChild);
+    let spawnpointRow = this.getSpawnpointRowHTML(rowNum);
+    spawnpointRow.removeChild(row.lastChild);
   }
 
   addTileLeft(rowNum) {
-    let tile = Map.makeDefaultTile();
+    let tile = World.makeDefaultTile();
     this.tiles[rowNum].unshift(tile);
     let row = this.getRowHTML(rowNum),
         elem = document.createElement("TD");
     elem.style.backgroundColor = tile.color;
     row.prepend(elem);
+    let spawnpointRow = this.getSpawnpointRowHTML(rowNum),
+        spawnpointElem = document.createElement("TD");
+    spawnpointRow.prepend(spawnpointElem);
   }
 
   popTileLeft(rowNum) {
     this.tiles[rowNum].shift();
     let row = this.getRowHTML(rowNum);
     row.removeChild(row.firstChild);
+    let spawnpointRow = this.getSpawnpointRowHTML(rowNum);
+    spawnpointRow.removeChild(row.firstChild);
   }
 
   getTile(rowNum, colNum) {
@@ -330,10 +437,37 @@ class Map {
     return this.mapElem.children[rowNum].children[colNum];
   }
 
+  getTileSpawnpointHTML(rowNum, colNum) {
+    return this.spawnpointMapElem.children[rowNum].children[colNum];
+  }
+
   setTile(rowNum, colNum, tile) {
     let elem = this.getTileHTML(rowNum, colNum);
     elem.style.backgroundColor = tile.color;
     this.tiles[rowNum][colNum] = tile;
+  }
+
+  setSpawnpoint(spawnId, tileCoord) {
+    if (this.spawnpoints.has(spawnId)) {
+      this.removeSpawnpoint(spawnId);
+    }
+    this.removeSpawnpointByCoord(tileCoord);
+    this.spawnpoints.set(spawnId, tileCoord);
+    this.getTileSpawnpointHTML(tileCoord.rowNum, tileCoord.colNum).classList.add("hasspawn");
+  }
+
+  removeSpawnpoint(spawnId) {
+    let tc = this.spawnpoints.get(spawnId);
+    this.getTileSpawnpointHTML(tc.rowNum, tc.colNum).classList.remove("hasspawn");
+    this.spawnpoints.delete(spawnId);
+  }
+
+  removeSpawnpointByCoord(tileCoord) {
+    for (const [spawnId, spawnpointCoord] of this.spawnpoints) {
+      if (spawnpointCoord === tileCoord) {
+        this.removeSpawnpoint(spawnId);
+      }
+    }
   }
 }
 
@@ -342,34 +476,38 @@ function handleClick(e) {
       rowClicked = cellClicked.parentNode,
       table = rowClicked.parentNode,
       colNum = Array.from(rowClicked.children).indexOf(cellClicked),
-      rowNum = Array.from(table.children).indexOf(rowClicked);
-  if (context.mode === ContextModes.DRAW) {
+      rowNum = Array.from(table.children).indexOf(rowClicked),
+      clickedTileCoord = new TileCoord(rowNum, colNum);
+  if (context.mode === ContextMode.DRAW) {
     context.drawPixel(rowNum, colNum);
-  } else if (context.mode === ContextModes.PICKER) {
+  } else if (context.mode === ContextMode.PICKER) {
     let tile = map.getTile(rowNum, colNum);
     context.setDrawTile(tile);
-    context.mode = ContextModes.DRAW;
-  } else if (context.mode === ContextModes.SELECT_ONE) {
-    let clickedTileCoord = new TileCoord(rowNum, colNum);
+    context.mode = ContextMode.DRAW;
+  } else if (context.mode === ContextMode.SELECT_ONE) {
     context.setSelection(new Selection(clickedTileCoord, clickedTileCoord));
-    context.mode = ContextModes.SELECT_TWO;
-  } else if (context.mode === ContextModes.SELECT_TWO) {
+    context.mode = ContextMode.SELECT_TWO;
+  } else if (context.mode === ContextMode.SELECT_TWO) {
     if (context.selection) {
-      let clickedTileCoord = new TileCoord(rowNum, colNum);
       context.setSelection(new Selection(context.selection.upperLeft, clickedTileCoord));
     }
-    context.mode = ContextModes.SELECT_ONE;
-  } else if (context.mode === ContextModes.LINE_ONE) {
-    let clickedTileCoord = new TileCoord(rowNum, colNum);
+    context.mode = ContextMode.SELECT_ONE;
+  } else if (context.mode === ContextMode.LINE_ONE) {
     context.setSelection(new Selection(clickedTileCoord, clickedTileCoord));
-    context.mode = ContextModes.LINE_TWO;
-  } else if (context.mode === ContextModes.LINE_TWO) {
+    context.mode = ContextMode.LINE_TWO;
+  } else if (context.mode === ContextMode.LINE_TWO) {
     if (context.selection) {
-      let startCoord = context.selection.upperLeft,
-          endCoord = new TileCoord(rowNum, colNum);
-      context.drawLine(startCoord, endCoord);
+      let startCoord = context.selection.upperLeft;
+      context.drawLine(startCoord, clickedTileCoord);
     }
-    context.mode = ContextModes.LINE_ONE;
+    context.mode = ContextMode.LINE_ONE;
+  } else if (context.mode === ContextMode.ADD_SPAWNPOINT) {
+    let spawnId = document.getElementById("spawn_id").value;
+    if (spawnId) {
+      map.setSpawnpoint(spawnId, clickedTileCoord);
+    }
+  } else if (context.mode === ContextMode.REMOVE_SPAWNPOINT) {
+    map.removeSpawnpointByCoord(clickedTileCoord);
   }
 }
 
@@ -438,9 +576,11 @@ function shrinkBottom() {
 
 function importMap() {
   let mapJson = document.getElementById("import").value,
-      mapArr = JSON.parse(mapJson),
+      mapObj = JSON.parse(mapJson),
+      mapArr = mapObj["tiles"],
+      spawnpoints = mapObj["spawn_points"],
       tiles = [];
-  map = new Map();
+  map = new World();
   for (let row = 0; row < mapArr.length; row++) {
     map.addRow()
     for (let col = 0; col < mapArr[row].length; col++) {
@@ -452,18 +592,30 @@ function importMap() {
       map.setTile(row, col, new Tile(tileId, tileColor, tileData));
     }
   }
+  for (const spawnId of Object.keys(spawnpoints)) {
+    map.setSpawnpoint(spawnId, TileCoord.fromJSON(spawnpoints[spawnId]));
+  }
 }
 
 function makeMap() {
   const width = parseInt(document.getElementById("width").value),
         height = parseInt(document.getElementById("height").value);
-  map = new Map(width, height);
+  map = new World(width, height);
 }
 
 function makeOutput() {
   const outputDiv = document.getElementById("outputdiv"),
         outputBox = document.getElementById("output");
   outputDiv.style.display = "";
-  let jsonTiles = map.tiles.map(row => row.map(tile => tile.toJSON()));
-  outputBox.value = JSON.stringify(jsonTiles);
+  let outputObj = {},
+      jsonTiles = map.tiles.map(row => row.map(tile => tile.toJSON())),
+      jsonSpawnpoints = {};
+  for (const [spawnId, spawnpointCoord] of map.spawnpoints) {
+    jsonSpawnpoints[spawnId] = spawnpointCoord.toJSON();
+  }
+  outputObj["version"] = "0.1.0";
+  outputObj["tiles"] = jsonTiles;
+  outputObj["entities"] = [];
+  outputObj["spawn_points"] = jsonSpawnpoints;
+  outputBox.value = JSON.stringify(outputObj);
 }

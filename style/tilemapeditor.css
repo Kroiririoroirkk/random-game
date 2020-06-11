@@ -57,7 +57,6 @@ button[onclick="makeOutput()"] {
   grid-template-columns: 40px auto;
   column-gap: 0;
   row-gap: 0;
-  height: 800px;
 }
 
 .arrow, .arrow svg {
@@ -88,7 +87,7 @@ button[onclick="makeOutput()"] {
   width: 33px;
 }
 
-#map {
+#map, #spawnpointmap {
   border-collapse: collapse;
   table-layout: fixed;
   width: 100%;
@@ -96,25 +95,33 @@ button[onclick="makeOutput()"] {
   grid-row: 2;
 }
 
-#map td {
+#map td, #spawnpointmap td {
   width: 16px;
   height: 16px;
   border: 1px solid black;
 }
 
-#map td.top {
+#spawnpointmap td {
+  background-color: #ddd;
+}
+
+#spawnpointmap td.hasspawn {
+  background-color: #f00;
+}
+
+#map td.top, #spawnpointmap td.top {
   border-top: 1px dashed black;
 }
 
-#map td.bottom {
+#map td.bottom, #spawnpointmap td.bottom {
   border-bottom: 1px dashed black;
 }
 
-#map td.left {
+#map td.left, #spawnpointmap td.left {
   border-left: 1px dashed black;
 }
 
-#map td.right {
+#map td.right, #spawnpointmap td.right {
   border-right: 1px dashed black;
 }
 
