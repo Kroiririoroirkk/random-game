@@ -50,11 +50,16 @@
           <input type="text" value="empty" id="tile_id">
         </div>
       </form>
+      <form id="viewbar"></form>
     </div>
     <div id="tooloptionsdiv" class="main" style="display: none;">
       <form id="spawnpointoptions" style="display: none;">
-        <label for="spawn_id">Spawnpoint name:</label>
-        <input type="text" id="spawn_id">
+        <label for="spawn_id">Spawnpoint name (can only contain letters, numbers, and underscores):</label>
+        <input type="text" id="spawn_id" pattern="^[a-zA-Z0-9_]+$">
+      </form>
+      <form id="spawnpointname" style="display: none;">
+        <label for="spawn_name">Spawnpoint name:</label>
+        <output id="spawn_name" name="spawn_name"></output>
       </form>
     </div>
     <div id="mapdiv" class="main" style="display: none;">

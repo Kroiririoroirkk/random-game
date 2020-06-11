@@ -43,6 +43,10 @@ class TileCoord {
       "block_y": rowNum
     };
   }
+
+  equals(other) {
+    return this.rowNum === other.rowNum && this.colNum === other.colNum;
+  }
 }
 
 class Selection {
@@ -223,23 +227,46 @@ class ContextMode {
   }
 }
 
-ContextMode.DRAW = new ContextMode("draw");
-ContextMode.PICKER = new ContextMode("picker");
+ContextMode.DRAW = new ContextMode("draw", function() {
+  context.viewMode = DisplayMode.MAP;
+});
+ContextMode.PICKER = new ContextMode("picker", function() {
+  context.viewMode = DisplayMode.MAP;
+});
 ContextMode.SELECT_ONE = new ContextMode("selectOne");
 ContextMode.SELECT_TWO = new ContextMode("selectTwo");
-ContextMode.FILL = new ContextMode("fill");
-ContextMode.LINE_ONE = new ContextMode("lineOne");
-ContextMode.LINE_TWO = new ContextMode("lineTwo");
+ContextMode.FILL = new ContextMode("fill", function() {
+  context.viewMode = DisplayMode.MAP;
+});
+ContextMode.LINE_ONE = new ContextMode("lineOne", function() {
+  context.viewMode = DisplayMode.MAP;
+});
+ContextMode.LINE_TWO = new ContextMode("lineTwo", function() {
+  context.viewMode = DisplayMode.MAP;
+});
 ContextMode.ADD_SPAWNPOINT = new ContextMode("addSpawnpoint",
   function() {
-    document.getElementById("tooloptionsdiv").style.display = "block";
-    document.getElementById("spawnpointoptions").style.display = "block";
+    context.viewMode = DisplayMode.SPAWNPOINTS;
+    document.getElementById("tooloptionsdiv").style.display = "";
+    document.getElementById("spawnpointoptions").style.display = "";
   },
   function() {
     document.getElementById("tooloptionsdiv").style.display = "none";
     document.getElementById("spawnpointoptions").style.display = "none";
   });
-ContextMode.REMOVE_SPAWNPOINT = new ContextMode("removeSpawnpoint");
+ContextMode.REMOVE_SPAWNPOINT = new ContextMode("removeSpawnpoint", function() {
+  context.viewMode = DisplayMode.SPAWNPOINTS;
+});
+ContextMode.VIEW_SPAWNPOINT_NAME = new ContextMode("viewSpawnpointName",
+  function() {
+    context.viewMode = DisplayMode.SPAWNPOINTS;
+    document.getElementById("tooloptionsdiv").style.display = "";
+    document.getElementById("spawnpointname").style.display = "";
+  },
+  function() {
+    document.getElementById("tooloptionsdiv").style.display = "none";
+    document.getElementById("spawnpointname").style.display = "none";
+  });
 
 function createToolbarButton(label, callback) {
   let b = document.createElement("BUTTON");
@@ -252,14 +279,22 @@ function createToolbarButton(label, callback) {
 function initializeToolbar() {
   context = new Context();
   let toolbar = document.getElementById("toolbardiv"),
+      viewbar = document.getElementById("viewbar"),
       tilesDiv = document.createElement("FORM");
+
+  viewbar.append(createToolbarButton("View map", function(e) {
+    context.viewMode = DisplayMode.MAP;
+  }));
+  viewbar.append(createToolbarButton("View spawnpoints", function(e) {
+    context.viewMode = DisplayMode.SPAWNPOINTS;
+  }));
+
   for (const tileId of Object.keys(TILE_COLORS)) {
     let button = createToolbarButton(tileId.replace("_", " "), function(e) {
       let tile_id = document.getElementById("tile_id"),
           tile_color = document.getElementById("tile_color");
       tile_id.value = tileId;
       tile_color.value = TILE_COLORS[tileId];
-      context.mode = ContextMode.DRAW;
     });
     if (/[0-9A].[0-9A].[0-9A]./.test(TILE_COLORS[tileId])) {
       button.style = `color: white; background-color: ${TILE_COLORS[tileId]};`;
@@ -271,6 +306,9 @@ function initializeToolbar() {
   }
   toolbar.append(tilesDiv);
 
+  toolbar.append(createToolbarButton("Draw", function(e) {
+    context.mode = ContextMode.DRAW;
+  }));
   toolbar.append(createToolbarButton("Pick a tile", function(e) {
     context.mode = ContextMode.PICKER;
   }));
@@ -292,11 +330,8 @@ function initializeToolbar() {
   toolbar.append(createToolbarButton("Remove spawnpoint", function(e) {
     context.mode = ContextMode.REMOVE_SPAWNPOINT;
   }));
-  toolbar.append(createToolbarButton("View spawnpoints", function(e) {
-    context.viewMode = DisplayMode.SPAWNPOINTS;
-  }));
-  toolbar.append(createToolbarButton("View map", function(e) {
-    context.viewMode = DisplayMode.MAP;
+  toolbar.append(createToolbarButton("View spawnpoint name", function(e) {
+    context.mode = ContextMode.VIEW_SPAWNPOINT_NAME;
   }));
 }
 
@@ -447,6 +482,15 @@ class World {
     this.tiles[rowNum][colNum] = tile;
   }
 
+  getSpawnpointByCoord(tileCoord) {
+    for (const [spawnId, spawnpointCoord] of this.spawnpoints) {
+      if (spawnpointCoord.equals(tileCoord)) {
+        return spawnId;
+      }
+    }
+    return null;
+  }
+
   setSpawnpoint(spawnId, tileCoord) {
     if (this.spawnpoints.has(spawnId)) {
       this.removeSpawnpoint(spawnId);
@@ -458,15 +502,16 @@ class World {
 
   removeSpawnpoint(spawnId) {
     let tc = this.spawnpoints.get(spawnId);
-    this.getTileSpawnpointHTML(tc.rowNum, tc.colNum).classList.remove("hasspawn");
-    this.spawnpoints.delete(spawnId);
+    if (tc) {
+      this.getTileSpawnpointHTML(tc.rowNum, tc.colNum).classList.remove("hasspawn");
+      this.spawnpoints.delete(spawnId);
+    }
   }
 
   removeSpawnpointByCoord(tileCoord) {
-    for (const [spawnId, spawnpointCoord] of this.spawnpoints) {
-      if (spawnpointCoord === tileCoord) {
-        this.removeSpawnpoint(spawnId);
-      }
+    let spawn_id = this.getSpawnpointByCoord(tileCoord);
+    if (spawn_id) {
+      this.removeSpawnpoint(spawn_id);
     }
   }
 }
@@ -503,16 +548,22 @@ function handleClick(e) {
     context.mode = ContextMode.LINE_ONE;
   } else if (context.mode === ContextMode.ADD_SPAWNPOINT) {
     let spawnId = document.getElementById("spawn_id").value;
-    if (spawnId) {
+    if (/^[a-zA-Z0-9_]+$/.test(spawnId)) {
       map.setSpawnpoint(spawnId, clickedTileCoord);
     }
   } else if (context.mode === ContextMode.REMOVE_SPAWNPOINT) {
     map.removeSpawnpointByCoord(clickedTileCoord);
+  } else if (context.mode === ContextMode.VIEW_SPAWNPOINT_NAME) {
+    let spawnName = document.getElementById("spawn_name"),
+        spawnId = map.getSpawnpointByCoord(clickedTileCoord);
+    if (spawnId) {
+      spawnName.innerText = spawnId;
+    }
   }
 }
 
 function expandLeft() {
-  if (map.height == 0) {
+  if (map.height === 0) {
     map.addRow();
   }
   for (let i = 0; i < map.height; i++) {
@@ -529,7 +580,7 @@ function shrinkLeft() {
 }
 
 function expandRight() {
-  if (map.height == 0) {
+  if (map.height === 0) {
     map.addRow();
   }
   for (let i = 0; i < map.height; i++) {
@@ -593,7 +644,8 @@ function importMap() {
     }
   }
   for (const spawnId of Object.keys(spawnpoints)) {
-    map.setSpawnpoint(spawnId, TileCoord.fromJSON(spawnpoints[spawnId]));
+    map.setSpawnpoint(spawnId.replaceAll(/[^a-zA-Z0-9_]/, ""),
+      TileCoord.fromJSON(spawnpoints[spawnId]));
   }
 }
 
