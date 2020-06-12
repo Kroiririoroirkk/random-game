@@ -411,7 +411,7 @@ class World {
   }
 
   popRowTop() {
-    this.tiles.unshift();
+    this.tiles.shift();
     this.mapElem.removeChild(this.mapElem.firstChild);
     this.spawnpointMapElem.removeChild(this.spawnpointMapElem.firstChild);
   }
@@ -441,7 +441,7 @@ class World {
     let row = this.getRowHTML(rowNum);
     row.removeChild(row.lastChild);
     let spawnpointRow = this.getSpawnpointRowHTML(rowNum);
-    spawnpointRow.removeChild(row.lastChild);
+    spawnpointRow.removeChild(spawnpointRow.lastChild);
   }
 
   addTileLeft(rowNum) {
@@ -461,7 +461,7 @@ class World {
     let row = this.getRowHTML(rowNum);
     row.removeChild(row.firstChild);
     let spawnpointRow = this.getSpawnpointRowHTML(rowNum);
-    spawnpointRow.removeChild(row.firstChild);
+    spawnpointRow.removeChild(spawnpointRow.firstChild);
   }
 
   getTile(rowNum, colNum) {
@@ -544,6 +544,7 @@ function handleClick(e) {
     if (context.selection) {
       let startCoord = context.selection.upperLeft;
       context.drawLine(startCoord, clickedTileCoord);
+      context.clearSelection();
     }
     context.mode = ContextMode.LINE_ONE;
   } else if (context.mode === ContextMode.ADD_SPAWNPOINT) {
