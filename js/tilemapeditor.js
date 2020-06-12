@@ -534,7 +534,14 @@ function handleClick(e) {
     context.mode = ContextMode.SELECT_TWO;
   } else if (context.mode === ContextMode.SELECT_TWO) {
     if (context.selection) {
-      context.setSelection(new Selection(context.selection.upperLeft, clickedTileCoord));
+      let startTileCoord = context.selection.upperLeft,
+          minRow = Math.min(startTileCoord.rowNum, clickedTileCoord.rowNum),
+          maxRow = Math.max(startTileCoord.rowNum, clickedTileCoord.rowNum),
+          minCol = Math.min(startTileCoord.colNum, clickedTileCoord.colNum),
+          maxCol = Math.max(startTileCoord.colNum, clickedTileCoord.colNum);
+      context.setSelection(new Selection(
+        new TileCoord(minRow, minCol),
+        new TileCoord(maxRow, maxCol)));
     }
     context.mode = ContextMode.SELECT_ONE;
   } else if (context.mode === ContextMode.LINE_ONE) {
