@@ -27,6 +27,8 @@ const TILE_COLORS = {
 
 const DEFAULT_TILE_ID = "grass";
 
+const SELF = 1;
+
 class TileCoord {
   constructor(rowNum, colNum) {
     this.rowNum = rowNum;
@@ -39,8 +41,8 @@ class TileCoord {
 
   toJSON() {
     return {
-      "block_x": colNum,
-      "block_y": rowNum
+      "block_x": this.colNum,
+      "block_y": this.rowNum
     };
   }
 
@@ -267,6 +269,15 @@ ContextMode.VIEW_SPAWNPOINT_NAME = new ContextMode("viewSpawnpointName",
     document.getElementById("tooloptionsdiv").style.display = "none";
     document.getElementById("spawnpointname").style.display = "none";
   });
+ContextMode.SET_GROUND_TILE = new ContextMode("setGroundTile", function() {
+  context.viewMode = DisplayMode.MAP;
+});
+ContextMode.LINK_PORTAL_ONE = new ContextMode("linkPortalOne", function() {
+  context.viewMode = DisplayMode.MAP;
+});
+ContextMode.LINK_PORTAL_TWO = new ContextMode("linkPortalTwo", function() {
+  context.viewMode = DisplayMode.SPAWNPOINTS;
+});
 
 function createToolbarButton(label, callback) {
   let b = document.createElement("BUTTON");
@@ -333,20 +344,34 @@ function initializeToolbar() {
   toolbar.append(createToolbarButton("View spawnpoint name", function(e) {
     context.mode = ContextMode.VIEW_SPAWNPOINT_NAME;
   }));
+  toolbar.append(createToolbarButton("Set ground tile", function(e) {
+    context.mode = ContextMode.SET_GROUND_TILE;
+  }));
+  toolbar.append(createToolbarButton("Link portal", function(e) {
+    context.mode = ContextMode.LINK_PORTAL_ONE;
+  }));
 }
 
 class Tile {
-  constructor(tileId, color="#FF00FF", tileData=undefined) {
+  constructor(tileId, color="#FF00FF") {
     this.tileId = tileId;
     this.color = color;
-    this.tileData = tileData;
+    this.tileData = new Map();
   }
 
   toJSON() {
-    if (this.tileData) {
-      return {"tile_id": this.tileId, "tile_data": this.tileData};
+    if (this.tileData.size == 0) {
+      return {"tile_id": this.tileId};
     }
-    return {"tile_id": this.tileId};
+    let tileDataJSON = Object.fromEntries(this.tileData);
+    if (this.tileData.has("world_id") && tileDataJSON["world_id"] === SELF) {
+      tileDataJSON["world_id"] = document.getElementById("worldname").value;
+    }
+    return {"tile_id": this.tileId, "tile_data": tileDataJSON};
+  }
+
+  setMetadata(prop, value) {
+    this.tileData.set(prop, value);
   }
 }
 
@@ -567,6 +592,23 @@ function handleClick(e) {
     if (spawnId) {
       spawnName.innerText = spawnId;
     }
+  } else if (context.mode === ContextMode.SET_GROUND_TILE) {
+    let groundTileId = document.getElementById("tile_id").value,
+        groundTile = {"tile_id": tileId},
+        tile = map.getTile(rowNum, colNum);
+    tile.setMetadata("ground_tile", groundTile);
+  } else if (context.mode === ContextMode.LINK_PORTAL_ONE) {
+    context.setSelection(new Selection(clickedTileCoord, clickedTileCoord));
+    context.mode = ContextMode.LINK_PORTAL_TWO;
+  } else if (context.mode === ContextMode.LINK_PORTAL_TWO) {
+    let spawnId = map.getSpawnpointByCoord(clickedTileCoord),
+        portalCoord = context.selection.upperLeft,
+        portal = map.getTile(portalCoord.rowNum, portalCoord.colNum);
+    if (spawnId) {
+      portal.setMetadata("world_id", SELF);
+      portal.setMetadata("spawn_id", spawnId);
+    }
+    context.mode = ContextMode.LINK_PORTAL_ONE;
   }
 }
 
