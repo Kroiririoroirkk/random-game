@@ -8,7 +8,7 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico">
   </head>
   <body>
-    <div class="main">
+    <div>
       <h1>Make a tilemap!!</h1>
       <p>Or return to the <a href="index.html">homepage</a>?</p>
       <form>
@@ -35,7 +35,7 @@
         </div>
       </form>
     </div>
-    <div id="toolbardiv" class="main" style="display: none;">
+    <div id="toolbardiv" style="display: none;">
       <form>
         <button type="button" onclick="makeOutput()">Generate code!</button>
       </form>
@@ -52,7 +52,7 @@
       </form>
       <form id="viewbar"></form>
     </div>
-    <div id="tooloptionsdiv" class="main" style="display: none;">
+    <div id="tooloptionsdiv" style="display: none;">
       <form id="spawnpointoptions" style="display: none;">
         <label for="spawn_id">Spawnpoint name (can only contain letters, numbers, and underscores):</label>
         <input type="text" id="spawn_id" pattern="^[a-zA-Z0-9_]+$">
@@ -62,7 +62,7 @@
         <output id="spawn_name" name="spawn_name"></output>
       </form>
     </div>
-    <div id="mapdiv" class="main" style="display: none;">
+    <div id="mapdiv" style="display: none;">
       <div id="mapdivcontainer">
         <div id="arrowstop" style="position: relative;">
           <div style="display: inline-block;">
@@ -120,7 +120,7 @@
         <table id="spawnpointmap" style="display: none;"></table>
       </div>
     </div>
-    <div id="outputdiv" class="main" style="display: none;">
+    <div id="outputdiv" style="display: none;">
       <form>
         <label for="output">Output:</label>
         <textarea id="output" readonly></textarea>
