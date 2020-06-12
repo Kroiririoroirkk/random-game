@@ -30,11 +30,6 @@ input[type="number"] {
 
 button {
   cursor: pointer;
-  filter: brightness(100%);
-}
-
-button:hover {
-  filter: brightness(92%);
 }
 
 button[onclick="makeOutput()"] {
@@ -47,6 +42,10 @@ button[onclick="makeOutput()"] {
   padding: 10px;
   border: 0px;
   border-radius: 15px;
+}
+
+#toolbardiv button, #mapdiv button {
+  filter: brightness(100%);
 }
 
 #toolbardiv button:hover, #mapdiv button:hover {
