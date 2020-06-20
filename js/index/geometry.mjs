@@ -7,7 +7,7 @@ class Vec {
   }
 
   relativeTo(p) {
-    return new Vec(this.x - p.x, this.y - p.y);
+    return this.sub(p);
   }
 
   relToPlayer(game) {
@@ -20,6 +20,22 @@ class Vec {
 
   add(p) {
     return new Vec(this.x + p.x, this.y + p.y);
+  }
+
+  sub(p) {
+    return new Vec(this.x - p.x, this.y - p.y);
+  }
+
+  mul(k) {
+    return new Vec(k*this.x, k*this.y);
+  }
+
+  div(k) {
+    return new Vec(this.x/k, this.y/k);
+  }
+
+  static fromJSON(obj) {
+    return new Vec(obj["x"], obj["y"]);
   }
 }
 

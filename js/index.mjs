@@ -5,6 +5,7 @@ import {BLOCK_WIDTH, DEFAULT_SAMPLE_RATE, PLAYER_SPEED,
         SCALE_FACTOR, SPEED_MULTIPLIER, SERVER_URL}
         from "./index/config.mjs";
 import {ContextMenus} from "./index/contextmenu.mjs";
+import {Cutscene} from "./index/cutscene.mjs";
 import {DeathScreen} from "./index/death.mjs";
 import {Entity} from "./index/entity.mjs";
 import {Dir, Vec} from "./index/geometry.mjs";
@@ -146,14 +147,14 @@ function initialize() {
 }
 
 function handleWSMessage(e) {
-  console.log(e);
   if (e.data.startsWith("world|")) {
-    const VERSION = "0.1.0",
+    console.log(e);
+    const VERSION = "0.2.0",
           parts   = e.data.split("|"),
           world   = JSON.parse(parts.slice(1)),
-          tiles   = world.tiles,
-          spawn   = new Vec(world.spawn_pos.x, world.spawn_pos.y);
-    if (world.version === VERSION) {
+          tiles   = world["tiles"],
+          spawn   = Vec.fromJSON(world["spawn_pos"]);
+    if (world["version"] === VERSION) {
       game.clearMap();
       let map = [];
       for (let j = 0; j < tiles.length; j++) {
@@ -166,11 +167,15 @@ function handleWSMessage(e) {
         map.push(rowTiles);
       }
       game.map = map;
-      game.entities = world.entities.map(Entity.fromJSON);
+      game.entities = world["entities"].map(Entity.fromJSON);
       if (game.playerObj) {
         game.playerObj.pos = spawn;
       } else {
         game.playerObj = new Player(spawn);
+      }
+      game.cutscenes = world["cutscenes"].map(Cutscene.fromJSON);
+      if (game.cutscenes.length > 0) {
+        game.contextMenu = ContextMenus.CUTSCENE;
       }
     }
   } else if (e.data.startsWith("movedto|")) {
@@ -361,6 +366,14 @@ function update(dt) {
       game.contextMenu = ContextMenus.MAP;
       game.keyBinding.consume("primarykey");
     }
+  } else if (game.contextMenu === ContextMenus.CUTSCENE) {
+    if (game.cutscenes.length > 0) {
+      if (!game.cutscenes[0].update(game, dt)) {
+        game.cutscenes.shift();
+      }
+    } else {
+      game.contextMenu = ContextMenus.MAP;
+    }
   }
   if (game.contextMenu === ContextMenus.LOG
       || game.contextMenu === ContextMenus.MENU
@@ -437,8 +450,10 @@ function render(dt) {
 
       game.unscale();
       game.usernameNotice.render(game);
-      game.gameLog.render(game);
-      game.menu.render(game);
+      if (game.contextMenu !== ContextMenus.CUTSCENE) {
+        game.gameLog.render(game);
+        game.menu.render(game);
+      }
       game.dialogueBox.render(game);
       game.sampleRateSlider.render(game);
     }
@@ -464,7 +479,12 @@ function main() {
     };
     requestAnimationFrame(gameLoop(null));
     let getplayers = function() {
-      game.ws.send("getupdates");
+      if (game.contextMenu === ContextMenus.LOG
+          || game.contextMenu === ContextMenus.MENU
+          || game.contextMenu === ContextMenus.MAP
+          || game.contextMenu === ContextMenus.DIALOGUE) {
+        game.ws.send("getupdates");
+      }
       setTimeout(getplayers, 1000/game.sampleRate);
     };
     getplayers();

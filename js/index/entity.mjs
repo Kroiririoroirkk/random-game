@@ -59,12 +59,12 @@ class Entity {
   }
 
   static fromJSON(obj) {
-    const entityId     = obj.entity_id,
+    const entityId     = obj["entity_id"],
           entityClass  = Entity.getById(entityId),
-          entityUuid   = obj.uuid,
-          entityPos    = new Vec(obj.pos.x, obj.pos.y),
-          entityVel    = new Vec(obj.velocity.x, obj.velocity.y),
-          entityFacing = Dir.strToDir(obj.facing);
+          entityUuid   = obj["uuid"],
+          entityPos    = Vec.fromJSON(obj["pos"]),
+          entityVel    = Vec.fromJSON(obj["velocity"]),
+          entityFacing = Dir.strToDir(obj["facing"]);
     return new entityClass(entityUuid, entityPos, entityVel, entityFacing);
   }
 }

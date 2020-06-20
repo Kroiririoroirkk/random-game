@@ -9,5 +9,6 @@ ContextMenus.DIALOGUE = 4;
 ContextMenus.BATTLE = 5;
 ContextMenus.DEATH = 6;
 ContextMenus.NONE = 7;
+ContextMenus.CUTSCENE = 8;
 
 export {ContextMenus};

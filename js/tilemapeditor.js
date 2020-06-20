@@ -715,9 +715,10 @@ function makeOutput() {
   for (const [spawnId, spawnpointCoord] of map.spawnpoints) {
     jsonSpawnpoints[spawnId] = spawnpointCoord.toJSON();
   }
-  outputObj["version"] = "0.1.0";
+  outputObj["version"] = "0.2.0";
   outputObj["tiles"] = jsonTiles;
   outputObj["entities"] = [];
   outputObj["spawn_points"] = jsonSpawnpoints;
+  outputObj["cutscenes"] = [];
   outputBox.value = JSON.stringify(outputObj);
 }
