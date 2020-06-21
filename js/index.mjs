@@ -373,6 +373,7 @@ function update(dt) {
   } else if (game.contextMenu === ContextMenus.CUTSCENE) {
     if (game.keyBinding.checkIfPressed("skipcutscene")) {
       game.contextMenu = ContextMenus.MAP;
+      game.cutscenes[0].cleanup(game);
       game.cutscenes = [];
       game.keyBinding.consume("skipcutscene")
     } else {

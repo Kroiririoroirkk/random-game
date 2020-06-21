@@ -11,6 +11,8 @@ class Cutscene {
 
   update(game, dt) {} //Return false if cutscene is over, true otherwise.
 
+  cleanup(game) {} //Called when the cutscene is skipped.
+
   static register(sceneType, sceneClass) {
     if (cutscenes.has(sceneType)) {
       throw new Error(`Scene type ${sceneType} is already in use.`);
@@ -99,6 +101,10 @@ class DialogueScene extends Cutscene {
       this.activated = true;
     }
     return true;
+  }
+
+  cleanup(game) {
+    game.dialogueBox.endDialogue();
   }
 }
 Cutscene.register("dialogue", DialogueScene)
