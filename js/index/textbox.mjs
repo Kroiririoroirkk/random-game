@@ -43,7 +43,7 @@ class UsernameNotice {
 class CutsceneSkipInstruction {
   render(game) {
     const ctx = game.canvasCtx,
-          text = "Press " + game.keyBinding.getKeyBind("skipcutscene")
+          text = "Press " + game.keyBinding.getKeyBindPretty("skipcutscene")
                           + " to skip the cutscene.";
     ctx.font = "20px san-serif";
     ctx.fillStyle = "rgb(80, 0, 80)";
@@ -85,9 +85,9 @@ class GameLog {
     const ctx = game.canvasCtx;
     ctx.font = "20px sans-serif";
     this.wrappedText = wrapText(ctx,
-      [`Press ${game.keyBinding.getKeyBind("openlog")} to exit the log,`
-       + ` ${game.keyBinding.getKeyBind("clearlog")} to clear,`
-       + ` and ${game.keyBinding.getKeyBind("scrollup")} and ${game.keyBinding.getKeyBind("scrolldown")} to scroll.`,
+      [`Press ${game.keyBinding.getKeyBindPretty("openlog")} to exit the log,`
+       + ` ${game.keyBinding.getKeyBindPretty("clearlog")} to clear,`
+       + ` and ${game.keyBinding.getKeyBindPretty("scrollup")} and ${game.keyBinding.getKeyBindPretty("scrolldown")} to scroll.`,
       ...this.messageLog]
         .join(" \n ----- \n "), this.width);
   }
@@ -95,7 +95,7 @@ class GameLog {
   unfocus(game) {
     const ctx = game.canvasCtx;
     ctx.font = "20px sans-serif";
-    const openMsg = `Press ${game.keyBinding.getKeyBind("openlog")} to open the log!`;
+    const openMsg = `Press ${game.keyBinding.getKeyBindPretty("openlog")} to open the log!`;
     const text = this.messageLog.length > 0 ?
       `${openMsg} \n ----- \n ${this.messageLog[0]}` :
       openMsg;
@@ -164,9 +164,9 @@ class Menu {
     const ctx = game.canvasCtx;
     ctx.font = "20px sans-serif";
     this.wrappedText = wrapText(ctx,
-      [`Press ${game.keyBinding.getKeyBind("openmenu")} to close the menu,`
-       + ` ${game.keyBinding.getKeyBind("scrollup")} and ${game.keyBinding.getKeyBind("scrolldown")} to pick an option,`
-       + ` and ${game.keyBinding.getKeyBind("primarykey")} to choose.`,
+      [`Press ${game.keyBinding.getKeyBindPretty("openmenu")} to close the menu,`
+       + ` ${game.keyBinding.getKeyBindPretty("scrollup")} and ${game.keyBinding.getKeyBindPretty("scrolldown")} to pick an option,`
+       + ` and ${game.keyBinding.getKeyBindPretty("primarykey")} to choose.`,
       ...this.items.map((item, i) =>
         i === this.currentlySelected ?
           ">" + item.text :
@@ -177,7 +177,7 @@ class Menu {
     const ctx = game.canvasCtx;
     ctx.font = "20px sans-serif";
     this.wrappedText = wrapText(ctx,
-      `Press ${game.keyBinding.getKeyBind("openmenu")} to open the menu!`, this.width);
+      `Press ${game.keyBinding.getKeyBindPretty("openmenu")} to open the menu!`, this.width);
   }
 
   cursorUp(game) {

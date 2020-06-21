@@ -22,6 +22,29 @@ class KeyBinding {
     return this.keyBinds[eventName];
   }
 
+  static prettifyCode(code) {
+    if (code.startsWith("Key")) {
+      code = code.substring(3);
+    } else if (code === "ArrowLeft") {
+      code = "←";
+    } else if (code === "ArrowUp") {
+      code = "↑";
+    } else if (code === "ArrowRight") {
+      code = "→";
+    } else if (code === "ArrowDown") {
+      code = "↓";
+    } else if (code === "ShiftLeft") {
+      code = "Shift (left)";
+    } else if (code === "ShiftRight") {
+      code = "Shift (right)";
+    }
+    return code;
+  }
+
+  getKeyBindPretty(eventName) {
+    return KeyBinding.prettifyCode(this.getKeyBind(eventName));
+  }
+
   checkIfPressed(eventName) {
     return this.pressedKeys.has(this.keyBinds[eventName]);
   }
@@ -50,11 +73,11 @@ class KeyBinding {
       let div = document.createElement("DIV"),
           charInput = document.createElement("INPUT");
       charInput.type = "text";
-      charInput.value = this.keyBinds[eventName];
+      charInput.value = KeyBinding.prettifyCode(this.keyBinds[eventName]);
       charInput.readOnly = true;
       charInput.addEventListener("keydown", e => {
         this.keyBinds[eventName] = e.code;
-        charInput.value = e.code;
+        charInput.value = KeyBinding.prettifyCode(e.code);
       }, false);
       div.append(eventName + ": ", charInput);
       container.append(div);
