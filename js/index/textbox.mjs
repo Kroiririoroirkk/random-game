@@ -40,6 +40,19 @@ class UsernameNotice {
   }
 }
 
+class CutsceneSkipInstruction {
+  render(game) {
+    const ctx = game.canvasCtx,
+          text = "Press " + game.keyBinding.getKeyBind("skipcutscene")
+                          + " to skip the cutscene.";
+    ctx.font = "20px san-serif";
+    ctx.fillStyle = "rgb(80, 0, 80)";
+    ctx.fillRect(0, 31, ctx.measureText(text).width + 20, 30);
+    ctx.fillStyle = "rgb(255, 255, 255)";
+    ctx.fillText(text, 10, 51);
+  }
+}
+
 class GameLog {
   constructor(game, width) {
     this.width = width;
@@ -324,5 +337,5 @@ class DialogueBox {
   }
 }
 
-export {wrapText, UsernameNotice, GameLog, MenuItem, Menu,
-        DialogueState, DialogueBox};
+export {wrapText, UsernameNotice, CutsceneSkipInstruction,
+        GameLog, MenuItem, Menu, DialogueState, DialogueBox};

@@ -13,8 +13,9 @@ import {KeyBinding} from "./index/keybinding.mjs";
 import {Player, OtherPlayer} from "./index/player.mjs";
 import {Render} from "./index/render.mjs";
 import {SampleRateSlider} from "./index/slider.mjs";
-import {UsernameNotice, GameLog, MenuItem, Menu,
-        DialogueState, DialogueBox} from "./index/textbox.mjs";
+import {UsernameNotice, CutsceneSkipInstruction,
+        GameLog, MenuItem, Menu, DialogueState,
+        DialogueBox} from "./index/textbox.mjs";
 import {Tile} from "./index/tile.mjs";
 
 const SHIFT = 16;
@@ -39,6 +40,7 @@ class Game {
     this.map = [];
     this.entities = [];
     this.usernameNotice = null;
+    this.cutsceneSkipInstruction = null;
     this.gameLog = null;
     this.menu = null;
     this.dialogueBox = null;
@@ -132,7 +134,9 @@ function initialize() {
   game.keyBinding.addKeyBind("tag", "KeyZ");
   game.keyBinding.addKeyBind("interact", "KeyZ");
   game.keyBinding.addKeyBind("primarykey", "KeyZ");
-  game.usernameNotice = new UsernameNotice(game);
+  game.keyBinding.addKeyBind("skipcutscene", "KeyX");
+  game.usernameNotice = new UsernameNotice();
+  game.cutsceneSkipInstruction = new CutsceneSkipInstruction();
   game.gameLog = new GameLog(game, 250);
   game.menu = new Menu(game, 250);
   game.menu.addItem(game, new MenuItem("Profile", function(){}));
@@ -367,12 +371,18 @@ function update(dt) {
       game.keyBinding.consume("primarykey");
     }
   } else if (game.contextMenu === ContextMenus.CUTSCENE) {
-    if (game.cutscenes.length > 0) {
-      if (!game.cutscenes[0].update(game, dt)) {
-        game.cutscenes.shift();
-      }
-    } else {
+    if (game.keyBinding.checkIfPressed("skipcutscene")) {
       game.contextMenu = ContextMenus.MAP;
+      game.cutscenes = [];
+      game.keyBinding.consume("skipcutscene")
+    } else {
+      if (game.cutscenes.length > 0) {
+        if (!game.cutscenes[0].update(game, dt)) {
+          game.cutscenes.shift();
+        }
+      } else {
+        game.contextMenu = ContextMenus.MAP;
+      }
     }
   }
   if (game.contextMenu === ContextMenus.LOG
@@ -450,7 +460,9 @@ function render(dt) {
 
       game.unscale();
       game.usernameNotice.render(game);
-      if (game.contextMenu !== ContextMenus.CUTSCENE) {
+      if (game.contextMenu === ContextMenus.CUTSCENE) {
+        game.cutsceneSkipInstruction.render(game);
+      } else {
         game.gameLog.render(game);
         game.menu.render(game);
       }
