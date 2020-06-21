@@ -20,3 +20,7 @@ body > div {
   color: purple;
   font: 20px sans-serif;
 }
+
+input[readonly]:focus {
+  outline: 1px solid blue;
+}
