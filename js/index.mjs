@@ -1,6 +1,6 @@
 "use strict";
 
-import {Battle, BattleMenu} from "./index/battle.mjs";
+import {BattleMenu} from "./index/battle.mjs";
 import {BLOCK_WIDTH, DEFAULT_SAMPLE_RATE, PLAYER_SPEED,
         SCALE_FACTOR, SPEED_MULTIPLIER, SERVER_URL}
         from "./index/config.mjs";
@@ -125,7 +125,9 @@ function initialize() {
   game.keyBinding.addKeyBind("moveup", "ArrowUp");
   game.keyBinding.addKeyBind("moveright", "ArrowRight");
   game.keyBinding.addKeyBind("movedown", "ArrowDown");
+  game.keyBinding.addKeyBind("scrollleft", "ArrowLeft");
   game.keyBinding.addKeyBind("scrollup", "ArrowUp");
+  game.keyBinding.addKeyBind("scrollright", "ArrowRight");
   game.keyBinding.addKeyBind("scrolldown", "ArrowDown");
   game.keyBinding.addKeyBind("fastmove", "ShiftLeft");
   game.keyBinding.addKeyBind("openlog", "KeyA");
@@ -152,7 +154,6 @@ function initialize() {
 
 function handleWSMessage(e) {
   if (e.data.startsWith("world|")) {
-    console.log(e);
     const VERSION = "0.2.0",
           parts   = e.data.split("|"),
           world   = JSON.parse(parts.slice(1)),
@@ -235,21 +236,21 @@ function handleWSMessage(e) {
       game.gameLog.addMsg(game, tagging_player + " tagged " + tagged_player + "!");
     }
   } else if (e.data.startsWith("battlestart")) {
+    let parts = e.data.split("|"),
+        side = parts[1];
     game.contextMenu = ContextMenus.BATTLE;
-    game.battle = new Battle();
+    game.battleMenu = new BattleMenu(side);
   } else if (e.data.startsWith("battlemovereq")) {
     let parts = e.data.split("|"),
-        moves = parts.slice(1);
-    game.battleMenu = new BattleMenu(game, moves);
+        combatantUUID = parts[1];
+    game.battleMenu.handleMoveRequest(game, combatantUUID);
   } else if (e.data.startsWith("battlestatus")) {
     let parts = e.data.split("|"),
-        playerHp = parseInt(parts[1]),
-        enemyHp = parseInt(parts[2]);
-    game.battle.playerHp = playerHp;
-    game.battle.enemyHp = enemyHp;
+        battle = JSON.parse(parts[1]);
+    game.battleMenu.setBattle(game, battle);
   } else if (e.data.startsWith("battleend")) {
     game.contextMenu = ContextMenus.MAP;
-    game.battle = null;
+    game.battleMenu = null;
   } else if (e.data.startsWith("death")) {
     game.contextMenu = ContextMenus.DEATH;
   }
@@ -350,18 +351,24 @@ function update(dt) {
     }
   } else if (game.contextMenu === ContextMenus.BATTLE) {
     if (game.battleMenu) {
+      if (game.keyBinding.checkIfPressed("scrollleft")) {
+        game.battleMenu.tabLeft(game);
+        game.keyBinding.consume("scrollleft");
+      }
       if (game.keyBinding.checkIfPressed("scrollup")) {
         game.battleMenu.cursorUp(game);
         game.keyBinding.consume("scrollup");
+      }
+      if (game.keyBinding.checkIfPressed("scrollright")) {
+        game.battleMenu.tabRight(game);
+        game.keyBinding.consume("scrollright");
       }
       if (game.keyBinding.checkIfPressed("scrolldown")) {
         game.battleMenu.cursorDown(game);
         game.keyBinding.consume("scrolldown");
       }
       if (game.keyBinding.checkIfPressed("primarykey")) {
-        let option = game.battleMenu.getOptionSelected();
-        game.ws.send("battlemove|"+option.toString());
-        game.battleMenu.resetSelected();
+        game.battleMenu.handleEnter(game);
         game.keyBinding.consume("primarykey");
       }
     }
@@ -433,7 +440,6 @@ function render(dt) {
   ctx.fillRect(0, 0, width, height);
 
   if (game.contextMenu === ContextMenus.BATTLE) {
-    game.battle.render(game);
     if (game.battleMenu) {
       game.battleMenu.render(game);
     }
