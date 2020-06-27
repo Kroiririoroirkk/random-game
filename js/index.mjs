@@ -71,9 +71,9 @@ class Game {
     this.map = [];
   }
 
-  scale() {
+  scale(scaleFactor=SCALE_FACTOR) {
     this.scaled = true;
-    this.canvasCtx.setTransform(SCALE_FACTOR, 0, 0, SCALE_FACTOR, 0, 0);
+    this.canvasCtx.setTransform(scaleFactor, 0, 0, scaleFactor, 0, 0);
   }
 
   unscale() {

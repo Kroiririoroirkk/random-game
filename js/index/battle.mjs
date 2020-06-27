@@ -1,11 +1,14 @@
 "use strict";
 
+import {Images} from "./render.mjs";
 import {wrapText} from "./textbox.mjs";
 
 class Species {
-  constructor(id, displayName) {
+  constructor(id, displayName, leftSprite, rightSprite) {
     this.id = id;
     this.displayName = displayName;
+    this.leftSprite = leftSprite;
+    this.rightSprite = rightSprite;
   }
 
   static getById(id) {
@@ -16,8 +19,8 @@ class Species {
     }
   }
 }
-Species.HUMAN = new Species("human", "Human");
-Species.SCARPFALL = new Species("scarpfall", "Scarpfall");
+Species.HUMAN = new Species("human", "Human", "char-right-still.png", "char-left-still.png");
+Species.SCARPFALL = new Species("scarpfall", "Scarpfall", "scarpfall-left.png", "scarpfall-right.png");
 
 class Stats {
   constructor(hp, attack, defense, mattack, mdefense, speed, charisma, dex, stam) {
@@ -322,9 +325,30 @@ class BattleMenu {
   render(game) {
     const LINE_HEIGHT = 24,
           ctx         = game.canvasCtx,
-          startingY = game.getScaledHeight()/2;
+          startingY   = game.getScaledHeight()/2;
 
     ctx.font = "20px san-serif";
+
+    let combatantY = 64;
+    for (const combatant of this.userCombatants.values()) {
+      const img = Images.getImage(combatant.species.leftSprite);
+      if (img) {
+        ctx.drawImage(img,
+                      game.getScaledWidth()/4 - 32,
+                      combatantY);
+      }
+      combatantY += 32;
+    }
+    combatantY = 64;
+    for (const combatant of this.opponentCombatants.values()) {
+      const img = Images.getImage(combatant.species.rightSprite);
+      if (img) {
+        ctx.drawImage(img,
+                      3*game.getScaledWidth()/4 - 32,
+                      combatantY);
+      }
+      combatantY += 32;
+    }
 
     ctx.fillStyle = "rgb(80, 0, 80)";
     ctx.fillRect(0, startingY-2*LINE_HEIGHT, game.getScaledWidth(), 2*LINE_HEIGHT);
