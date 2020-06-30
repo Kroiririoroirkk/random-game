@@ -113,7 +113,8 @@ function startGame() {
   let ws = new WebSocket(SERVER_URL);
   game = new Game(ws, username);
   ws.onclose = function(){
-    alert("The server has been reloaded! Please refresh.");
+    alert("The server has been reloaded! The page will auto-refresh once you press OK.");
+    window.location.reload();
   };
   main();
 }
@@ -504,7 +505,7 @@ function main() {
           || game.contextMenu === ContextMenus.DIALOGUE) {
         game.ws.send("getupdates");
       }
-      setTimeout(getplayers, 1000/game.sampleRate);
+      window.setTimeout(getplayers, 1000/game.sampleRate);
     };
     getplayers();
   };
