@@ -26,6 +26,7 @@ Species.POUFFLE = new Species("pouffle", "Poufflé", "terrekin/pouffle-left.png"
 Species.LAVADOREY = new Species("lavadorey", "Lavadorey", "terrekin/lavadorey-left.png", "terrekin/lavadorey-right.png");
 Species.DONNERLO = new Species("donnerlo", "Donnerlo", "terrekin/donnerlo-left.png", "terrekin/donnerlo-right.png");
 Species.VINELETTE = new Species("vinelette", "Vinelette", "terrekin/vinelette-left.png", "terrekin/vinelette-right.png");
+Species.WHIRLYBIRD = new Species("whirlybird", "Whirlybird", "terrekin/whirlybird-left.png", "terrekin/whirlybird-right.png");
 
 class Stats {
   constructor(hp, attack, defense, mattack, mdefense, speed, charisma, dex, stam) {
