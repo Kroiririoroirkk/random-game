@@ -20,7 +20,12 @@ class Species {
   }
 }
 Species.HUMAN = new Species("human", "Human", "char-right-still.png", "char-left-still.png");
-Species.SCARPFALL = new Species("scarpfall", "Scarpfall", "scarpfall-left.png", "scarpfall-right.png");
+Species.SCARPFALL = new Species("scarpfall", "Scarpfall", "terrekin/scarpfall-left.png", "terrekin/scarpfall-right.png");
+Species.ORELICK = new Species("orelick", "Orelick", "terrekin/orelick-left.png", "terrekin/orelick-right.png");
+Species.POUFFLE = new Species("pouffle", "Poufflé", "terrekin/pouffle-left.png", "terrekin/pouffle-right.png");
+Species.LAVADOREY = new Species("lavadorey", "Lavadorey", "terrekin/lavadorey-left.png", "terrekin/lavadorey-right.png");
+Species.DONNERLO = new Species("donnerlo", "Donnerlo", "terrekin/donnerlo-left.png", "terrekin/donnerlo-right.png");
+Species.VINELETTE = new Species("vinelette", "Vinelette", "terrekin/vinelette-left.png", "terrekin/vinelette-right.png");
 
 class Stats {
   constructor(hp, attack, defense, mattack, mdefense, speed, charisma, dex, stam) {
