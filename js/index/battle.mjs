@@ -190,6 +190,7 @@ BattleMenuTab.TABS = [
   BattleMenuTab.ITEM,
   BattleMenuTab.RUN
 ];
+BattleMenuTab.MOVE_DESCRIPTION = new BattleMenuTab("moveDescription", "Move Description");
 
 class BattleMenu {
   constructor(side) {
@@ -198,13 +199,22 @@ class BattleMenu {
     this.userCombatants = new Map();
     this.opponentCombatants = new Map();
     this.openTab = BattleMenuTab.OVERVIEW;
+    this.tabs = BattleMenuTab.TABS;
     this.tabText = [];
     this.currentlySelected = 0;
     this.itemsLength = 0;
     this.combatantUUIDToAttack = null;
+
+    // Overview tab
     this.userCombatantsOverviewText = [];
     this.opponentCombatantsOverviewText = [];
+
+    // Attack tab
     this.attackMenuText = [];
+
+    // Move description tab
+    this.moveToDescribe = null;
+    this.descriptionText = "";
   }
 
   static otherSide(s) {
@@ -235,7 +245,7 @@ class BattleMenu {
   redraw(game) {
     const ctx = game.canvasCtx;
     ctx.font = "20px sans-serif";
-    this.tabText = BattleMenuTab.TABS.map(tab =>
+    this.tabText = this.tabs.map(tab =>
       tab === this.openTab ?
         ">" + tab.displayName :
         tab.displayName);
@@ -244,25 +254,32 @@ class BattleMenu {
       for (const combatant of this.userCombatants.values()) {
         textLines.push(`${combatant.species.displayName}: HP ${combatant.stats.hp}/${combatant.maxHP}, Stam ${combatant.stats.stam}`);
       }
-      this.userCombatantsOverviewText = wrapText(ctx,
-        textLines.join(" \n ----- \n "), game.getScaledWidth()*0.6 - 20);
+      this.userCombatantsOverviewText = textLines.join(" \n ----- \n ");
       textLines = ["Enemies"];
       for (const combatant of this.opponentCombatants.values()) {
         textLines.push(`${combatant.species.displayName}: HP ${Math.round(combatant.hpProportion*100)}%`);
       }
-      this.opponentCombatantsOverviewText = wrapText(ctx,
-        textLines.join(" \n ----- \n "), game.getScaledWidth()*0.4 - 20);
+      this.opponentCombatantsOverviewText = textLines.join(" \n ----- \n ");
     } else if (this.openTab === BattleMenuTab.ATTACK) {
-      this.attackMenuText = [];
+      this.attackMenuText = "";
       if (this.combatantUUIDToAttack) {
         const combatant = this.userCombatants.get(this.combatantUUIDToAttack);
-        this.attackMenuText = wrapText(ctx,
-          ["Choose a move:",
+        this.attackMenuText =
+          [`Choose a move! Use ${game.keyBinding.getKeyBindPretty("scrollup")} and ${game.keyBinding.getKeyBindPretty("scrolldown")} to move the cursor up and down,`
+            + ` ${game.keyBinding.getKeyBindPretty("primarykey")} to choose a move,`
+            + ` and ${game.keyBinding.getKeyBindPretty("secondarykey")} to obtain information about a move.`,
           ...combatant.moves.map((move, i) =>
             i === this.currentlySelected ?
               ">" + move.displayName :
-              move.displayName)].join(" \n ----- \n "), game.getScaledWidth() - 20);
+              move.displayName)].join(" \n ----- \n ");
         this.itemsLength = combatant.moves.length;
+      }
+    } else if (this.openTab === BattleMenuTab.MOVE_DESCRIPTION) {
+      this.descriptionText = "";
+      if (this.moveToDescribe) {
+        this.descriptionText =
+          [`Press ${game.keyBinding.getKeyBindPretty("secondarykey")} to return.`,
+          this.moveToDescribe.description].join(" \n ----- \n ");
       }
     }
   }
@@ -326,8 +343,25 @@ class BattleMenu {
       game.ws.send(msg);
       this.resetSelected();
       this.combatantUUIDToAttack = null;
+      this.itemsLength = 0;
       this.redraw(game);
     }
+  }
+
+  handleSecondaryEnter(game) {
+    if (this.openTab === BattleMenuTab.ATTACK) {
+      this.openTab = BattleMenuTab.MOVE_DESCRIPTION;
+      this.tabs = [BattleMenuTab.MOVE_DESCRIPTION];
+      let combatant = this.userCombatants.get(this.combatantUUIDToAttack);
+      this.moveToDescribe = combatant.moves[this.getOptionSelected()];
+    } else if (this.openTab === BattleMenuTab.MOVE_DESCRIPTION) {
+      this.openTab = BattleMenuTab.ATTACK;
+      this.tabs = BattleMenuTab.TABS;
+      this.moveToDescribe = null;
+    }
+    this.resetSelected();
+    this.itemsLength = 0;
+    this.redraw(game);
   }
 
   getOptionSelected() {
@@ -388,20 +422,31 @@ class BattleMenu {
 
     if (this.openTab === BattleMenuTab.OVERVIEW) {
       ctx.fillStyle = "rgb(255, 255, 255)";
-      let y = startingY;
-      for (const line of this.userCombatantsOverviewText) {
+      let y = startingY,
+          textLines = wrapText(ctx, this.userCombatantsOverviewText, game.getScaledWidth()*0.6 - 20);
+      for (const line of textLines) {
         y += LINE_HEIGHT;
         ctx.fillText(line, 10, y);
       }
       y = startingY;
-      for (const line of this.opponentCombatantsOverviewText) {
+      textLines = wrapText(ctx, this.opponentCombatantsOverviewText, game.getScaledWidth()*0.4 - 20);
+      for (const line of textLines) {
         y += LINE_HEIGHT;
         ctx.fillText(line, game.getScaledWidth()*0.6 + 10, y);
       }
     } else if (this.openTab === BattleMenuTab.ATTACK) {
       ctx.fillStyle = "rgb(255, 255, 255)";
-      let y = startingY;
-      for (const line of this.attackMenuText) {
+      let y = startingY,
+          textLines = wrapText(ctx, this.attackMenuText, game.getScaledWidth() - 20);
+      for (const line of textLines) {
+        y += LINE_HEIGHT;
+        ctx.fillText(line, 10, y);
+      }
+    } else if (this.openTab === BattleMenuTab.MOVE_DESCRIPTION) {
+      ctx.fillStyle = "rgb(255, 255, 255)";
+      let y = startingY,
+          textLines = wrapText(ctx, this.descriptionText, game.getScaledWidth() - 20);
+      for (const line of textLines) {
         y += LINE_HEIGHT;
         ctx.fillText(line, 10, y);
       }

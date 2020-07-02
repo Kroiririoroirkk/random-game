@@ -137,6 +137,7 @@ function initialize() {
   game.keyBinding.addKeyBind("tag", "KeyZ");
   game.keyBinding.addKeyBind("interact", "KeyZ");
   game.keyBinding.addKeyBind("primarykey", "KeyZ");
+  game.keyBinding.addKeyBind("secondarykey", "KeyX");
   game.keyBinding.addKeyBind("skipcutscene", "KeyX");
   game.usernameNotice = new UsernameNotice();
   game.cutsceneSkipInstruction = new CutsceneSkipInstruction();
@@ -371,6 +372,10 @@ function update(dt) {
       if (game.keyBinding.checkIfPressed("primarykey")) {
         game.battleMenu.handleEnter(game);
         game.keyBinding.consume("primarykey");
+      }
+      if (game.keyBinding.checkIfPressed("secondarykey")) {
+        game.battleMenu.handleSecondaryEnter(game);
+        game.keyBinding.consume("secondarykey");
       }
     }
   } else if (game.contextMenu === ContextMenus.DEATH) {
