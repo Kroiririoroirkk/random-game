@@ -279,7 +279,15 @@ class BattleMenu {
       if (this.moveToDescribe) {
         this.descriptionText =
           [`Press ${game.keyBinding.getKeyBindPretty("secondarykey")} to return.`,
-          this.moveToDescribe.description].join(" \n ----- \n ");
+          "-----",
+          `Name: ${this.moveToDescribe.displayName}`,
+          `Element: ${this.moveToDescribe.element.displayName}`,
+          `Type: ${this.moveToDescribe.type.displayName}`,
+          `Stamina Draw: ${this.moveToDescribe.staminaDraw}`,
+          `Power: ${this.moveToDescribe.power}`,
+          `Move Time: ${this.moveToDescribe.moveTime}`,
+          `Accuracy: ${this.moveToDescribe.accuracy*100}%`,
+          `Description: ${this.moveToDescribe.description}`].join(" \n ");
       }
     }
   }
@@ -379,23 +387,27 @@ class BattleMenu {
 
     ctx.font = "20px san-serif";
 
-    let combatantY = 64;
+    ctx.fillStyle = "rgb(50, 230, 50)";
+    ctx.fillRect(0, 0, game.getScaledWidth(), startingY-2*LINE_HEIGHT);
+
+    ctx.fillStyle = "rgb(255, 255, 255)";
+    let combatantX = game.getScaledWidth()/4 - 32,
+        combatantY = 64;
     for (const combatant of this.userCombatants.values()) {
       const img = Images.getImage(combatant.species.leftSprite);
       if (img) {
-        ctx.drawImage(img,
-                      game.getScaledWidth()/4 - 32,
-                      combatantY);
+        ctx.fillRect(combatantX, combatantY, img.naturalWidth, img.naturalHeight);
+        ctx.drawImage(img, combatantX, combatantY);
       }
       combatantY += 32;
     }
+    combatantX = 3*game.getScaledWidth()/4 - 32;
     combatantY = 64;
     for (const combatant of this.opponentCombatants.values()) {
       const img = Images.getImage(combatant.species.rightSprite);
       if (img) {
-        ctx.drawImage(img,
-                      3*game.getScaledWidth()/4 - 32,
-                      combatantY);
+        ctx.fillRect(combatantX, combatantY, img.naturalWidth, img.naturalHeight);
+        ctx.drawImage(img, combatantX, combatantY);
       }
       combatantY += 32;
     }
