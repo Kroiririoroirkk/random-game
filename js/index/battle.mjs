@@ -408,8 +408,6 @@ class BattleMenu {
     for (const combatant of this.userCombatants.values()) {
       const img = Images.getImage(combatant.species.leftSprite);
       if (img) {
-        ctx.fillRect(combatantX, combatantY+img.naturalHeight/2,
-                     img.naturalWidth, img.naturalHeight);
         ctx.drawImage(img, combatantX, combatantY);
       }
       combatantY += 32;
@@ -419,8 +417,6 @@ class BattleMenu {
     for (const combatant of this.opponentCombatants.values()) {
       const img = Images.getImage(combatant.species.rightSprite);
       if (img) {
-        ctx.fillRect(combatantX, combatantY+img.naturalHeight/2,
-                     img.naturalWidth, img.naturalHeight);
         ctx.drawImage(img, combatantX, combatantY);
       }
       combatantY += 32;
