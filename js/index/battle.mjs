@@ -1,5 +1,6 @@
 "use strict";
 
+import {BLOCK_WIDTH} from "./config.mjs";
 import {Images} from "./render.mjs";
 import {wrapText} from "./textbox.mjs";
 
@@ -193,7 +194,7 @@ BattleMenuTab.TABS = [
 BattleMenuTab.MOVE_DESCRIPTION = new BattleMenuTab("moveDescription", "Move Description");
 
 class BattleMenu {
-  constructor(side) {
+  constructor(game, side) {
     this.side = side;
     this.oppositeSide = BattleMenu.otherSide(side);
     this.userCombatants = new Map();
@@ -215,6 +216,8 @@ class BattleMenu {
     // Move description tab
     this.moveToDescribe = null;
     this.descriptionText = "";
+
+    this.redraw(game);
   }
 
   static otherSide(s) {
@@ -387,16 +390,26 @@ class BattleMenu {
 
     ctx.font = "20px san-serif";
 
-    ctx.fillStyle = "rgb(50, 230, 50)";
-    ctx.fillRect(0, 0, game.getScaledWidth(), startingY-2*LINE_HEIGHT);
+    const grassImg = Images.getImage("wild-grass.png");
+    if (grassImg) {
+      for (let y = 0; y < startingY-2*LINE_HEIGHT; y += BLOCK_WIDTH) {
+        for (let x = 0; x < game.getScaledWidth(); x += BLOCK_WIDTH) {
+          ctx.drawImage(grassImg, x, y);
+        }
+      }
+    } else {
+      ctx.fillStyle = "#3DB846";
+      ctx.fillRect(0, 0, game.getScaledWidth(), startingY-2*LINE_HEIGHT);
+    }
 
-    ctx.fillStyle = "rgb(255, 255, 255)";
+    ctx.fillStyle = "#3DB846";
     let combatantX = game.getScaledWidth()/4 - 32,
         combatantY = 64;
     for (const combatant of this.userCombatants.values()) {
       const img = Images.getImage(combatant.species.leftSprite);
       if (img) {
-        ctx.fillRect(combatantX, combatantY, img.naturalWidth, img.naturalHeight);
+        ctx.fillRect(combatantX, combatantY+img.naturalHeight/2,
+                     img.naturalWidth, img.naturalHeight);
         ctx.drawImage(img, combatantX, combatantY);
       }
       combatantY += 32;
@@ -406,7 +419,8 @@ class BattleMenu {
     for (const combatant of this.opponentCombatants.values()) {
       const img = Images.getImage(combatant.species.rightSprite);
       if (img) {
-        ctx.fillRect(combatantX, combatantY, img.naturalWidth, img.naturalHeight);
+        ctx.fillRect(combatantX, combatantY+img.naturalHeight/2,
+                     img.naturalWidth, img.naturalHeight);
         ctx.drawImage(img, combatantX, combatantY);
       }
       combatantY += 32;

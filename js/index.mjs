@@ -241,7 +241,7 @@ function handleWSMessage(e) {
     let parts = e.data.split("|"),
         side = parts[1];
     game.contextMenu = ContextMenus.BATTLE;
-    game.battleMenu = new BattleMenu(side);
+    game.battleMenu = new BattleMenu(game, side);
   } else if (e.data.startsWith("battlemovereq")) {
     let parts = e.data.split("|"),
         combatantUUID = parts[1];
