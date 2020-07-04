@@ -22,7 +22,7 @@ class Tile {
   render(game) {
     return [new Render((function() {
       const ctx = game.canvasCtx,
-            pos = this.pos.relToPlayer(game),
+            pos = this.pos.relToPlayer(game).floor(),
             spr = this.getSprite();
       if (spr) {
         ctx.drawImage(spr, pos.x, pos.y);

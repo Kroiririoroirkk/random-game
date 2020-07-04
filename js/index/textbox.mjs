@@ -34,7 +34,7 @@ class UsernameNotice {
           text = "Your username is " + game.username + ".";
     ctx.font = "20px san-serif";
     ctx.fillStyle = "rgb(80, 0, 80)";
-    ctx.fillRect(0, 0, ctx.measureText(text).width + 20, 30);
+    ctx.fillRect(0, 0, Math.ceil(ctx.measureText(text).width) + 20, 30);
     ctx.fillStyle = "rgb(255, 255, 255)";
     ctx.fillText(text, 10, 20);
   }
@@ -47,7 +47,7 @@ class CutsceneSkipInstruction {
                           + " to skip the cutscene.";
     ctx.font = "20px san-serif";
     ctx.fillStyle = "rgb(80, 0, 80)";
-    ctx.fillRect(0, 31, ctx.measureText(text).width + 20, 30);
+    ctx.fillRect(0, 31, Math.ceil(ctx.measureText(text).width) + 20, 30);
     ctx.fillStyle = "rgb(255, 255, 255)";
     ctx.fillText(text, 10, 51);
   }
@@ -211,7 +211,7 @@ class Menu {
   render(game) {
     const LINE_HEIGHT = 24,
           ctx         = game.canvasCtx,
-          startingX = game.getScaledWidth() - this.width - 20;
+          startingX = Math.ceil(game.getScaledWidth() - this.width - 20);
     let y = 0;
     ctx.font = "20px san-serif";
     ctx.fillStyle = "rgb(80, 0, 80)";

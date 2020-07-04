@@ -1,6 +1,5 @@
 "use strict";
 
-import {BLOCK_WIDTH} from "./config.mjs";
 import {Images} from "./render.mjs";
 import {wrapText} from "./textbox.mjs";
 
@@ -385,39 +384,56 @@ class BattleMenu {
 
   render(game) {
     const LINE_HEIGHT = 24,
-          ctx         = game.canvasCtx,
-          startingY   = game.getScaledHeight()/2;
+          ctx               = game.canvasCtx,
+          startingY         = Math.floor(game.getScaledHeight()/2),
+          skyline           = Math.floor(game.getScaledHeight()/6),
+          combatantFootLine = Math.floor(game.getScaledHeight()/3);
 
     ctx.font = "20px san-serif";
 
-    const grassImg = Images.getImage("wild-grass.png");
+    const skyImg = Images.getImage("battle-sky.png");
+    if (skyImg) {
+      const skyWidth = skyImg.naturalWidth,
+            skyHeight = skyImg.naturalHeight;
+      for (let y = 0; y < skyline; y += skyHeight) {
+        for (let x = 0; x < game.getScaledWidth(); x += skyWidth) {
+          ctx.drawImage(skyImg, x, y);
+        }
+      }
+    } else {
+      ctx.fillStyle = "#6FA6B2";
+      ctx.fillRect(0, 0, game.getScaledWidth(), startingY-2*LINE_HEIGHT);
+    }
+    const grassImg = Images.getImage("battle-grass.png");
     if (grassImg) {
-      for (let y = 0; y < startingY-2*LINE_HEIGHT; y += BLOCK_WIDTH) {
-        for (let x = 0; x < game.getScaledWidth(); x += BLOCK_WIDTH) {
+      const grassWidth = grassImg.naturalWidth,
+            grassHeight = grassImg.naturalHeight;
+      for (let y = skyline; y < startingY-2*LINE_HEIGHT; y += grassHeight) {
+        for (let x = 0; x < game.getScaledWidth(); x += grassWidth) {
           ctx.drawImage(grassImg, x, y);
         }
       }
     } else {
-      ctx.fillStyle = "#3DB846";
+      ctx.fillStyle = "#3B6B3A";
       ctx.fillRect(0, 0, game.getScaledWidth(), startingY-2*LINE_HEIGHT);
     }
 
     ctx.fillStyle = "#3DB846";
     let combatantX = game.getScaledWidth()/4 - 32,
-        combatantY = 64;
+        combatantY = combatantFootLine;
     for (const combatant of this.userCombatants.values()) {
       const img = Images.getImage(combatant.species.leftSprite);
       if (img) {
-        ctx.drawImage(img, combatantX, combatantY);
+        ctx.drawImage(img, combatantX, combatantY-img.naturalHeight);
       }
       combatantY += 32;
     }
     combatantX = 3*game.getScaledWidth()/4 - 32;
-    combatantY = 64;
+    combatantY = combatantFootLine;
     for (const combatant of this.opponentCombatants.values()) {
       const img = Images.getImage(combatant.species.rightSprite);
       if (img) {
-        ctx.drawImage(img, combatantX, combatantY);
+        ctx.drawImage(img, combatantX, combatantY-img.naturalHeight);
       }
       combatantY += 32;
     }

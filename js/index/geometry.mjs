@@ -34,6 +34,10 @@ class Vec {
     return new Vec(this.x/k, this.y/k);
   }
 
+  floor() {
+    return new Vec(Math.floor(this.x), Math.floor(this.y));
+  }
+
   static fromJSON(obj) {
     return new Vec(obj["x"], obj["y"]);
   }

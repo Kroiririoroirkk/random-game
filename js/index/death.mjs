@@ -11,7 +11,7 @@ class DeathScreen {
     ctx.fillStyle = "rgb(255, 255, 255)";
     ctx.fillText("You died.", 10, 20);
     ctx.fillText("Press Z to respawn.", 10, 20 + LINE_HEIGHT)
-    const sprite = Images.getImage("terrekin/death.png");
+    const sprite = Images.getImage("death.png");
     if (sprite) {
       const size = Math.min(game.getScaledWidth()-20,
                             game.getScaledHeight()-30-2*LINE_HEIGHT);
