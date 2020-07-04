@@ -4,7 +4,7 @@ import {Images} from "./render.mjs";
 import {wrapText} from "./textbox.mjs";
 
 class Species {
-  constructor(id, displayName, leftSprite, rightSprite) {
+  constructor(id, displayName, leftSprite=`terrekin/${id}-left.png`, rightSprite=`terrekin/${id}-right.png`) {
     this.id = id;
     this.displayName = displayName;
     this.leftSprite = leftSprite;
@@ -20,23 +20,23 @@ class Species {
   }
 }
 Species.HUMAN = new Species("human", "Human", "char-right-still.png", "char-left-still.png");
-Species.SCARPFALL = new Species("scarpfall", "Scarpfall", "terrekin/scarpfall-left.png", "terrekin/scarpfall-right.png");
-Species.ORELICK = new Species("orelick", "Orelick", "terrekin/orelick-left.png", "terrekin/orelick-right.png");
-Species.AQUANIMA = new Species("aquanima", "Aquanima", "terrekin/aquanima-left.png", "terrekin/aquanima-right.png");
-Species.POUFFLE = new Species("pouffle", "Poufflé", "terrekin/pouffle-left.png", "terrekin/pouffle-right.png");
-Species.LAVADOREY = new Species("lavadorey", "Lavadorey", "terrekin/lavadorey-left.png", "terrekin/lavadorey-right.png");
-Species.DONNERLO = new Species("donnerlo", "Donnerlo", "terrekin/donnerlo-left.png", "terrekin/donnerlo-right.png");
-Species.VINELETTE = new Species("vinelette", "Vinelette", "terrekin/vinelette-left.png", "terrekin/vinelette-right.png");
-Species.CALDERGRUB = new Species("caldergrub", "Caldergrub", "terrekin/caldergrub-left.png", "terrekin/caldergrub-right.png");
-Species.CAZADARE = new Species("cazadare", "Cazadare", "terrekin/cazadare-left.png", "terrekin/cazadare-right.png");
-Species.WHIRLYBIRD = new Species("whirlybird", "Whirlybird", "terrekin/whirlybird-left.png", "terrekin/whirlybird-right.png");
-Species.QUEENFISHER = new Species("queenfisher", "Queenfisher", "terrekin/queenfisher-left.png", "terrekin/queenfisher-right.png");
+Species.SCARPFALL = new Species("scarpfall", "Scarpfall");
+Species.ORELICK = new Species("orelick", "Orelick");
+Species.AQUANIMA = new Species("aquanima", "Aquanima");
+Species.POUFFLE = new Species("pouffle", "Poufflé");
+Species.LAVADOREY = new Species("lavadorey", "Lavadorey");
+Species.DONNERLO = new Species("donnerlo", "Donnerlo");
+Species.VINELETTE = new Species("vinelette", "Vinelette");
+Species.CALDERGRUB = new Species("caldergrub", "Caldergrub");
+Species.CAZADARE = new Species("cazadare", "Cazadare");
+Species.WHIRLYBIRD = new Species("whirlybird", "Whirlybird");
+Species.QUEENFISHER = new Species("queenfisher", "Queenfisher");
 
-Species.DRISSENGAN = new Species("drissengan", "Drissengan", "terrekin/drissengan-left.png", "terrekin/drissengan-right.png");
-Species.LEIDEBLADE = new Species("leideblade", "Leideblade", "terrekin/leideblade-left.png", "terrekin/leideblade-right.png");
-Species.NAILIST = new Species("nailist", "Nailist", "terrekin/nailist-left.png", "terrekin/nailist-right.png");
-Species.OILLY = new Species("oilly", "Oilly", "terrekin/oilly-left.png", "terrekin/oilly-right.png");
-Species.TERREPIN = new Species("terrepin", "Terrepin", "terrekin/terrepin-left.png", "terrekin/terrepin-right.png");
+Species.DRISSENGAN = new Species("drissengan", "Drissengan");
+Species.LEIDEBLADE = new Species("leideblade", "Leideblade");
+Species.NAILIST = new Species("nailist", "Nailist");
+Species.OILLY = new Species("oilly", "Oilly");
+Species.TERREPIN = new Species("terrepin", "Terrepin");
 
 class Stats {
   constructor(hp, attack, defense, mattack, mdefense, speed, charisma, dex, stam) {
