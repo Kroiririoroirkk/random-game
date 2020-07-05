@@ -28,7 +28,7 @@ Species.LAVADOREY = new Species("lavadorey", "Lavadorey");
 Species.DONNERLO = new Species("donnerlo", "Donnerlo");
 Species.VINELETTE = new Species("vinelette", "Vinelette");
 Species.CALDERGRUB = new Species("caldergrub", "Caldergrub");
-Species.CAZADARE = new Species("cazadare", "Cazadare");
+Species.VOLADARE = new Species("voladare", "Voladare");
 Species.WHIRLYBIRD = new Species("whirlybird", "Whirlybird");
 Species.QUEENFISHER = new Species("queenfisher", "Queenfisher");
 
