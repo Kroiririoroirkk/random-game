@@ -243,6 +243,16 @@ class DialogueBox {
     this.entityUuid = null;
   }
 
+  getInstructionsText(game, dialogueState) {
+    if (dialogueState === DialogueState.TEXT) {
+      return (`Press ${game.keyBinding.getKeyBindPretty("primarykey")} to advance `
+        + `and ${game.keyBinding.getKeyBindPretty("scrollup")} and ${game.keyBinding.getKeyBindPretty("scrolldown")} to scroll.`);
+    } else if (dialogueState === DialogueState.CHOOSE) {
+      return (`Press ${game.keyBinding.getKeyBindPretty("scrollup")} and ${game.keyBinding.getKeyBindPretty("scrolldown")} to choose an option `
+        + `and ${game.keyBinding.getKeyBindPretty("primarykey")} to confirm your choice.`);
+    }
+  }
+
   setText(game, text, entityUuid) {
     this.options = null;
     this.text = text;
@@ -251,7 +261,9 @@ class DialogueBox {
     this.lineStart = 0;
     const ctx = game.canvasCtx;
     ctx.font = "20px sans-serif";
-    this.wrappedText = wrapText(ctx, text, this.width);
+    this.wrappedText = wrapText(ctx,
+      `${this.getInstructionsText(game, DialogueState.TEXT)} \n ----- \n ${text}`,
+      this.width);
   }
 
   setOptions(game, options, entityUuid) {
@@ -268,10 +280,12 @@ class DialogueBox {
     const ctx = game.canvasCtx;
     ctx.font = "20px sans-serif";
     this.wrappedText = wrapText(ctx,
-      this.options.map((option, i) =>
+      [this.getInstructionsText(game, DialogueState.CHOOSE),
+      "-----",
+      ...this.options.map((option, i) =>
         i === this.currentlySelected ?
           ">" + option :
-          option).join(" \n "), this.width);
+          option)].join(" \n "), this.width);
   }
 
   getOptionSelected() {

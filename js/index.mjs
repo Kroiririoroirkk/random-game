@@ -149,7 +149,7 @@ function initialize() {
     game.contextMenu = ContextMenus.NONE;
     game.keyBinding.createPage(game);
   }));
-  game.dialogueBox = new DialogueBox(500, 100);
+  game.dialogueBox = new DialogueBox(500, 200);
   game.sampleRateSlider = new SampleRateSlider(game);
   game.deathScreen = new DeathScreen(game);
 }
