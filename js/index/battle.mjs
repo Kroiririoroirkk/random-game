@@ -31,12 +31,16 @@ Species.CALDERGRUB = new Species("caldergrub", "Caldergrub");
 Species.VOLADARE = new Species("voladare", "Voladare");
 Species.WHIRLYBIRD = new Species("whirlybird", "Whirlybird");
 Species.QUEENFISHER = new Species("queenfisher", "Queenfisher");
-
+// Below are terrekin that have not been assigned a Compendium number yet.
 Species.DRISSENGAN = new Species("drissengan", "Drissengan");
 Species.LEIDEBLADE = new Species("leideblade", "Leideblade");
 Species.NAILIST = new Species("nailist", "Nailist");
 Species.OILLY = new Species("oilly", "Oilly");
 Species.TERREPIN = new Species("terrepin", "Terrepin");
+Species.AVALANCE = new Species("avalance", "Avalance");
+Species.J118 = new Species("j118", "J118");
+Species.WICKBEAM = new Species("wickbeam", "Wickbeam");
+
 
 class Stats {
   constructor(hp, attack, defense, mattack, mdefense, speed, charisma, dex, stam) {
