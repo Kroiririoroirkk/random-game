@@ -137,7 +137,7 @@ class Context {
         map.getTileHTML(rowNum, s.upperLeft.colNum-1).classList.remove("right");
       }
       map.getTileHTML(rowNum, s.lowerRight.colNum).classList.remove("right");
-      if (s.upperLeft.colNum < map.tiles[0].length-1) {
+      if (s.lowerRight.colNum < map.tiles[0].length-1) {
         map.getTileHTML(rowNum, s.lowerRight.colNum+1).classList.remove("left");
       }
     }
