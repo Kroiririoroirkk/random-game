@@ -310,15 +310,36 @@ ContextMode.LINK_PORTAL_ONE = new ContextMode("linkPortalOne", function() {
 ContextMode.LINK_PORTAL_TWO = new ContextMode("linkPortalTwo", function() {
   context.viewMode = DisplayMode.SPAWNPOINTS;
 });
-ContextMode.SET_METADATA = new ContextMode("setMetadata", function() {
-  context.viewMode = DisplayMode.MAP;
-});
-ContextMode.VIEW_METADATA = new ContextMode("viewMetadata", function() {
-  context.viewMode = DisplayMode.MAP;
-});
-ContextMode.DELETE_METADATA = new ContextMode("deleteMetadata", function() {
-  context.viewMode = DisplayMode.MAP;
-});
+ContextMode.SET_METADATA = new ContextMode("setMetadata",
+  function() {
+    context.viewMode = DisplayMode.MAP;
+    document.getElementById("tooloptionsdiv").style.display = "";
+    document.getElementById("setmetadata").style.display = "";
+  },
+  function() {
+    document.getElementById("tooloptionsdiv").style.display = "none";
+    document.getElementById("setmetadata").style.display = "none";
+  });
+ContextMode.VIEW_METADATA = new ContextMode("viewMetadata",
+  function() {
+    context.viewMode = DisplayMode.MAP;
+    document.getElementById("tooloptionsdiv").style.display = "";
+    document.getElementById("viewmetadata").style.display = "";
+  },
+  function() {
+    document.getElementById("tooloptionsdiv").style.display = "none";
+    document.getElementById("viewmetadata").style.display = "none";
+  });
+ContextMode.DELETE_METADATA = new ContextMode("deleteMetadata",
+  function() {
+    context.viewMode = DisplayMode.MAP;
+    document.getElementById("tooloptionsdiv").style.display = "";
+    document.getElementById("deletemetadata").style.display = "";
+  },
+  function() {
+    document.getElementById("tooloptionsdiv").style.display = "none";
+    document.getElementById("deletemetadata").style.display = "none";
+  });
 
 function createToolbarButton(label, callback) {
   let b = document.createElement("BUTTON");
@@ -403,10 +424,10 @@ function initializeToolbar() {
 }
 
 class Tile {
-  constructor(tileId, color="#FF00FF") {
+  constructor(tileId, color="#FF00FF", tileData=undefined) {
     this.tileId = tileId;
     this.color = color;
-    this.tileData = new Map();
+    this.tileData = tileData ? new Map(Object.entries(tileData)) : new Map();
   }
 
   toJSON() {
@@ -422,6 +443,10 @@ class Tile {
 
   setMetadata(prop, value) {
     this.tileData.set(prop, value);
+  }
+
+  deleteMetadataProperty(prop) {
+    this.tileData.delete(prop);
   }
 }
 
@@ -597,12 +622,12 @@ function handleClick(e) {
       table = rowClicked.parentNode,
       colNum = Array.from(rowClicked.children).indexOf(cellClicked),
       rowNum = Array.from(table.children).indexOf(rowClicked),
-      clickedTileCoord = new TileCoord(rowNum, colNum);
+      clickedTileCoord = new TileCoord(rowNum, colNum),
+      clickedTile = map.getTile(rowNum, colNum);
   if (context.mode === ContextMode.DRAW) {
     context.drawPixel(rowNum, colNum);
   } else if (context.mode === ContextMode.PICKER) {
-    let tile = map.getTile(rowNum, colNum);
-    context.setDrawTile(tile);
+    context.setDrawTile(clickedTile);
     context.mode = ContextMode.DRAW;
   } else if (context.mode === ContextMode.SELECT_ONE) {
     context.setSelection(new Selection(clickedTileCoord, clickedTileCoord));
@@ -644,9 +669,8 @@ function handleClick(e) {
     }
   } else if (context.mode === ContextMode.SET_GROUND_TILE) {
     let groundTileId = document.getElementById("tile_id").value,
-        groundTile = {"tile_id": tileId},
-        tile = map.getTile(rowNum, colNum);
-    tile.setMetadata("ground_tile", groundTile);
+        groundTile = {"tile_id": tileId};
+    clickedTile.setMetadata("ground_tile", groundTile);
   } else if (context.mode === ContextMode.LINK_PORTAL_ONE) {
     context.setSelection(new Selection(clickedTileCoord, clickedTileCoord));
     context.mode = ContextMode.LINK_PORTAL_TWO;
@@ -659,6 +683,20 @@ function handleClick(e) {
       portal.setMetadata("spawn_id", spawnId);
     }
     context.mode = ContextMode.LINK_PORTAL_ONE;
+  } else if (context.mode === ContextMode.SET_METADATA) {
+    let metadataProperty = document.getElementById("set_metadata_property").value,
+        metadataValue = document.getElementById("set_metadata_value").value;
+    clickedTile.setMetadata(metadataProperty, metadataValue);
+  } else if (context.mode === ContextMode.VIEW_METADATA) {
+    let metadataText = document.getElementById("view_metadata_items"),
+        text = "";
+    for (let [property, value] of clickedTile.tileData) {
+      text += `${property}: ${value}; `;
+    }
+    metadataText.innerText = text;
+  } else if (context.mode === ContextMode.DELETE_METADATA) {
+    let metadataProperty = document.getElementById("delete_metadata_property").value;
+    clickedTile.deleteMetadataProperty(metadataProperty);
   }
 }
 
@@ -744,7 +782,7 @@ function importMap() {
     }
   }
   for (const spawnId of Object.keys(spawnpoints)) {
-    map.setSpawnpoint(spawnId.replaceAll(/[^a-zA-Z0-9_]/, ""),
+    map.setSpawnpoint(spawnId.replaceAll(/[^a-zA-Z0-9_]/g, ""),
       TileCoord.fromJSON(spawnpoints[spawnId]));
   }
 }

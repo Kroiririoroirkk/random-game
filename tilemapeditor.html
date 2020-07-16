@@ -74,6 +74,20 @@
         <label for="spawn_name">Spawnpoint name:</label>
         <output id="spawn_name" name="spawn_name"></output>
       </form>
+      <form id="setmetadata" style="display: none;">
+        <label for="set_metadata_property">Property (can only contain letters, numbers, and underscores):</label>
+        <input type="text" id="set_metadata_property" pattern="^[a-zA-Z0-9_]+$"><br>
+        <label for="set_metadata_value">Value (can only contain letters, numbers, and underscores):</label>
+        <input type="text" id="set_metadata_value" pattern="^[a-zA-Z0-9_]+$">
+      </form>
+      <form id="viewmetadata" style="display: none;">
+        <label for="view_metadata_items">Metadata:</label>
+        <output id="view_metadata_items" name="view_metadata_items"></output>
+      </form>
+      <form id="deletemetadata" style="display: none;">
+        <label for="delete_metadata_property">Property (can only contain letters, numbers, and underscores):</label>
+        <input type="text" id="delete_metadata_property" pattern="^[a-zA-Z0-9_]+$">
+      </form>
     </div>
     <div id="mapdiv" style="display: none;">
       <div id="mapdivcontainer">
