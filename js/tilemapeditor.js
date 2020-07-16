@@ -9,7 +9,7 @@ window.onload = function() {
 };
 
 const TILE_COLORS = {
-  "empty": "#222222",
+  "empty": "#333333",
   "grass": "#00FF00",
   "wild_grass": "#3DB846",
   "wall": "#606060",
@@ -22,7 +22,39 @@ const TILE_COLORS = {
   "lava": "#EC731C",
   "floor": "#DDDDDD",
   "indoor_wall": "#00711A",
-  "barrier": "#555555"
+  "barrier": "#555555",
+  "carpet": "#F1C232",
+  "rug": "#38761D",
+  "table": "#B45F06",
+  "chair": "#FFFF00",
+  "knickknack_shelf": "#C27BA0",
+  "left_door": "#FF6D01",
+  "right_door": "#FF6D01",
+  "metal_left_door": "#D9D9D9",
+  "metal_right_door": "#D9D9D9",
+  "countertop": "#0000FF",
+  "stair_top_ascending": "#434343",
+  "stair_bottom_ascending": "#666666",
+  "stair_top_descending": "#434343",
+  "stair_bottom_descending": "#666666",
+  "couch": "#00FFFF",
+  "bed": "#FF0000",
+  "lamp_nightstand": "#FFF2CC",
+  "desk": "#FFE599",
+  "bookcase": "#E6B8AF",
+  "hung_up_clothes": "#A64D79",
+  "pile_of_clothes": "#FF00FF",
+  "player_roof": "#FF00FF",
+  "shop_roof": "#EEDD00",
+  "army_roof": "#00FFFF",
+  "university_roof": "#4285F4",
+  "university_hospital_roof": "#0B5394",
+  "roof": "#FF6D01",
+  "well": "#4A86E8",
+  "pavement": "#999999",
+  "construction": "#FFD966",
+  "trees": "#38761D",
+  "garden": "#783F04"
 };
 
 const DEFAULT_TILE_ID = "grass";
