@@ -699,6 +699,23 @@ function importMap() {
   }
 }
 
+function importMapCSV() {
+  let mapCSV = document.getElementById("importCSV").value,
+      mapRows = mapCSV.split("\n");
+  map = new World();
+  for (let row = 0; row < mapRows.length; row++) {
+    map.addRow()
+    let mapTiles = mapRows[row].split(",");
+    for (let col = 0; col < mapTiles.length; col++) {
+      let tile = mapTiles[col],
+          tileId = tile ? tile : "empty",
+          tileColor = TILE_COLORS[tileId];
+      map.addTile(row);
+      map.setTile(row, col, new Tile(tileId, tileColor));
+    }
+  }
+}
+
 function makeMap() {
   const width = parseInt(document.getElementById("width").value),
         height = parseInt(document.getElementById("height").value);
