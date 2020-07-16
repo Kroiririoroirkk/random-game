@@ -9,20 +9,20 @@ window.onload = function() {
 };
 
 const TILE_COLORS = {
-  "empty": "#000000",
+  "empty": "#222222",
   "grass": "#00FF00",
   "wild_grass": "#3DB846",
   "wall": "#606060",
   "portal": "#C996FF",
   "sign": "#FFFF00",
-  "deep_water": "#0000A0",
+  "deep_water": "#0000FF",
   "shallow_water": "#64B3F4",
   "dirt": "#645A28",
   "desert": "#DAD79C",
   "lava": "#EC731C",
   "floor": "#DDDDDD",
   "indoor_wall": "#00711A",
-  "barrier": "#B0B0B0"
+  "barrier": "#555555"
 };
 
 const DEFAULT_TILE_ID = "grass";
