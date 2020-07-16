@@ -280,7 +280,7 @@ ContextMode.LINE_TWO = new ContextMode("lineTwo", function() {
 });
 ContextMode.ADD_SPAWNPOINT = new ContextMode("addSpawnpoint",
   function() {
-    context.viewMode = DisplayMode.SPAWNPOINTS;
+    context.viewMode = DisplayMode.MAP;
     document.getElementById("tooloptionsdiv").style.display = "";
     document.getElementById("spawnpointoptions").style.display = "";
   },
@@ -309,6 +309,15 @@ ContextMode.LINK_PORTAL_ONE = new ContextMode("linkPortalOne", function() {
 });
 ContextMode.LINK_PORTAL_TWO = new ContextMode("linkPortalTwo", function() {
   context.viewMode = DisplayMode.SPAWNPOINTS;
+});
+ContextMode.SET_METADATA = new ContextMode("setMetadata", function() {
+  context.viewMode = DisplayMode.MAP;
+});
+ContextMode.VIEW_METADATA = new ContextMode("viewMetadata", function() {
+  context.viewMode = DisplayMode.MAP;
+});
+ContextMode.DELETE_METADATA = new ContextMode("deleteMetadata", function() {
+  context.viewMode = DisplayMode.MAP;
 });
 
 function createToolbarButton(label, callback) {
@@ -381,6 +390,15 @@ function initializeToolbar() {
   }));
   toolbar.append(createToolbarButton("Link portal", function(e) {
     context.mode = ContextMode.LINK_PORTAL_ONE;
+  }));
+  toolbar.append(createToolbarButton("Set metadata", function(e) {
+    context.mode = ContextMode.SET_METADATA;
+  }));
+  toolbar.append(createToolbarButton("View metadata", function(e) {
+    context.mode = ContextMode.VIEW_METADATA;
+  }));
+  toolbar.append(createToolbarButton("Delete metadata", function(e) {
+    context.mode = ContextMode.DELETE_METADATA;
   }));
 }
 
