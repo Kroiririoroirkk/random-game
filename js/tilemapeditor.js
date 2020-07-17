@@ -669,7 +669,7 @@ function handleClick(e) {
     }
   } else if (context.mode === ContextMode.SET_GROUND_TILE) {
     let groundTileId = document.getElementById("tile_id").value,
-        groundTile = {"tile_id": tileId};
+        groundTile = {"tile_id": groundTileId};
     clickedTile.setMetadata("ground_tile", groundTile);
   } else if (context.mode === ContextMode.LINK_PORTAL_ONE) {
     context.setSelection(new Selection(clickedTileCoord, clickedTileCoord));
