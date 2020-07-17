@@ -39,13 +39,16 @@ class Tile {
 
   animate() {}
 
-  static register(tileId, tileClass,
-                        sprite=null, fillStyle="#000000") {
+  static register(tileId, tileClass, fillStyle="#000000", sprite=undefined) {
     if (tiles.has(tileId)) {
       throw new Error(`Tile ID ${tileId} is already in use.`);
     } else {
       tiles.set(tileId, tileClass);
-      tileClass._sprite = sprite;
+      if (typeof sprite === "undefined") {
+        tileClass._sprite = `tiles/${tileId}.png`;
+      } else {
+        tileClass._sprite = sprite;
+      }
       tileClass._fillStyle = fillStyle;
     }
   }
@@ -87,16 +90,16 @@ class TilePlus extends Tile {
 }
 
 class Empty extends Tile {}
-Tile.register("empty", Empty);
+Tile.register("empty", Empty, "#000000", null);
 
 class Grass extends Tile {}
-Tile.register("grass", Grass, "grass.png", "#00FF00");
+Tile.register("grass", Grass, "#00FF00");
 
 class WildGrass extends Tile {}
-Tile.register("wild_grass", WildGrass, "wild_grass.png", "#3DB846");
+Tile.register("wild_grass", WildGrass, "#3DB846");
 
 class Wall extends Tile {}
-Tile.register("wall", Wall, "wall.png", "#606060");
+Tile.register("wall", Wall, "#606060");
 
 class PortalData {
   constructor(groundTile) {
@@ -108,10 +111,10 @@ class Portal extends TilePlus {
   constructor(pos, data) {
     super(pos, data);
     this.animation = new Animation(
-      new Frame(0.28, "portal-1.png"),
-      new Frame(0.28, "portal-2.png", "portal-1.png"),
-      new Frame(0.28, "portal-3.png", "portal-1.png"),
-      new Frame(0.28, "portal-4.png", "portal-1.png")
+      new Frame(0.28, "tiles/portal-1.png"),
+      new Frame(0.28, "tiles/portal-2.png", "tiles/portal-1.png"),
+      new Frame(0.28, "tiles/portal-3.png", "tiles/portal-1.png"),
+      new Frame(0.28, "tiles/portal-4.png", "tiles/portal-1.png")
     );
   }
 
@@ -132,7 +135,7 @@ class Portal extends TilePlus {
             ...super.render(game)];
   }
 }
-Tile.register("portal", Portal, null, "#C996FF");
+Tile.register("portal", Portal, "#C996FF", null);
 
 class SignData {
   constructor(groundTile) {
@@ -151,127 +154,128 @@ class Sign extends TilePlus {
             ...(super.render(game).map(r => r.withY(this.pos.y + SIGN_HEIGHT)))];
   }
 }
-Tile.register("sign", Sign, "sign.png", "#FFFF00");
+Tile.register("sign", Sign, "#FFFF00");
 
 class DeepWater extends Tile {}
-Tile.register("deep_water", DeepWater, "deep_water.png", "#0000FF");
+Tile.register("deep_water", DeepWater, "#0000FF");
 
 class ShallowWater extends Tile {}
-Tile.register("shallow_water", ShallowWater, "shallow_water.png", "#64B3F4");
+Tile.register("shallow_water", ShallowWater, "#64B3F4");
 
 class Dirt extends Tile {}
-Tile.register("dirt", Dirt, "dirt.png", "#645A28");
+Tile.register("dirt", Dirt, "#645A28");
 
 class Desert extends Tile {}
-Tile.register("desert", Desert, "desert.png", "#DAD79C");
+Tile.register("desert", Desert, "#DAD79C");
 
 class Lava extends Tile {}
-Tile.register("lava", Lava, "lava.png", "#EC731C");
+Tile.register("lava", Lava, "#EC731C");
 
 class Floor extends Tile {}
-Tile.register("floor", Floor, ["floor1.png", "floor2.png"], "#DDDDDD");
+Tile.register("floor", Floor, "#DDDDDD",
+              ["tiles/floor1.png", "tiles/floor2.png"]);
 
 class IndoorWall extends Tile {}
-Tile.register("indoor_wall", IndoorWall, "indoor_wall.png", "#00711A");
+Tile.register("indoor_wall", IndoorWall, "#00711A");
 
 class Barrier extends Tile {}
-Tile.register("barrier", Barrier);
+Tile.register("barrier", Barrier, "#000000", null);
 
 class Carpet extends Tile {}
-Tile.register("carpet", Carpet, "carpet.png", "#F1C232");
+Tile.register("carpet", Carpet, "#F1C232");
 
 class Rug extends Tile {}
-Tile.register("rug", Rug, "rug.png", "#38761D");
+Tile.register("rug", Rug, "#38761D");
 
 class Table extends Tile {}
-Tile.register("table", Table, "table.png", "#B45F06");
+Tile.register("table", Table, "#B45F06");
 
 class Chair extends Tile {}
-Tile.register("chair", Chair, "chair.png", "#FFFF00");
+Tile.register("chair", Chair, "#FFFF00");
 
 class KnickknackShelf extends Tile {}
-Tile.register("knickknack_shelf", KnickknackShelf, "knickknack_shelf.png", "#C27BA0");
+Tile.register("knickknack_shelf", KnickknackShelf, "#C27BA0");
 
 class LeftDoor extends Tile {}
-Tile.register("left_door", LeftDoor, "left_door.png", "#FF6D01");
+Tile.register("left_door", LeftDoor, "#FF6D01");
 
 class RightDoor extends Tile {}
-Tile.register("right_door", RightDoor, "right_door.png", "#FF6D01");
+Tile.register("right_door", RightDoor, "#FF6D01");
 
 class MetalLeftDoor extends Tile {}
-Tile.register("metal_left_door", MetalLeftDoor, "metal_left_door.png", "#D9D9D9");
+Tile.register("metal_left_door", MetalLeftDoor, "#D9D9D9");
 
 class MetalRightDoor extends Tile {}
-Tile.register("metal_right_door", MetalRightDoor, "metal_right_door.png", "#D9D9D9");
+Tile.register("metal_right_door", MetalRightDoor, "#D9D9D9");
 
 class Countertop extends Tile {}
-Tile.register("countertop", Countertop, "countertop.png", "#0000FF");
+Tile.register("countertop", Countertop, "#0000FF");
 
 class StairTopAscending extends Tile {}
-Tile.register("stair_top_ascending", StairTopAscending, "stair_top_ascending.png", "#434343");
+Tile.register("stair_top_ascending", StairTopAscending, "#434343");
 
 class StairBottomAscending extends Tile {}
-Tile.register("stair_bottom_ascending", StairBottomAscending, "stair_bottom_ascending.png", "#666666");
+Tile.register("stair_bottom_ascending", StairBottomAscending, "#666666");
 
 class StairTopDescending extends Tile {}
-Tile.register("stair_top_descending", StairTopDescending, "stair_top_descending.png", "#434343");
+Tile.register("stair_top_descending", StairTopDescending, "#434343");
 
 class StairBottomDescending extends Tile {}
-Tile.register("stair_bottom_descending", StairBottomDescending, "stair_bottom_descending.png", "#666666");
+Tile.register("stair_bottom_descending", StairBottomDescending, "#666666");
 
 class Couch extends Tile {}
-Tile.register("couch", Couch, "couch.png", "#00FFFF");
+Tile.register("couch", Couch, "#00FFFF");
 
 class Bed extends Tile {}
-Tile.register("bed", Bed, "bed.png", "#FF0000");
+Tile.register("bed", Bed, "#FF0000");
 
 class LampNightstand extends Tile {}
-Tile.register("lamp_nightstand", LampNightstand, "lamp_nightstand.png", "#FFF2CC");
+Tile.register("lamp_nightstand", LampNightstand, "#FFF2CC");
 
 class Desk extends Tile {}
-Tile.register("desk", Desk, "desk.png", "#FFE599");
+Tile.register("desk", Desk, "#FFE599");
 
 class Bookcase extends Tile {}
-Tile.register("bookcase", Bookcase, "bookcase.png", "#E6B8AF");
+Tile.register("bookcase", Bookcase, "#E6B8AF");
 
 class HungUpClothes extends Tile {}
-Tile.register("hung_up_clothes", HungUpClothes, "hung_up_clothes.png", "#A64D79");
+Tile.register("hung_up_clothes", HungUpClothes, "#A64D79");
 
 class PileOfClothes extends Tile {}
-Tile.register("pile_of_clothes", PileOfClothes, "pile_of_clothes.png", "#FF00FF");
+Tile.register("pile_of_clothes", PileOfClothes, "#FF00FF");
 
 class PlayerRoof extends Tile {}
-Tile.register("player_roof", PlayerRoof, "player_roof.png", "#FF00FF");
+Tile.register("player_roof", PlayerRoof, "#FF00FF");
 
 class ShopRoof extends Tile {}
-Tile.register("shop_roof", ShopRoof, "shop_roof.png", "#EEDD00");
+Tile.register("shop_roof", ShopRoof, "#EEDD00");
 
 class ArmyRoof extends Tile {}
-Tile.register("army_roof", ArmyRoof, "army_roof.png", "#00FFFF");
+Tile.register("army_roof", ArmyRoof, "#00FFFF");
 
 class UniversityRoof extends Tile {}
-Tile.register("university_roof", UniversityRoof, "university_roof.png", "#4285F4");
+Tile.register("university_roof", UniversityRoof, "#4285F4");
 
 class UniversityHospitalRoof extends Tile {}
-Tile.register("university_hospital_roof", UniversityHospitalRoof, "university_hospital_roof.png", "#0B5394");
+Tile.register("university_hospital_roof", UniversityHospitalRoof, "#0B5394");
 
 class Roof extends Tile {}
-Tile.register("roof", Roof, "roof.png", "#1111BB");
+Tile.register("roof", Roof, "#1111BB");
 
 class Well extends Tile {}
-Tile.register("well", Well, "well.png", "#4A86E8");
+Tile.register("well", Well, "#4A86E8");
 
 class Pavement extends Tile {}
-Tile.register("pavement", Pavement, "pavement.png", "#999999");
+Tile.register("pavement", Pavement, "#999999");
 
 class Construction extends Tile {}
-Tile.register("construction", Construction, "construction.png", "#FFD966");
+Tile.register("construction", Construction, "#FFD966");
 
 class Trees extends Tile {}
-Tile.register("trees", Trees, "trees.png", "#38761D");
+Tile.register("trees", Trees, "#38761D");
 
 class Garden extends Tile {}
-Tile.register("garden", Garden, "garden.png", "#783F04");
+Tile.register("garden", Garden, "#783F04");
 
 export {Tile, TilePlus, Empty, Grass, WildGrass, Wall,
         PortalData, Portal, SignData, Sign,
