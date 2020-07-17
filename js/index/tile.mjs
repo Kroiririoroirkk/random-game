@@ -256,7 +256,7 @@ class UniversityHospitalRoof extends Tile {}
 Tile.register("university_hospital_roof", UniversityHospitalRoof, "university_hospital_roof.png", "#0B5394");
 
 class Roof extends Tile {}
-Tile.register("roof", Roof, "roof.png", "#FF6D01");
+Tile.register("roof", Roof, "roof.png", "#1111BB");
 
 class Well extends Tile {}
 Tile.register("well", Well, "well.png", "#4A86E8");

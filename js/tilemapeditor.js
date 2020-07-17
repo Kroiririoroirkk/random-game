@@ -49,7 +49,7 @@ const TILE_COLORS = {
   "army_roof": "#00FFFF",
   "university_roof": "#4285F4",
   "university_hospital_roof": "#0B5394",
-  "roof": "#FF6D01",
+  "roof": "#1111BB",
   "well": "#4A86E8",
   "pavement": "#999999",
   "construction": "#FFD966",
