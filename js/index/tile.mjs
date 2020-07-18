@@ -127,10 +127,10 @@ class Portal extends TransparentTile {
   constructor(pos, data) {
     super(pos, data);
     this.animation = new Animation(
-      new Frame(0.28, "tiles/portal-1.png"),
-      new Frame(0.28, "tiles/portal-2.png", "tiles/portal-1.png"),
-      new Frame(0.28, "tiles/portal-3.png", "tiles/portal-1.png"),
-      new Frame(0.28, "tiles/portal-4.png", "tiles/portal-1.png")
+      new Frame(0.28, "tiles/portal/portal-1.png"),
+      new Frame(0.28, "tiles/portal/portal-2.png", "tiles/portal/portal-1.png"),
+      new Frame(0.28, "tiles/portal/portal-3.png", "tiles/portal/portal-1.png"),
+      new Frame(0.28, "tiles/portal/portal-4.png", "tiles/portal/portal-1.png")
     );
   }
 
@@ -168,7 +168,7 @@ Tile.register("lava", Lava, "#EC731C");
 
 class Floor extends Tile {}
 Tile.register("floor", Floor, "#DDDDDD",
-              ["tiles/floor1.png", "tiles/floor2.png"]);
+              ["tiles/floor/floor1.png", "tiles/floor/floor2.png"]);
 
 class IndoorWall extends Tile {}
 Tile.register("indoor_wall", IndoorWall, "#00711A");
@@ -216,43 +216,43 @@ class Table extends TransparentTile {
     }
     if (statusY === -1) {
       if (statusX === -1) {
-        sprite = "tiles/table_single.png";
+        sprite = "tiles/table/table_single.png";
       } else if (statusX === 0) {
-        sprite = "tiles/table_left.png";
+        sprite = "tiles/table/table_left.png";
       } else if (statusX === 1) {
-        sprite = "tiles/table_middle.png";
+        sprite = "tiles/table/table_middle.png";
       } else if (statusX === 2) {
-        sprite = "tiles/table_right.png";
+        sprite = "tiles/table/table_right.png";
       }
     } else if (statusY === 0) {
       if (statusX === -1) {
-        sprite = "tiles/table_back_single.png";
+        sprite = "tiles/table/table_back_single.png";
       } else if (statusX === 0) {
-        sprite = "tiles/table_back_left.png";
+        sprite = "tiles/table/table_back_left.png";
       } else if (statusX === 1) {
-        sprite = "tiles/table_back_middle.png";
+        sprite = "tiles/table/table_back_middle.png";
       } else if (statusX === 2) {
-        sprite = "tiles/table_back_right.png";
+        sprite = "tiles/table/table_back_right.png";
       }
     } else if (statusY === 1) {
       if (statusX === -1) {
-        sprite = "tiles/table_middle_single.png";
+        sprite = "tiles/table/table_middle_single.png";
       } else if (statusX === 0) {
-        sprite = "tiles/table_middle_left.png";
+        sprite = "tiles/table/table_middle_left.png";
       } else if (statusX === 1) {
-        sprite = "tiles/table_middle_middle.png";
+        sprite = "tiles/table/table_middle_middle.png";
       } else if (statusX === 2) {
-        sprite = "tiles/table_middle_right.png";
+        sprite = "tiles/table/table_middle_right.png";
       }
     } else if (statusY === 2) {
       if (statusX === -1) {
-        sprite = "tiles/table_front_single.png";
+        sprite = "tiles/table/table_front_single.png";
       } else if (statusX === 0) {
-        sprite = "tiles/table_front_left.png";
+        sprite = "tiles/table/table_front_left.png";
       } else if (statusX === 1) {
-        sprite = "tiles/table_front_middle.png";
+        sprite = "tiles/table/table_front_middle.png";
       } else if (statusX === 2) {
-        sprite = "tiles/table_front_right.png";
+        sprite = "tiles/table/table_front_right.png";
       }
     }
     return Images.getImage(sprite);
@@ -276,13 +276,13 @@ class Chair extends TransparentTile {
 
   getSprite(game) {
     if (this.data.facing === Dir.LEFT) {
-      return Images.getImage("tiles/chair_left.png");
+      return Images.getImage("tiles/chair/chair_left.png");
     } else if (this.data.facing === Dir.UP) {
-      return Images.getImage("tiles/chair_up.png");
+      return Images.getImage("tiles/chair/chair_up.png");
     } else if (this.data.facing === Dir.RIGHT) {
-      return Images.getImage("tiles/chair_right.png");
+      return Images.getImage("tiles/chair/chair_right.png");
     } else if (this.data.facing === Dir.DOWN) {
-      return Images.getImage("tiles/chair_down.png");
+      return Images.getImage("tiles/chair/chair_down.png");
     }
   }
 }
@@ -326,9 +326,9 @@ class Couch extends TransparentTile {
     let tileCoord = this.pos.toTileCoord(),
         tileLeft  = game.map[tileCoord.y][tileCoord.x-1];
     if (tileLeft instanceof Couch) {
-      return Images.getImage("tiles/couch_right.png");
+      return Images.getImage("tiles/couch/couch_right.png");
     } else {
-      return Images.getImage("tiles/couch_left.png");
+      return Images.getImage("tiles/couch/couch_left.png");
     }
   }
 }
@@ -368,33 +368,33 @@ class Bed extends TransparentTile {
     }
     if (statusY === -1 || statusY === 0) {
       if (statusX === -1) {
-        sprite = "tiles/bed_head_single.png";
+        sprite = "tiles/bed/bed_head_single.png";
       } else if (statusX === 0) {
-        sprite = "tiles/bed_head_left.png";
+        sprite = "tiles/bed/bed_head_left.png";
       } else if (statusX === 1) {
-        sprite = "tiles/bed_head_middle.png";
+        sprite = "tiles/bed/bed_head_middle.png";
       } else if (statusX === 2) {
-        sprite = "tiles/bed_head_right.png";
+        sprite = "tiles/bed/bed_head_right.png";
       }
     } else if (statusY === 1) {
       if (statusX === -1) {
-        sprite = "tiles/bed_middle_single.png";
+        sprite = "tiles/bed/bed_middle_single.png";
       } else if (statusX === 0) {
-        sprite = "tiles/bed_middle_left.png";
+        sprite = "tiles/bed/bed_middle_left.png";
       } else if (statusX === 1) {
-        sprite = "tiles/bed_middle_middle.png";
+        sprite = "tiles/bed/bed_middle_middle.png";
       } else if (statusX === 2) {
-        sprite = "tiles/bed_middle_right.png";
+        sprite = "tiles/bed/bed_middle_right.png";
       }
     } else if (statusY === 2) {
       if (statusX === -1) {
-        sprite = "tiles/bed_foot_single.png";
+        sprite = "tiles/bed/bed_foot_single.png";
       } else if (statusX === 0) {
-        sprite = "tiles/bed_foot_left.png";
+        sprite = "tiles/bed/bed_foot_left.png";
       } else if (statusX === 1) {
-        sprite = "tiles/bed_foot_middle.png";
+        sprite = "tiles/bed/bed_foot_middle.png";
       } else if (statusX === 2) {
-        sprite = "tiles/bed_foot_right.png";
+        sprite = "tiles/bed/bed_foot_right.png";
       }
     }
     return Images.getImage(sprite);
@@ -444,7 +444,7 @@ Tile.register("pavement", Pavement, "#999999");
 class Construction extends Tile {}
 Tile.register("construction", Construction, "#FFD966");
 
-class Trees extends Tile {}
+class Trees extends TransparentTile {}
 Tile.register("trees", Trees, "#38761D");
 
 class Garden extends Tile {}
