@@ -291,17 +291,20 @@ Tile.register("chair", Chair, "#FFFF00", null);
 class KnickknackShelf extends Tile {}
 Tile.register("knickknack_shelf", KnickknackShelf, "#C27BA0");
 
-class LeftDoor extends Tile {}
+class LeftDoor extends TransparentTile {}
 Tile.register("left_door", LeftDoor, "#FF6D01");
 
-class RightDoor extends Tile {}
+class RightDoor extends TransparentTile {}
 Tile.register("right_door", RightDoor, "#FF6D01");
 
-class MetalLeftDoor extends Tile {}
+class MetalLeftDoor extends TransparentTile {}
 Tile.register("metal_left_door", MetalLeftDoor, "#D9D9D9");
 
-class MetalRightDoor extends Tile {}
+class MetalRightDoor extends TransparentTile {}
 Tile.register("metal_right_door", MetalRightDoor, "#D9D9D9");
+
+class Mat extends TransparentTile {}
+Tile.register("mat", Mat, "#C27BA0");
 
 class Countertop extends Tile {}
 Tile.register("countertop", Countertop, "#0000FF");

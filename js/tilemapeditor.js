@@ -32,6 +32,7 @@ const TILE_COLORS = {
   "right_door": "#FF6D01",
   "metal_left_door": "#D9D9D9",
   "metal_right_door": "#D9D9D9",
+  "mat": "#C27BA0",
   "countertop": "#0000FF",
   "stair_top_ascending": "#434343",
   "stair_bottom_ascending": "#666666",
