@@ -4,7 +4,7 @@ const SERVER_URL = "wss://terrekin-server.kroiririoroirkk.repl.co";
 
 const BLOCK_WIDTH = 32;
 const PLAYER_WIDTH = 28;
-const SCALE_FACTOR = 1.3;
+const SCALE_FACTOR = 2;
 
 const PLAYER_SPEED = BLOCK_WIDTH*3;
 const SPEED_MULTIPLIER = 2;
