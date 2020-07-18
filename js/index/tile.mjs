@@ -182,8 +182,83 @@ Tile.register("carpet", Carpet, "#F1C232");
 class Rug extends Tile {}
 Tile.register("rug", Rug, "#38761D");
 
-class Table extends Tile {}
-Tile.register("table", Table, "#B45F06");
+class Table extends TransparentTile {
+  getSprite(game) {
+    let tileCoord = this.pos.toTileCoord(),
+        tileAbove = game.map[tileCoord.y-1][tileCoord.x],
+        tileBelow = game.map[tileCoord.y+1][tileCoord.x],
+        tileLeft  = game.map[tileCoord.y][tileCoord.x-1],
+        tileRight = game.map[tileCoord.y][tileCoord.x+1],
+        statusY,
+        statusX,
+        sprite;
+    if (tileAbove instanceof Table) {
+      if (tileBelow instanceof Table) {
+        statusY = 1;
+      } else {
+        statusY = 2;
+      }
+    } else if (tileBelow instanceof Table) {
+      statusY = 0;
+    } else {
+      statusY = -1;
+    }
+    if (tileLeft instanceof Table) {
+      if (tileRight instanceof Table) {
+        statusX = 1;
+      } else {
+        statusX = 2;
+      }
+    } else if (tileRight instanceof Table) {
+      statusX = 0;
+    } else {
+      statusX = -1;
+    }
+    if (statusY === -1) {
+      if (statusX === -1) {
+        sprite = "tiles/table_single.png";
+      } else if (statusX === 0) {
+        sprite = "tiles/table_left.png";
+      } else if (statusX === 1) {
+        sprite = "tiles/table_middle.png";
+      } else if (statusX === 2) {
+        sprite = "tiles/table_right.png";
+      }
+    } else if (statusY === 0) {
+      if (statusX === -1) {
+        sprite = "tiles/table_back_single.png";
+      } else if (statusX === 0) {
+        sprite = "tiles/table_back_left.png";
+      } else if (statusX === 1) {
+        sprite = "tiles/table_back_middle.png";
+      } else if (statusX === 2) {
+        sprite = "tiles/table_back_right.png";
+      }
+    } else if (statusY === 1) {
+      if (statusX === -1) {
+        sprite = "tiles/table_middle_single.png";
+      } else if (statusX === 0) {
+        sprite = "tiles/table_middle_left.png";
+      } else if (statusX === 1) {
+        sprite = "tiles/table_middle_middle.png";
+      } else if (statusX === 2) {
+        sprite = "tiles/table_middle_right.png";
+      }
+    } else if (statusY === 2) {
+      if (statusX === -1) {
+        sprite = "tiles/table_front_single.png";
+      } else if (statusX === 0) {
+        sprite = "tiles/table_front_left.png";
+      } else if (statusX === 1) {
+        sprite = "tiles/table_front_middle.png";
+      } else if (statusX === 2) {
+        sprite = "tiles/table_front_right.png";
+      }
+    }
+    return Images.getImage(sprite);
+  }
+}
+Tile.register("table", Table, "#B45F06", null);
 
 class ChairData extends GroundData {
   constructor(facing, groundTile) {
