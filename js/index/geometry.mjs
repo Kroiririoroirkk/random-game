@@ -1,5 +1,7 @@
 "use strict";
 
+import {BLOCK_WIDTH} from "./config.mjs";
+
 class Vec {
   constructor(x, y) {
     this.x = x;
@@ -40,6 +42,18 @@ class Vec {
 
   static fromJSON(obj) {
     return new Vec(obj["x"], obj["y"]);
+  }
+
+  toTileCoord() {
+    return new TileCoord(Math.floor(this.x / BLOCK_WIDTH),
+                         Math.floor(this.y / BLOCK_WIDTH));
+  }
+}
+
+class TileCoord {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
   }
 }
 

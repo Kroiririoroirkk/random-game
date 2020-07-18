@@ -10,13 +10,13 @@ class Tile {
     this.pos = pos;
   }
 
-  getSprite() {
+  getSprite(game) {
     const spr = this.sprite || this.constructor._sprite;
     if (Object.prototype.toString.call(spr) === '[object String]') {
-      return spr ? Images.getImage(spr) : null;
+      return Images.getImage(spr);
     } else if (Array.isArray(spr)) {
       this.sprite = spr[Math.floor(Math.random() * spr.length)];
-      return this.getSprite();
+      return this.getSprite(game);
     }
   }
 
@@ -24,7 +24,7 @@ class Tile {
     return [new Render((function() {
       const ctx = game.canvasCtx,
             pos = this.pos.relToPlayer(game).floor(),
-            spr = this.getSprite();
+            spr = this.getSprite(game);
       if (spr) {
         ctx.drawImage(spr, pos.x, pos.y);
       } else {
@@ -89,6 +89,28 @@ class TilePlus extends Tile {
   }
 }
 
+class GroundData {
+  constructor(groundTile) {
+    this.groundTile = groundTile;
+  }
+}
+
+class TransparentTile extends TilePlus {
+  render(game, height=undefined) {
+    if (height) {
+      return [...this.data.groundTile.render(game),
+              ...(super.render(game).map(r => r.withY(this.pos.y + height)))];
+    } else {
+      return [...this.data.groundTile.render(game),
+              ...super.render(game)];
+    }
+  }
+
+  static dataFromJSON(obj, pos) {
+    return new GroundData(Tile.fromJSON(obj["ground_tile"], pos));
+  }
+}
+
 class Empty extends Tile {}
 Tile.register("empty", Empty, "#000000", null);
 
@@ -101,13 +123,7 @@ Tile.register("wild_grass", WildGrass, "#3DB846");
 class Wall extends Tile {}
 Tile.register("wall", Wall, "#606060");
 
-class PortalData {
-  constructor(groundTile) {
-    this.groundTile = groundTile;
-  }
-}
-
-class Portal extends TilePlus {
+class Portal extends TransparentTile {
   constructor(pos, data) {
     super(pos, data);
     this.animation = new Animation(
@@ -118,40 +134,19 @@ class Portal extends TilePlus {
     );
   }
 
-  static dataFromJSON(obj, pos) {
-    return new PortalData(Tile.fromJSON(obj["ground_tile"], pos));
-  }
-
   animate(dt) {
     this.animation.animate(dt);
   }
 
-  getSprite() {
+  getSprite(game) {
     return this.animation.getSprite();
-  }
-
-  render(game) {
-    return [...this.data.groundTile.render(game),
-            ...super.render(game)];
   }
 }
 Tile.register("portal", Portal, "#C996FF", null);
 
-class SignData {
-  constructor(groundTile) {
-    this.groundTile = groundTile;
-  }
-}
-
-class Sign extends TilePlus {
-  static dataFromJSON(obj, pos) {
-    return new SignData(Tile.fromJSON(obj["ground_tile"], pos));
-  }
-
+class Sign extends TransparentTile {
   render(game) {
-    const SIGN_HEIGHT = 27;
-    return [...this.data.groundTile.render(game),
-            ...(super.render(game).map(r => r.withY(this.pos.y + SIGN_HEIGHT)))];
+    return super.render(game, 27);
   }
 }
 Tile.register("sign", Sign, "#FFFF00");
@@ -190,8 +185,33 @@ Tile.register("rug", Rug, "#38761D");
 class Table extends Tile {}
 Tile.register("table", Table, "#B45F06");
 
-class Chair extends Tile {}
-Tile.register("chair", Chair, "#FFFF00");
+class ChairData extends GroundData {
+  constructor(facing, groundTile) {
+    super(groundTile);
+    this.facing = facing;
+  }
+}
+
+class Chair extends TransparentTile {
+  static dataFromJSON(obj, pos) {
+    return new ChairData(
+      Dir.strToDir(obj["facing"]),
+      super.dataFromJSON(obj, pos).groundTile);
+  }
+
+  getSprite(game) {
+    if (this.data.facing === Dir.LEFT) {
+      return Images.getImage("tiles/chair_left.png");
+    } else if (this.data.facing === Dir.UP) {
+      return Images.getImage("tiles/chair_up.png");
+    } else if (this.data.facing === Dir.RIGHT) {
+      return Images.getImage("tiles/chair_right.png");
+    } else if (this.data.facing === Dir.DOWN) {
+      return Images.getImage("tiles/chair_down.png");
+    }
+  }
+}
+Tile.register("chair", Chair, "#FFFF00", null);
 
 class KnickknackShelf extends Tile {}
 Tile.register("knickknack_shelf", KnickknackShelf, "#C27BA0");
@@ -223,11 +243,86 @@ Tile.register("stair_top_descending", StairTopDescending, "#434343");
 class StairBottomDescending extends Tile {}
 Tile.register("stair_bottom_descending", StairBottomDescending, "#666666");
 
-class Couch extends Tile {}
-Tile.register("couch", Couch, "#00FFFF");
+class Couch extends TransparentTile {
+  getSprite(game) {
+    let tileCoord = this.pos.toTileCoord(),
+        tileLeft  = game.map[tileCoord.y][tileCoord.x-1];
+    if (tileLeft instanceof Couch) {
+      return Images.getImage("tiles/couch_right.png");
+    } else {
+      return Images.getImage("tiles/couch_left.png");
+    }
+  }
+}
+Tile.register("couch", Couch, "#00FFFF", null);
 
-class Bed extends Tile {}
-Tile.register("bed", Bed, "#FF0000");
+class Bed extends TransparentTile {
+  getSprite(game) {
+    let tileCoord = this.pos.toTileCoord(),
+        tileAbove = game.map[tileCoord.y-1][tileCoord.x],
+        tileBelow = game.map[tileCoord.y+1][tileCoord.x],
+        tileLeft  = game.map[tileCoord.y][tileCoord.x-1],
+        tileRight = game.map[tileCoord.y][tileCoord.x+1],
+        statusY,
+        statusX,
+        sprite;
+    if (tileAbove instanceof Bed) {
+      if (tileBelow instanceof Bed) {
+        statusY = 1;
+      } else {
+        statusY = 2;
+      }
+    } else if (tileBelow instanceof Bed) {
+      statusY = 0;
+    } else {
+      statusY = -1;
+    }
+    if (tileLeft instanceof Bed) {
+      if (tileRight instanceof Bed) {
+        statusX = 1;
+      } else {
+        statusX = 2;
+      }
+    } else if (tileRight instanceof Bed) {
+      statusX = 0;
+    } else {
+      statusX = -1;
+    }
+    if (statusY === -1 || statusY === 0) {
+      if (statusX === -1) {
+        sprite = "tiles/bed_head_single.png";
+      } else if (statusX === 0) {
+        sprite = "tiles/bed_head_left.png";
+      } else if (statusX === 1) {
+        sprite = "tiles/bed_head_middle.png";
+      } else if (statusX === 2) {
+        sprite = "tiles/bed_head_right.png";
+      }
+    } else if (statusY === 1) {
+      if (statusX === -1) {
+        sprite = "tiles/bed_middle_single.png";
+      } else if (statusX === 0) {
+        sprite = "tiles/bed_middle_left.png";
+      } else if (statusX === 1) {
+        sprite = "tiles/bed_middle_middle.png";
+      } else if (statusX === 2) {
+        sprite = "tiles/bed_middle_right.png";
+      }
+    } else if (statusY === 2) {
+      if (statusX === -1) {
+        sprite = "tiles/bed_foot_single.png";
+      } else if (statusX === 0) {
+        sprite = "tiles/bed_foot_left.png";
+      } else if (statusX === 1) {
+        sprite = "tiles/bed_foot_middle.png";
+      } else if (statusX === 2) {
+        sprite = "tiles/bed_foot_right.png";
+      }
+    }
+    return Images.getImage(sprite);
+  }
+}
+Tile.register("bed", Bed, "#FF0000", null);
 
 class LampNightstand extends Tile {}
 Tile.register("lamp_nightstand", LampNightstand, "#FFF2CC");
@@ -277,8 +372,8 @@ Tile.register("trees", Trees, "#38761D");
 class Garden extends Tile {}
 Tile.register("garden", Garden, "#783F04");
 
-export {Tile, TilePlus, Empty, Grass, WildGrass, Wall,
-        PortalData, Portal, SignData, Sign,
+export {Tile, TilePlus, GroundData, TransparentTile,
+        Empty, Grass, WildGrass, Wall, Portal, Sign,
         DeepWater, ShallowWater, Dirt, Desert, Lava,
         Floor, IndoorWall, Barrier, Carpet, Rug, Table, Chair,
         KnickknackShelf, LeftDoor, RightDoor, MetalLeftDoor,
