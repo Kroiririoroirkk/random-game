@@ -179,7 +179,21 @@ Tile.register("barrier", Barrier, "#000000", null);
 class Carpet extends Tile {}
 Tile.register("carpet", Carpet, "#F1C232");
 
-class Rug extends Tile {}
+class RugData {
+  constructor(pattern) {
+    this.pattern = pattern;
+  }
+}
+
+class Rug extends TilePlus {
+  static dataFromJSON(obj, pos) {
+    return new RugData(obj["pattern"]);
+  }
+
+  getSprite(game) {
+    return Images.getImage(`tiles/rug/rug${this.data.pattern}.png`);
+  }
+}
 Tile.register("rug", Rug, "#38761D");
 
 class Table extends TransparentTile {
@@ -303,8 +317,18 @@ Tile.register("metal_left_door", MetalLeftDoor, "#D9D9D9");
 class MetalRightDoor extends TransparentTile {}
 Tile.register("metal_right_door", MetalRightDoor, "#D9D9D9");
 
-class Mat extends TransparentTile {}
-Tile.register("mat", Mat, "#C27BA0");
+class Mat extends TransparentTile {
+  getSprite(game) {
+    let tileCoord = this.pos.toTileCoord(),
+        tileLeft  = game.map[tileCoord.y][tileCoord.x-1];
+    if (tileLeft instanceof Mat) {
+      return Images.getImage("tiles/mat/mat_right.png");
+    } else {
+      return Images.getImage("tiles/mat/mat_left.png");
+    }
+  }
+}
+Tile.register("mat", Mat, "#C27BA0", null);
 
 class Countertop extends Tile {}
 Tile.register("countertop", Countertop, "#0000FF");
