@@ -489,8 +489,27 @@ Tile.register("university_hospital_roof", UniversityHospitalRoof, "#0B5394");
 class Roof extends Tile {}
 Tile.register("roof", Roof, "#1111BB");
 
-class Well extends Tile {}
-Tile.register("well", Well, "#4A86E8");
+class Well extends TransparentTile {
+  getSprite(game) {
+    if (this.sprite) {return Images.getImage(this.sprite);}
+    let tileCoord = this.pos.toTileCoord(),
+        tileAboveRight = game.map[tileCoord.y-1][tileCoord.x+1],
+        tileBelowRight = game.map[tileCoord.y+1][tileCoord.x+1],
+        tileAboveLeft  = game.map[tileCoord.y-1][tileCoord.x-1],
+        tileBelowLeft  = game.map[tileCoord.y+1][tileCoord.x-1];
+    if (tileAboveRight instanceof Well) {
+      this.sprite = "tiles/well/well_lower_left.png";
+    } else if (tileBelowRight instanceof Well) {
+      this.sprite = "tiles/well/well_upper_left.png";
+    } else if (tileAboveLeft instanceof Well) {
+      this.sprite = "tiles/well/well_lower_right.png";
+    } else if (tileBelowLeft instanceof Well) {
+      this.sprite = "tiles/well/well_upper_right.png";
+    }
+    return Images.getImage(this.sprite);
+  }
+}
+Tile.register("well", Well, "#4A86E8", null);
 
 class Pavement extends Tile {}
 Tile.register("pavement", Pavement, "#999999");
