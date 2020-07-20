@@ -302,7 +302,7 @@ class Chair extends TransparentTile {
 }
 Tile.register("chair", Chair, "#FFFF00", null);
 
-class KnickknackShelf extends Tile {}
+class KnickknackShelf extends TransparentTile {}
 Tile.register("knickknack_shelf", KnickknackShelf, "#C27BA0");
 
 class LeftDoor extends TransparentTile {}
