@@ -448,15 +448,18 @@ class Bookcase extends TransparentTile {
   }
 
   getSprite(game) {
+    if (this.sprite) {return Images.getImage(this.sprite);}
     if (this.data.facing === Dir.LEFT) {
-      return Images.getImage("tiles/bookcase/bookcase_left.png");
+      this.sprite = "tiles/bookcase/bookcase_left.png";
     } else if (this.data.facing === Dir.UP) {
-      return Images.getImage("tiles/bookcase/bookcase_back.png");
+      this.sprite = "tiles/bookcase/bookcase_back.png";
     } else if (this.data.facing === Dir.RIGHT) {
-      return Images.getImage("tiles/bookcase/bookcase_right.png");
+      this.sprite = "tiles/bookcase/bookcase_right.png";
     } else if (this.data.facing === Dir.DOWN) {
-      return Images.getImage("tiles/bookcase/bookcase_front.png");
+      let spriteArr = ["tiles/bookcase/bookcase_front1.png", "tiles/bookcase/bookcase_front2.png"];
+      this.sprite = spriteArr[Math.floor(Math.random()*2)];
     }
+    return Images.getImage(this.sprite);
   }
 }
 Tile.register("bookcase", Bookcase, "#E6B8AF");
