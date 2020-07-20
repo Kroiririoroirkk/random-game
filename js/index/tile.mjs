@@ -442,7 +442,23 @@ Tile.register("lamp_nightstand", LampNightstand, "#FFF2CC");
 class Desk extends Tile {}
 Tile.register("desk", Desk, "#FFE599");
 
-class Bookcase extends Tile {}
+class Bookcase extends TransparentTile {
+  static dataFromJSON(obj, pos) {
+    return Chair.dataFromJSON(obj, pos);
+  }
+
+  getSprite(game) {
+    if (this.data.facing === Dir.LEFT) {
+      return Images.getImage("tiles/bookcase/bookcase_left.png");
+    } else if (this.data.facing === Dir.UP) {
+      return Images.getImage("tiles/bookcase/bookcase_back.png");
+    } else if (this.data.facing === Dir.RIGHT) {
+      return Images.getImage("tiles/bookcase/bookcase_right.png");
+    } else if (this.data.facing === Dir.DOWN) {
+      return Images.getImage("tiles/bookcase/bookcase_front.png");
+    }
+  }
+}
 Tile.register("bookcase", Bookcase, "#E6B8AF");
 
 class HungUpClothes extends Tile {}
