@@ -11,13 +11,7 @@ class Tile {
   }
 
   getSprite(game) {
-    const spr = this.sprite || this.constructor._sprite;
-    if (Object.prototype.toString.call(spr) === '[object String]') {
-      return Images.getImage(spr);
-    } else if (Array.isArray(spr)) {
-      this.sprite = spr[Math.floor(Math.random() * spr.length)];
-      return this.getSprite(game);
-    }
+    return Images.getImage(this.constructor._sprite);
   }
 
   render(game) {
@@ -166,9 +160,25 @@ Tile.register("desert", Desert, "#DAD79C");
 class Lava extends Tile {}
 Tile.register("lava", Lava, "#EC731C");
 
-class Floor extends Tile {}
-Tile.register("floor", Floor, "#DDDDDD",
-              ["tiles/floor/floor1.png", "tiles/floor/floor2.png"]);
+class Floor extends Tile {
+  getSprite(game) {
+    if (this.sprite) {return Images.getImage(this.sprite);}
+    let tileCoord = this.pos.toTileCoord(),
+        tileLeft  = game.map[tileCoord.y][tileCoord.x-1];
+    if (tileLeft instanceof Floor && tileLeft.sprite) {
+      this.sprite = tileLeft.sprite;
+    } else if (tileLeft.data
+               && tileLeft.data.groundTile instanceof Floor
+               && tileLeft.data.groundTile.sprite) {
+      this.sprite = tileLeft.data.groundTile.sprite;
+    } else {
+      let spriteArr = ["tiles/floor/floor1.png", "tiles/floor/floor2.png"];
+      this.sprite = spriteArr[Math.floor(Math.random()*2)];
+    }
+    return Images.getImage(this.sprite);
+  }
+}
+Tile.register("floor", Floor, "#DDDDDD", null);
 
 class IndoorWall extends Tile {}
 Tile.register("indoor_wall", IndoorWall, "#00711A");
