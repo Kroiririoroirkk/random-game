@@ -1,5 +1,6 @@
 "use strict";
 
+import {BLOCK_WIDTH} from "./config.mjs";
 import {Dir} from "./geometry.mjs";
 import {Animation, Frame, Images, Render} from "./render.mjs";
 
@@ -20,7 +21,7 @@ class Tile {
             pos = this.pos.relToPlayer(game).floor(),
             spr = this.getSprite(game);
       if (spr) {
-        ctx.drawImage(spr, pos.x, pos.y);
+        ctx.drawImage(spr, pos.x, pos.y+BLOCK_WIDTH-spr.naturalHeight);
       } else {
         Render.drawRect(game.canvasCtx, pos, this.constructor._fillStyle);
       }
