@@ -38,7 +38,7 @@ class Tile {
 
   animate() {}
 
-  static register(tileId, tileClass, fillStyle="#000000", spritePath=undefined) {
+  static register(tileId, tileClass, fillStyle, spritePath=undefined) {
     if (tiles.has(tileId)) {
       throw new Error(`Tile ID ${tileId} is already in use.`);
     } else {
