@@ -11,8 +11,12 @@ class Tile {
     this.pos = pos;
   }
 
+  getSpritePath(game) {
+    return this.spritePath;
+  }
+
   getSprite(game) {
-    return Images.getImage(this.constructor._sprite);
+    return Images.getImage(this.getSpritePath(game));
   }
 
   render(game) {
@@ -23,7 +27,7 @@ class Tile {
       if (spr) {
         ctx.drawImage(spr, pos.x, pos.y+BLOCK_WIDTH-spr.naturalHeight);
       } else {
-        Render.drawRect(game.canvasCtx, pos, this.constructor._fillStyle);
+        Render.drawRect(game.canvasCtx, pos, this.constructor.fillStyle);
       }
     }).bind(this), this.pos.y)];
   }
@@ -34,17 +38,135 @@ class Tile {
 
   animate() {}
 
-  static register(tileId, tileClass, fillStyle="#000000", sprite=undefined) {
+  static register(tileId, tileClass, fillStyle="#000000", spritePath=undefined) {
     if (tiles.has(tileId)) {
       throw new Error(`Tile ID ${tileId} is already in use.`);
     } else {
       tiles.set(tileId, tileClass);
-      if (typeof sprite === "undefined") {
-        tileClass._sprite = `tiles/${tileId}.png`;
+      if (typeof spritePath === "undefined") {
+        tileClass.prototype.spritePath = `tiles/${tileId}.png`;
       } else {
-        tileClass._sprite = sprite;
+        tileClass.prototype.spritePath = spritePath;
       }
-      tileClass._fillStyle = fillStyle;
+      tileClass.fillStyle = fillStyle;
+    }
+  }
+
+  static setLeftRightSprites(tileClass, leftSpritePath, rightSpritePath) {
+    tileClass.prototype.getSpritePath = function getSpritePath(game) {
+      if (this.spritePath) {return this.spritePath;}
+      let tileCoord = this.pos.toTileCoord(),
+          tileLeft  = game.map[tileCoord.y][tileCoord.x-1];
+      if (tileLeft instanceof tileClass) {
+        this.spritePath = rightSpritePath;
+      } else {
+        this.spritePath = leftSpritePath;
+      }
+      return this.spritePath;
+    };
+  }
+
+  static setTwoByTwoSprite(tileClass,
+      upperLeftSpritePath, upperRightSpritePath,
+      lowerLeftSpritePath, lowerRightSpritePath) {
+    tileClass.prototype.getSpritePath = function getSpritePath(game) {
+      if (this.spritePath) {return this.spritePath;}
+      let tileCoord = this.pos.toTileCoord(),
+          tileAboveRight = game.map[tileCoord.y-1][tileCoord.x+1],
+          tileBelowRight = game.map[tileCoord.y+1][tileCoord.x+1],
+          tileAboveLeft  = game.map[tileCoord.y-1][tileCoord.x-1],
+          tileBelowLeft  = game.map[tileCoord.y+1][tileCoord.x-1];
+      if (tileAboveRight instanceof tileClass) {
+        this.spritePath = lowerLeftSpritePath;
+      } else if (tileBelowRight instanceof tileClass) {
+        this.spritePath = upperLeftSpritePath;
+      } else if (tileAboveLeft instanceof tileClass) {
+        this.spritePath = lowerRightSpritePath;
+      } else if (tileBelowLeft instanceof tileClass) {
+        this.spritePath = upperRightSpritePath;
+      }
+      return this.spritePath;
+    }
+  }
+
+  static setConnectingSprites(tileClass,
+      singleSpritePath,       leftSpritePath,       middleSpritePath,       rightSpritePath,
+      backSingleSpritePath,   backLeftSpritePath,   backMiddleSpritePath,   backRightSpritePath,
+      middleSingleSpritePath, middleLeftSpritePath, middleMiddleSpritePath, middleRightSpritePath,
+      frontSingleSpritePath,  frontLeftSpritePath,  frontMiddleSpritePath,  frontRightSpritePath) {
+    tileClass.prototype.getSpritePath = function getSpritePath(game) {
+      if (this.spritePath) {return this.spritePath;}
+      let tileCoord = this.pos.toTileCoord(),
+          tileAbove = game.map[tileCoord.y-1][tileCoord.x],
+          tileBelow = game.map[tileCoord.y+1][tileCoord.x],
+          tileLeft  = game.map[tileCoord.y][tileCoord.x-1],
+          tileRight = game.map[tileCoord.y][tileCoord.x+1],
+          statusY,
+          statusX;
+      if (tileAbove instanceof tileClass) {
+        if (tileBelow instanceof tileClass) {
+          statusY = 1;
+        } else {
+          statusY = 2;
+        }
+      } else if (tileBelow instanceof tileClass) {
+        statusY = 0;
+      } else {
+        statusY = -1;
+      }
+      if (tileLeft instanceof tileClass) {
+        if (tileRight instanceof tileClass) {
+          statusX = 1;
+        } else {
+          statusX = 2;
+        }
+      } else if (tileRight instanceof tileClass) {
+        statusX = 0;
+      } else {
+        statusX = -1;
+      }
+      if (statusY === -1) {
+        if (statusX === -1) {
+          this.spritePath = singleSpritePath;
+        } else if (statusX === 0) {
+          this.spritePath = leftSpritePath;
+        } else if (statusX === 1) {
+          this.spritePath = middleSpritePath;
+        } else if (statusX === 2) {
+          this.spritePath = rightSpritePath;
+        }
+      } else if (statusY === 0) {
+        if (statusX === -1) {
+          this.spritePath = backSingleSpritePath;
+        } else if (statusX === 0) {
+          this.spritePath = backLeftSpritePath;
+        } else if (statusX === 1) {
+          this.spritePath = backMiddleSpritePath;
+        } else if (statusX === 2) {
+          this.spritePath = backRightSpritePath;
+        }
+      } else if (statusY === 1) {
+        if (statusX === -1) {
+          this.spritePath = middleSingleSpritePath;
+        } else if (statusX === 0) {
+          this.spritePath = middleLeftSpritePath;
+        } else if (statusX === 1) {
+          this.spritePath = middleMiddleSpritePath;
+        } else if (statusX === 2) {
+          this.spritePath = middleRightSpritePath;
+        }
+      } else if (statusY === 2) {
+        if (statusX === -1) {
+          this.spritePath = frontSingleSpritePath;
+        } else if (statusX === 0) {
+          this.spritePath = frontLeftSpritePath;
+        } else if (statusX === 1) {
+          this.spritePath = frontMiddleSpritePath;
+        } else if (statusX === 2) {
+          this.spritePath = frontRightSpritePath;
+        }
+      }
+      return this.spritePath;
     }
   }
 
@@ -58,10 +180,10 @@ class Tile {
   }
 
   static fromJSON(obj, pos) {
-    const tileId    = obj.tile_id,
+    const tileId    = obj["tile_id"],
           tileClass = Tile.getById(tileId);
     if (tileClass.hasMetadata) {
-      return new tileClass(pos, tileClass.dataFromJSON(obj.tile_data, pos));
+      return new tileClass(pos, tileClass.dataFromJSON(obj["tile_data"], pos));
     } else {
       return new tileClass(pos);
     }
@@ -91,20 +213,16 @@ class GroundData {
 }
 
 class TransparentTile extends TilePlus {
-  render(game, height=undefined) {
-    if (height) {
-      return [...this.data.groundTile.render(game),
-              ...(super.render(game).map(r => r.withY(this.pos.y + height)))];
-    } else {
-      return [...this.data.groundTile.render(game),
-              ...super.render(game)];
-    }
+  render(game) {
+    return [...this.data.groundTile.render(game),
+            ...(super.render(game).map(r => r.withY(this.pos.y + this.renderDepth)))];
   }
 
   static dataFromJSON(obj, pos) {
     return new GroundData(Tile.fromJSON(obj["ground_tile"], pos));
   }
 }
+TransparentTile.prototype.renderDepth = 0;
 
 class Empty extends Tile {}
 Tile.register("empty", Empty, "#000000", null);
@@ -139,12 +257,9 @@ class Portal extends TransparentTile {
 }
 Tile.register("portal", Portal, "#C996FF", null);
 
-class Sign extends TransparentTile {
-  render(game) {
-    return super.render(game, 27);
-  }
-}
+class Sign extends TransparentTile {}
 Tile.register("sign", Sign, "#FFFF00");
+Sign.prototype.renderDepth = 27;
 
 class DeepWater extends Tile {}
 Tile.register("deep_water", DeepWater, "#0000FF");
@@ -162,21 +277,21 @@ class Lava extends Tile {}
 Tile.register("lava", Lava, "#EC731C");
 
 class Floor extends Tile {
-  getSprite(game) {
-    if (this.sprite) {return Images.getImage(this.sprite);}
+  getSpritePath(game) {
+    if (this.spritePath) {return this.spritePath;}
     let tileCoord = this.pos.toTileCoord(),
         tileLeft  = game.map[tileCoord.y][tileCoord.x-1];
-    if (tileLeft instanceof Floor && tileLeft.sprite) {
-      this.sprite = tileLeft.sprite;
+    if (tileLeft instanceof Floor && tileLeft.spritePath) {
+      this.spritePath = tileLeft.spritePath;
     } else if (tileLeft.data
                && tileLeft.data.groundTile instanceof Floor
-               && tileLeft.data.groundTile.sprite) {
-      this.sprite = tileLeft.data.groundTile.sprite;
+               && tileLeft.data.groundTile.spritePath) {
+      this.spritePath = tileLeft.data.groundTile.spritePath;
     } else {
       let spriteArr = ["tiles/floor/floor1.png", "tiles/floor/floor2.png"];
-      this.sprite = spriteArr[Math.floor(Math.random()*2)];
+      this.spritePath = spriteArr[Math.floor(Math.random()*2)];
     }
-    return Images.getImage(this.sprite);
+    return this.spritePath;
   }
 }
 Tile.register("floor", Floor, "#DDDDDD", null);
@@ -201,89 +316,22 @@ class Rug extends TilePlus {
     return new RugData(obj["pattern"]);
   }
 
-  getSprite(game) {
-    return Images.getImage(`tiles/rug/rug${this.data.pattern}.png`);
+  getSpritePath(game) {
+    if (this.spritePath) {return this.spritePath;}
+    this.spritePath = `tiles/rug/rug${this.data.pattern}.png`;
+    return this.spritePath;
   }
 }
 Tile.register("rug", Rug, "#38761D");
 
-class Table extends TransparentTile {
-  getSprite(game) {
-    let tileCoord = this.pos.toTileCoord(),
-        tileAbove = game.map[tileCoord.y-1][tileCoord.x],
-        tileBelow = game.map[tileCoord.y+1][tileCoord.x],
-        tileLeft  = game.map[tileCoord.y][tileCoord.x-1],
-        tileRight = game.map[tileCoord.y][tileCoord.x+1],
-        statusY,
-        statusX,
-        sprite;
-    if (tileAbove instanceof Table) {
-      if (tileBelow instanceof Table) {
-        statusY = 1;
-      } else {
-        statusY = 2;
-      }
-    } else if (tileBelow instanceof Table) {
-      statusY = 0;
-    } else {
-      statusY = -1;
-    }
-    if (tileLeft instanceof Table) {
-      if (tileRight instanceof Table) {
-        statusX = 1;
-      } else {
-        statusX = 2;
-      }
-    } else if (tileRight instanceof Table) {
-      statusX = 0;
-    } else {
-      statusX = -1;
-    }
-    if (statusY === -1) {
-      if (statusX === -1) {
-        sprite = "tiles/table/table_single.png";
-      } else if (statusX === 0) {
-        sprite = "tiles/table/table_left.png";
-      } else if (statusX === 1) {
-        sprite = "tiles/table/table_middle.png";
-      } else if (statusX === 2) {
-        sprite = "tiles/table/table_right.png";
-      }
-    } else if (statusY === 0) {
-      if (statusX === -1) {
-        sprite = "tiles/table/table_back_single.png";
-      } else if (statusX === 0) {
-        sprite = "tiles/table/table_back_left.png";
-      } else if (statusX === 1) {
-        sprite = "tiles/table/table_back_middle.png";
-      } else if (statusX === 2) {
-        sprite = "tiles/table/table_back_right.png";
-      }
-    } else if (statusY === 1) {
-      if (statusX === -1) {
-        sprite = "tiles/table/table_middle_single.png";
-      } else if (statusX === 0) {
-        sprite = "tiles/table/table_middle_left.png";
-      } else if (statusX === 1) {
-        sprite = "tiles/table/table_middle_middle.png";
-      } else if (statusX === 2) {
-        sprite = "tiles/table/table_middle_right.png";
-      }
-    } else if (statusY === 2) {
-      if (statusX === -1) {
-        sprite = "tiles/table/table_front_single.png";
-      } else if (statusX === 0) {
-        sprite = "tiles/table/table_front_left.png";
-      } else if (statusX === 1) {
-        sprite = "tiles/table/table_front_middle.png";
-      } else if (statusX === 2) {
-        sprite = "tiles/table/table_front_right.png";
-      }
-    }
-    return Images.getImage(sprite);
-  }
-}
+class Table extends TransparentTile {}
 Tile.register("table", Table, "#B45F06", null);
+Tile.setConnectingSprites(Table,
+  "tiles/table/table_single.png",        "tiles/table/table_left.png",        "tiles/table/table_middle.png",        "tiles/table/table_right.png",
+  "tiles/table/table_back_single.png",   "tiles/table/table_back_left.png",   "tiles/table/table_back_middle.png",   "tiles/table/table_back_right.png",
+  "tiles/table/table_middle_single.png", "tiles/table/table_middle_left.png", "tiles/table/table_middle_middle.png", "tiles/table/table_middle_right.png",
+  "tiles/table/table_front_single.png",  "tiles/table/table_front_left.png",  "tiles/table/table_front_middle.png",  "tiles/table/table_front_right.png");
+
 
 class ChairData extends GroundData {
   constructor(facing, groundTile) {
@@ -299,16 +347,18 @@ class Chair extends TransparentTile {
       super.dataFromJSON(obj, pos).groundTile);
   }
 
-  getSprite(game) {
+  getSpritePath(game) {
+    if (this.spritePath) {return this.spritePath;}
     if (this.data.facing === Dir.LEFT) {
-      return Images.getImage("tiles/chair/chair_left.png");
+      this.spritePath = "tiles/chair/chair_left.png";
     } else if (this.data.facing === Dir.UP) {
-      return Images.getImage("tiles/chair/chair_up.png");
+      this.spritePath = "tiles/chair/chair_up.png";
     } else if (this.data.facing === Dir.RIGHT) {
-      return Images.getImage("tiles/chair/chair_right.png");
+      this.spritePath = "tiles/chair/chair_right.png";
     } else if (this.data.facing === Dir.DOWN) {
-      return Images.getImage("tiles/chair/chair_down.png");
+      this.spritePath = "tiles/chair/chair_down.png";
     }
+    return this.spritePath;
   }
 }
 Tile.register("chair", Chair, "#FFFF00", null);
@@ -328,18 +378,9 @@ Tile.register("metal_left_door", MetalLeftDoor, "#D9D9D9");
 class MetalRightDoor extends TransparentTile {}
 Tile.register("metal_right_door", MetalRightDoor, "#D9D9D9");
 
-class Mat extends TransparentTile {
-  getSprite(game) {
-    let tileCoord = this.pos.toTileCoord(),
-        tileLeft  = game.map[tileCoord.y][tileCoord.x-1];
-    if (tileLeft instanceof Mat) {
-      return Images.getImage("tiles/mat/mat_right.png");
-    } else {
-      return Images.getImage("tiles/mat/mat_left.png");
-    }
-  }
-}
+class Mat extends TransparentTile {}
 Tile.register("mat", Mat, "#C27BA0", null);
+Tile.setLeftRightSprites(Mat, "tiles/mat/mat_left.png", "tiles/mat/mat_right.png");
 
 class Countertop extends Tile {}
 Tile.register("countertop", Countertop, "#0000FF");
@@ -356,86 +397,17 @@ Tile.register("stair_top_descending", StairTopDescending, "#434343");
 class StairBottomDescending extends Tile {}
 Tile.register("stair_bottom_descending", StairBottomDescending, "#666666");
 
-class Couch extends TransparentTile {
-  getSprite(game) {
-    let tileCoord = this.pos.toTileCoord(),
-        tileLeft  = game.map[tileCoord.y][tileCoord.x-1];
-    if (tileLeft instanceof Couch) {
-      return Images.getImage("tiles/couch/couch_right.png");
-    } else {
-      return Images.getImage("tiles/couch/couch_left.png");
-    }
-  }
-}
+class Couch extends TransparentTile {}
 Tile.register("couch", Couch, "#00FFFF", null);
+Tile.setLeftRightSprites(Couch, "tiles/couch/couch_left.png", "tiles/couch/couch_right.png");
 
-class Bed extends TransparentTile {
-  getSprite(game) {
-    let tileCoord = this.pos.toTileCoord(),
-        tileAbove = game.map[tileCoord.y-1][tileCoord.x],
-        tileBelow = game.map[tileCoord.y+1][tileCoord.x],
-        tileLeft  = game.map[tileCoord.y][tileCoord.x-1],
-        tileRight = game.map[tileCoord.y][tileCoord.x+1],
-        statusY,
-        statusX,
-        sprite;
-    if (tileAbove instanceof Bed) {
-      if (tileBelow instanceof Bed) {
-        statusY = 1;
-      } else {
-        statusY = 2;
-      }
-    } else if (tileBelow instanceof Bed) {
-      statusY = 0;
-    } else {
-      statusY = -1;
-    }
-    if (tileLeft instanceof Bed) {
-      if (tileRight instanceof Bed) {
-        statusX = 1;
-      } else {
-        statusX = 2;
-      }
-    } else if (tileRight instanceof Bed) {
-      statusX = 0;
-    } else {
-      statusX = -1;
-    }
-    if (statusY === -1 || statusY === 0) {
-      if (statusX === -1) {
-        sprite = "tiles/bed/bed_head_single.png";
-      } else if (statusX === 0) {
-        sprite = "tiles/bed/bed_head_left.png";
-      } else if (statusX === 1) {
-        sprite = "tiles/bed/bed_head_middle.png";
-      } else if (statusX === 2) {
-        sprite = "tiles/bed/bed_head_right.png";
-      }
-    } else if (statusY === 1) {
-      if (statusX === -1) {
-        sprite = "tiles/bed/bed_middle_single.png";
-      } else if (statusX === 0) {
-        sprite = "tiles/bed/bed_middle_left.png";
-      } else if (statusX === 1) {
-        sprite = "tiles/bed/bed_middle_middle.png";
-      } else if (statusX === 2) {
-        sprite = "tiles/bed/bed_middle_right.png";
-      }
-    } else if (statusY === 2) {
-      if (statusX === -1) {
-        sprite = "tiles/bed/bed_foot_single.png";
-      } else if (statusX === 0) {
-        sprite = "tiles/bed/bed_foot_left.png";
-      } else if (statusX === 1) {
-        sprite = "tiles/bed/bed_foot_middle.png";
-      } else if (statusX === 2) {
-        sprite = "tiles/bed/bed_foot_right.png";
-      }
-    }
-    return Images.getImage(sprite);
-  }
-}
+class Bed extends TransparentTile {}
 Tile.register("bed", Bed, "#FF0000", null);
+Tile.setConnectingSprites(Bed,
+  "tiles/bed/bed_head_single.png",   "tiles/bed/bed_head_left.png",   "tiles/bed/bed_head_middle.png",   "tiles/bed/bed_head_right.png",
+  "tiles/bed/bed_head_single.png",   "tiles/bed/bed_head_left.png",   "tiles/bed/bed_head_middle.png",   "tiles/bed/bed_head_right.png",
+  "tiles/bed/bed_middle_single.png", "tiles/bed/bed_middle_left.png", "tiles/bed/bed_middle_middle.png", "tiles/bed/bed_middle_right.png",
+  "tiles/bed/bed_foot_single.png",   "tiles/bed/bed_foot_left.png",   "tiles/bed/bed_foot_middle.png",   "tiles/bed/bed_foot_right.png");
 
 class LampNightstand extends Tile {}
 Tile.register("lamp_nightstand", LampNightstand, "#FFF2CC");
@@ -448,19 +420,19 @@ class Bookcase extends TransparentTile {
     return Chair.dataFromJSON(obj, pos);
   }
 
-  getSprite(game) {
-    if (this.sprite) {return Images.getImage(this.sprite);}
+  getSpritePath(game) {
+    if (this.spritePath) {return this.spritePath;}
     if (this.data.facing === Dir.LEFT) {
-      this.sprite = "tiles/bookcase/bookcase_left.png";
+      this.spritePath = "tiles/bookcase/bookcase_left.png";
     } else if (this.data.facing === Dir.UP) {
-      this.sprite = "tiles/bookcase/bookcase_back.png";
+      this.spritePath = "tiles/bookcase/bookcase_back.png";
     } else if (this.data.facing === Dir.RIGHT) {
-      this.sprite = "tiles/bookcase/bookcase_right.png";
+      this.spritePath = "tiles/bookcase/bookcase_right.png";
     } else if (this.data.facing === Dir.DOWN) {
       let spriteArr = ["tiles/bookcase/bookcase_front1.png", "tiles/bookcase/bookcase_front2.png"];
-      this.sprite = spriteArr[Math.floor(Math.random()*2)];
+      this.spritePath = spriteArr[Math.floor(Math.random()*2)];
     }
-    return Images.getImage(this.sprite);
+    return this.spritePath;
   }
 }
 Tile.register("bookcase", Bookcase, "#E6B8AF");
@@ -489,27 +461,11 @@ Tile.register("university_hospital_roof", UniversityHospitalRoof, "#0B5394");
 class Roof extends Tile {}
 Tile.register("roof", Roof, "#1111BB");
 
-class Well extends TransparentTile {
-  getSprite(game) {
-    if (this.sprite) {return Images.getImage(this.sprite);}
-    let tileCoord = this.pos.toTileCoord(),
-        tileAboveRight = game.map[tileCoord.y-1][tileCoord.x+1],
-        tileBelowRight = game.map[tileCoord.y+1][tileCoord.x+1],
-        tileAboveLeft  = game.map[tileCoord.y-1][tileCoord.x-1],
-        tileBelowLeft  = game.map[tileCoord.y+1][tileCoord.x-1];
-    if (tileAboveRight instanceof Well) {
-      this.sprite = "tiles/well/well_lower_left.png";
-    } else if (tileBelowRight instanceof Well) {
-      this.sprite = "tiles/well/well_upper_left.png";
-    } else if (tileAboveLeft instanceof Well) {
-      this.sprite = "tiles/well/well_lower_right.png";
-    } else if (tileBelowLeft instanceof Well) {
-      this.sprite = "tiles/well/well_upper_right.png";
-    }
-    return Images.getImage(this.sprite);
-  }
-}
+class Well extends TransparentTile {}
 Tile.register("well", Well, "#4A86E8", null);
+Tile.setTwoByTwoSprite(Well,
+  "tiles/well/well_upper_left.png", "tiles/well/well_upper_right.png",
+  "tiles/well/well_lower_left.png", "tiles/well/well_lower_right.png")
 
 class Pavement extends Tile {}
 Tile.register("pavement", Pavement, "#999999");
