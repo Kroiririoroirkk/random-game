@@ -104,11 +104,17 @@ class OtherPlayer extends Entity {
     return [new Render((function() {
       const ctx = game.canvasCtx,
             startingX = Math.floor(this.pos.relToPlayer(game).x),
-            startingY = Math.floor(this.pos.relToPlayer(game).y);
-      ctx.fillStyle = "rgb(0, 0, 0)";
-      ctx.fillRect(startingX, startingY, PLAYER_WIDTH, PLAYER_WIDTH);
-      ctx.fillStyle = "rgb(255, 20, 147)";
-      ctx.fillRect(startingX+1, startingY+1, PLAYER_WIDTH-2, PLAYER_WIDTH-2);
+            startingY = Math.floor(this.pos.relToPlayer(game).y),
+            img = Images.getImage("other_player.png");
+      if (img) {
+        ctx.drawImage(img, startingX - (img.naturalWidth - BLOCK_WIDTH)/2,
+                           startingY - (img.naturalHeight - BLOCK_WIDTH));
+      } else {
+        ctx.fillStyle = "rgb(0, 0, 0)";
+        ctx.fillRect(startingX, startingY, PLAYER_WIDTH, PLAYER_WIDTH);
+        ctx.fillStyle = "rgb(255, 20, 147)";
+        ctx.fillRect(startingX+1, startingY+1, PLAYER_WIDTH-2, PLAYER_WIDTH-2);
+      }
     }).bind(this), this.pos.y + PLAYER_WIDTH)];
   }
 }
