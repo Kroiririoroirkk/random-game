@@ -52,7 +52,8 @@ class Tile {
     }
   }
 
-  static setLeftRightSprites(tileClass, leftSpritePath, rightSpritePath) {
+  static setLeftRightSprites(tileClass,
+    leftSpritePath, rightSpritePath) {
     tileClass.prototype.getSpritePath = function getSpritePath(game) {
       if (this.spritePath) {return this.spritePath;}
       let tileCoord = this.pos.toTileCoord(),
@@ -380,7 +381,8 @@ Tile.register("metal_right_door", MetalRightDoor, "#D9D9D9");
 
 class Mat extends TransparentTile {}
 Tile.register("mat", Mat, "#C27BA0", null);
-Tile.setLeftRightSprites(Mat, "tiles/mat/mat_left.png", "tiles/mat/mat_right.png");
+Tile.setLeftRightSprites(Mat,
+  "tiles/mat/mat_left.png", "tiles/mat/mat_right.png");
 
 class Countertop extends Tile {}
 Tile.register("countertop", Countertop, "#0000FF");
@@ -399,7 +401,8 @@ Tile.register("stair_bottom_descending", StairBottomDescending, "#666666");
 
 class Couch extends TransparentTile {}
 Tile.register("couch", Couch, "#00FFFF", null);
-Tile.setLeftRightSprites(Couch, "tiles/couch/couch_left.png", "tiles/couch/couch_right.png");
+Tile.setLeftRightSprites(Couch,
+  "tiles/couch/couch_left.png", "tiles/couch/couch_right.png");
 
 class Bed extends TransparentTile {}
 Tile.register("bed", Bed, "#FF0000", null);
