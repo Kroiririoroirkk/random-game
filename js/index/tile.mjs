@@ -384,8 +384,13 @@ Tile.register("mat", Mat, "#C27BA0", null);
 Tile.setLeftRightSprites(Mat,
   "tiles/mat/mat_left.png", "tiles/mat/mat_right.png");
 
-class Countertop extends Tile {}
-Tile.register("countertop", Countertop, "#0000FF");
+class Countertop extends TransparentTile {}
+Tile.register("countertop", Countertop, "#0000FF", null);
+Tile.setConnectingSprites(Countertop,
+  "tiles/countertop/countertop_single.png",        "tiles/countertop/countertop_left.png",        "tiles/countertop/countertop_middle.png",        "tiles/countertop/countertop_right.png",
+  "tiles/countertop/countertop_back_single.png",   "tiles/countertop/countertop_back_left.png",   "tiles/countertop/countertop_back_middle.png",   "tiles/countertop/countertop_back_right.png",
+  "tiles/countertop/countertop_middle_single.png", "tiles/countertop/countertop_middle_left.png", "tiles/countertop/countertop_middle_middle.png", "tiles/countertop/countertop_middle_right.png",
+  "tiles/countertop/countertop_front_single.png",  "tiles/countertop/countertop_front_left.png",  "tiles/countertop/countertop_front_middle.png",  "tiles/countertop/countertop_front_right.png");
 
 class StairTopAscending extends Tile {}
 Tile.register("stair_top_ascending", StairTopAscending, "#434343");
