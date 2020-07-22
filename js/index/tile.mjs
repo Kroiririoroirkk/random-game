@@ -486,7 +486,7 @@ Tile.setTwoByTwoSprite(Well,
 class Pavement extends Tile {}
 Tile.register("pavement", Pavement, "#999999");
 
-class Construction extends Tile {}
+class Construction extends TransparentTile {}
 Tile.register("construction", Construction, "#FFD966");
 
 class Trees extends TransparentTile {}
