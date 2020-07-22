@@ -393,10 +393,14 @@ Tile.setConnectingSprites(Countertop,
   "tiles/countertop/countertop_front_single.png",  "tiles/countertop/countertop_front_left.png",  "tiles/countertop/countertop_front_middle.png",  "tiles/countertop/countertop_front_right.png");
 
 class StairTopAscending extends Tile {}
-Tile.register("stair_top_ascending", StairTopAscending, "#434343");
+Tile.register("stair_top_ascending", StairTopAscending, "#434343", null);
+Tile.setLeftRightSprites(StairTopAscending,
+  "tiles/stair_top_ascending/stair_top_ascending_left.png", "tiles/stair_top_ascending/stair_top_ascending_right.png");
 
 class StairBottomAscending extends Tile {}
-Tile.register("stair_bottom_ascending", StairBottomAscending, "#666666");
+Tile.register("stair_bottom_ascending", StairBottomAscending, "#666666", null);
+Tile.setLeftRightSprites(StairBottomAscending,
+  "tiles/stair_bottom_ascending/stair_bottom_ascending_left.png", "tiles/stair_bottom_ascending/stair_bottom_ascending_right.png");
 
 class StairTopDescending extends Tile {}
 Tile.register("stair_top_descending", StairTopDescending, "#434343");
@@ -417,7 +421,7 @@ Tile.setConnectingSprites(Bed,
   "tiles/bed/bed_middle_single.png", "tiles/bed/bed_middle_left.png", "tiles/bed/bed_middle_middle.png", "tiles/bed/bed_middle_right.png",
   "tiles/bed/bed_foot_single.png",   "tiles/bed/bed_foot_left.png",   "tiles/bed/bed_foot_middle.png",   "tiles/bed/bed_foot_right.png");
 
-class LampNightstand extends Tile {}
+class LampNightstand extends TransparentTile {}
 Tile.register("lamp_nightstand", LampNightstand, "#FFF2CC");
 
 class Desk extends Tile {}
