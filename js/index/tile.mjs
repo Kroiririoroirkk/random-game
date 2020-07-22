@@ -323,7 +323,7 @@ class Rug extends TilePlus {
     return this.spritePath;
   }
 }
-Tile.register("rug", Rug, "#38761D");
+Tile.register("rug", Rug, "#38761D", null);
 
 class Table extends TransparentTile {}
 Tile.register("table", Table, "#B45F06", null);
@@ -443,7 +443,7 @@ class Bookcase extends TransparentTile {
     return this.spritePath;
   }
 }
-Tile.register("bookcase", Bookcase, "#E6B8AF");
+Tile.register("bookcase", Bookcase, "#E6B8AF", null);
 
 class HungUpClothes extends Tile {}
 Tile.register("hung_up_clothes", HungUpClothes, "#A64D79");
