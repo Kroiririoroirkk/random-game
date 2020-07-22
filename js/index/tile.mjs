@@ -225,8 +225,10 @@ class TransparentTile extends TilePlus {
 }
 TransparentTile.prototype.renderDepth = 0;
 
-class Empty extends Tile {}
-Tile.register("empty", Empty, "#000000", null);
+class Empty extends Tile {
+  render(game) {return [];}
+}
+Tile.register("empty", Empty, null, null);
 
 class Grass extends Tile {}
 Tile.register("grass", Grass, "#00FF00");
