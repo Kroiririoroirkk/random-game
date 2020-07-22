@@ -403,10 +403,14 @@ Tile.setLeftRightSprites(StairBottomAscending,
   "tiles/stair_bottom_ascending/stair_bottom_ascending_left.png", "tiles/stair_bottom_ascending/stair_bottom_ascending_right.png");
 
 class StairTopDescending extends Tile {}
-Tile.register("stair_top_descending", StairTopDescending, "#434343");
+Tile.register("stair_top_descending", StairTopDescending, "#434343", null);
+Tile.setLeftRightSprites(StairTopDescending,
+  "tiles/stair_top_descending/stair_top_descending_left.png", "tiles/stair_top_descending/stair_top_descending_right.png");
 
 class StairBottomDescending extends Tile {}
-Tile.register("stair_bottom_descending", StairBottomDescending, "#666666");
+Tile.register("stair_bottom_descending", StairBottomDescending, "#666666", null);
+Tile.setLeftRightSprites(StairBottomDescending,
+  "tiles/stair_bottom_descending/stair_bottom_descending_left.png", "tiles/stair_bottom_descending/stair_bottom_descending_right.png");
 
 class Couch extends TransparentTile {}
 Tile.register("couch", Couch, "#00FFFF", null);
