@@ -308,6 +308,7 @@ class Portal extends TransparentTile {
   }
 }
 Tile.register("portal", Portal, "#C996FF", null);
+Portal.prototype.renderDepth = 0;
 
 class InvisiblePortal extends TransparentTile {
   render(game) {return this.data.groundTile.render(game);}
@@ -439,7 +440,7 @@ class Mat extends TransparentTile {}
 Tile.register("mat", Mat, "#C27BA0");
 Tile.setLeftRightSprites(Mat,
   "tiles/mat/mat_left.png", "tiles/mat/mat_right.png");
-Mat.prototype.renderDepth = 1;
+Mat.prototype.renderDepth = 0;
 
 class Countertop extends TransparentTile {}
 Tile.register("countertop", Countertop, "#0000FF");
