@@ -309,6 +309,11 @@ class Portal extends TransparentTile {
 }
 Tile.register("portal", Portal, "#C996FF", null);
 
+class InvisiblePortal extends TransparentTile {
+  render(game) {return this.data.groundTile.render(game);}
+}
+Tile.register("invisible_portal", InvisiblePortal, null, null);
+
 class Sign extends TransparentTile {}
 Tile.register("sign", Sign, "#FFFF00");
 Sign.prototype.renderDepth = 27;
