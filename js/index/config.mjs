@@ -1,6 +1,6 @@
 "use strict";
 
-const SERVER_URL = "ws://localhost:8080";//"wss://terrekin-server.kroiririoroirkk.repl.co";
+const SERVER_URL = "wss://terrekin-server.kroiririoroirkk.repl.co";
 
 const BLOCK_WIDTH = 32;
 const PLAYER_WIDTH = 28;
