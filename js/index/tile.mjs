@@ -179,7 +179,7 @@ class Tile {
     }
   }
 
-  static setBlockSprites(tileClass, spritePath, width, height, sizes) {
+  static setBlockSprites(tileClass, spritePath, sizes) {
     tileClass.prototype.spritePath = null;
     tileClass.prototype.getSpritePath = function getSpritePath(game) {
       if (this.spritePath) {return this.spritePath;}
@@ -188,7 +188,7 @@ class Tile {
           dy = 0,
           sx = 0,
           sy = 0;
-      for (; dx < width; dx++) {
+      for (; dx < sizes[0].length; dx++) {
         let tileToCheck = game.map[tileCoord.y][tileCoord.x-dx-1];
         if (!(tileToCheck instanceof tileClass ||
               (tileToCheck.data &&
@@ -196,7 +196,7 @@ class Tile {
           break;
         }
       }
-      for (; dy < height; dy++) {
+      for (; dy < sizes.length; dy++) {
         let tileToCheck = game.map[tileCoord.y-dy-1][tileCoord.x];
         if (!(tileToCheck instanceof tileClass ||
               (tileToCheck.data &&
@@ -519,21 +519,41 @@ Tile.register("pile_of_clothes", PileOfClothes, "#FF00FF");
 class PlayerRoof extends TransparentTile {}
 Tile.register("player_roof", PlayerRoof, "#FF00FF");
 
-class ShopRoof extends TransparentTile {}
-Tile.register("shop_roof", ShopRoof, "#EEDD00");
+class ShopRoofArmor extends TransparentTile {}
+Tile.register("shop_roof_armor", ShopRoofArmor, "#EEDD00");
+Tile.setBlockSprites(ShopRoofArmor, "tiles/shop_roof_armor.png",
+  [new Array(4).fill([BLOCK_WIDTH,BLOCK_WIDTH*3]),
+   new Array(4).fill([BLOCK_WIDTH,BLOCK_WIDTH])]);
+
+class ShopRoofWeapon extends TransparentTile {}
+Tile.register("shop_roof_weapon", ShopRoofWeapon, "#EEDD00");
+Tile.setBlockSprites(ShopRoofWeapon, "tiles/shop_roof_weapon.png",
+ [new Array(4).fill([BLOCK_WIDTH,BLOCK_WIDTH*3]),
+  new Array(4).fill([BLOCK_WIDTH,BLOCK_WIDTH])]);
+
+class ShopRoofItem extends TransparentTile {}
+Tile.register("shop_roof_item", ShopRoofItem, "#EEDD00");
+Tile.setBlockSprites(ShopRoofItem, "tiles/shop_roof_item.png",
+  [new Array(4).fill([BLOCK_WIDTH,BLOCK_WIDTH*3]),
+   new Array(4).fill([BLOCK_WIDTH,BLOCK_WIDTH])]);
 
 class ArmyRoof extends TransparentTile {}
 Tile.register("army_roof", ArmyRoof, "#00FFFF");
+Tile.setBlockSprites(ArmyRoof, "tiles/army_roof.png",
+  [new Array(4).fill([BLOCK_WIDTH,BLOCK_WIDTH*3]),
+   new Array(4).fill([BLOCK_WIDTH,BLOCK_WIDTH])]);
 
 class UniversityRoof extends TransparentTile {}
 Tile.register("university_roof", UniversityRoof, "#4285F4");
+Tile.setBlockSprites(UniversityRoof, "tiles/university_roof.png",
+  [new Array(8).fill([BLOCK_WIDTH,BLOCK_WIDTH*7]),
+   new Array(8).fill([BLOCK_WIDTH,BLOCK_WIDTH])]);
 
 class Roof extends TransparentTile {}
 Tile.register("roof", Roof, "#1111BB");
-Tile.setBlockSprites(Roof, "tiles/roof.png", 3, 3,
-  [new Array(3).fill([BLOCK_WIDTH,BLOCK_WIDTH*3]),
-   new Array(3).fill([BLOCK_WIDTH,BLOCK_WIDTH]),
-   new Array(3).fill([BLOCK_WIDTH,BLOCK_WIDTH])]);
+Tile.setBlockSprites(Roof, "tiles/roof.png",
+  [new Array(4).fill([BLOCK_WIDTH,BLOCK_WIDTH*3]),
+   new Array(4).fill([BLOCK_WIDTH,BLOCK_WIDTH])]);
 
 class Well extends TransparentTile {}
 Tile.register("well", Well, "#4A86E8");
@@ -562,5 +582,6 @@ export {Tile, TilePlus, GroundData, TransparentTile,
         StairBottomAscending, StairTopDescending,
         StairBottomDescending, Couch, Bed, LampNightstand,
         Desk, Bookcase, HungUpClothes, PileOfClothes,
-        PlayerRoof, ShopRoof, ArmyRoof, UniversityRoof,
+        PlayerRoof, ShopRoofArmor, ShopRoofWeapon,
+        ShopRoofItem, ArmyRoof, UniversityRoof,
         Roof, Well, Pavement, Construction, Trees, Garden};
