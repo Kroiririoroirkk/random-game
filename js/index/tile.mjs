@@ -421,9 +421,6 @@ class Chair extends TransparentTile {
 }
 Tile.register("chair", Chair, "#FFFF00", null);
 
-class KnickknackShelf extends TransparentTile {}
-Tile.register("knickknack_shelf", KnickknackShelf, "#C27BA0");
-
 class LeftDoor extends TransparentTile {}
 Tile.register("left_door", LeftDoor, "#FF6D01");
 
