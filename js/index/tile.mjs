@@ -179,13 +179,15 @@ class Tile {
     }
   }
 
-  static setBlockSprites(tileClass, spritePath, width, height) {
+  static setBlockSprites(tileClass, spritePath, width, height, sizes) {
     tileClass.prototype.spritePath = null;
     tileClass.prototype.getSpritePath = function getSpritePath(game) {
       if (this.spritePath) {return this.spritePath;}
       let tileCoord = this.pos.toTileCoord(),
           dx = 0,
-          dy = 0;
+          dy = 0,
+          sx = 0,
+          sy = 0;
       for (; dx < width; dx++) {
         let tileToCheck = game.map[tileCoord.y][tileCoord.x-dx-1];
         if (!(tileToCheck instanceof tileClass ||
@@ -202,10 +204,16 @@ class Tile {
           break;
         }
       }
-      this.sx = dx*BLOCK_WIDTH;
-      this.sy = dy*BLOCK_WIDTH;
-      this.sWidth = BLOCK_WIDTH;
-      this.sHeight = BLOCK_WIDTH;
+      for (let i = 0; i < dx; i++) {
+        sx += sizes[dy][i][0];
+      }
+      for (let j = 0; j < dy; j++) {
+        sy += sizes[j][dx][1];
+      }
+      this.sx = sx;
+      this.sy = sy;
+      this.sWidth = sizes[dy][dx][0];
+      this.sHeight = sizes[dy][dx][1];
       this.spritePath = spritePath;
       this.usesBiggerSprite = true;
       return this.spritePath;
@@ -264,7 +272,7 @@ class TransparentTile extends TilePlus {
     return new GroundData(Tile.fromJSON(obj["ground_tile"], pos));
   }
 }
-TransparentTile.prototype.renderDepth = 0;
+TransparentTile.prototype.renderDepth = BLOCK_WIDTH;
 
 class Empty extends Tile {
   render(game) {return [];}
@@ -426,6 +434,7 @@ class Mat extends TransparentTile {}
 Tile.register("mat", Mat, "#C27BA0");
 Tile.setLeftRightSprites(Mat,
   "tiles/mat/mat_left.png", "tiles/mat/mat_right.png");
+Mat.prototype.renderDepth = 1;
 
 class Countertop extends TransparentTile {}
 Tile.register("countertop", Countertop, "#0000FF");
@@ -516,7 +525,10 @@ Tile.register("university_roof", UniversityRoof, "#4285F4");
 
 class Roof extends TransparentTile {}
 Tile.register("roof", Roof, "#1111BB");
-Tile.setBlockSprites(Roof, "tiles/roof.png", 3, 3);
+Tile.setBlockSprites(Roof, "tiles/roof.png", 3, 3,
+  [new Array(3).fill([BLOCK_WIDTH,BLOCK_WIDTH*3]),
+   new Array(3).fill([BLOCK_WIDTH,BLOCK_WIDTH]),
+   new Array(3).fill([BLOCK_WIDTH,BLOCK_WIDTH])]);
 
 class Well extends TransparentTile {}
 Tile.register("well", Well, "#4A86E8");
