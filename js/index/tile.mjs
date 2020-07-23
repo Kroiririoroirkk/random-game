@@ -25,7 +25,12 @@ class Tile {
             pos = this.pos.relToPlayer(game).floor(),
             spr = this.getSprite(game);
       if (spr) {
-        ctx.drawImage(spr, pos.x, pos.y+BLOCK_WIDTH-spr.naturalHeight);
+        if (this.usesBiggerSprite) {
+          ctx.drawImage(spr, this.sx, this.sy, this.sWidth, this.sHeight,
+            pos.x, pos.y+BLOCK_WIDTH-this.sHeight, this.sWidth, this.sHeight);
+        } else {
+          ctx.drawImage(spr, pos.x, pos.y+BLOCK_WIDTH-spr.naturalHeight);
+        }
       } else {
         Render.drawRect(game.canvasCtx, pos, this.constructor.fillStyle);
       }
@@ -53,7 +58,8 @@ class Tile {
   }
 
   static setLeftRightSprites(tileClass,
-    leftSpritePath, rightSpritePath) {
+      leftSpritePath, rightSpritePath) {
+    tileClass.prototype.spritePath = null;
     tileClass.prototype.getSpritePath = function getSpritePath(game) {
       if (this.spritePath) {return this.spritePath;}
       let tileCoord = this.pos.toTileCoord(),
@@ -70,6 +76,7 @@ class Tile {
   static setTwoByTwoSprite(tileClass,
       upperLeftSpritePath, upperRightSpritePath,
       lowerLeftSpritePath, lowerRightSpritePath) {
+    tileClass.prototype.spritePath = null;
     tileClass.prototype.getSpritePath = function getSpritePath(game) {
       if (this.spritePath) {return this.spritePath;}
       let tileCoord = this.pos.toTileCoord(),
@@ -95,6 +102,7 @@ class Tile {
       backSingleSpritePath,   backLeftSpritePath,   backMiddleSpritePath,   backRightSpritePath,
       middleSingleSpritePath, middleLeftSpritePath, middleMiddleSpritePath, middleRightSpritePath,
       frontSingleSpritePath,  frontLeftSpritePath,  frontMiddleSpritePath,  frontRightSpritePath) {
+    tileClass.prototype.spritePath = null;
     tileClass.prototype.getSpritePath = function getSpritePath(game) {
       if (this.spritePath) {return this.spritePath;}
       let tileCoord = this.pos.toTileCoord(),
@@ -167,6 +175,39 @@ class Tile {
           this.spritePath = frontRightSpritePath;
         }
       }
+      return this.spritePath;
+    }
+  }
+
+  static setBlockSprites(tileClass, spritePath, width, height) {
+    tileClass.prototype.spritePath = null;
+    tileClass.prototype.getSpritePath = function getSpritePath(game) {
+      if (this.spritePath) {return this.spritePath;}
+      let tileCoord = this.pos.toTileCoord(),
+          dx = 0,
+          dy = 0;
+      for (; dx < width; dx++) {
+        let tileToCheck = game.map[tileCoord.y][tileCoord.x-dx-1];
+        if (!(tileToCheck instanceof tileClass ||
+              (tileToCheck.data &&
+               tileToCheck.data.groundTile instanceof tileClass))) {
+          break;
+        }
+      }
+      for (; dy < height; dy++) {
+        let tileToCheck = game.map[tileCoord.y-dy-1][tileCoord.x];
+        if (!(tileToCheck instanceof tileClass ||
+              (tileToCheck.data &&
+               tileToCheck.data.groundTile instanceof tileClass))) {
+          break;
+        }
+      }
+      this.sx = dx*BLOCK_WIDTH;
+      this.sy = dy*BLOCK_WIDTH;
+      this.sWidth = BLOCK_WIDTH;
+      this.sHeight = BLOCK_WIDTH;
+      this.spritePath = spritePath;
+      this.usesBiggerSprite = true;
       return this.spritePath;
     }
   }
@@ -382,12 +423,12 @@ class MetalRightDoor extends TransparentTile {}
 Tile.register("metal_right_door", MetalRightDoor, "#D9D9D9");
 
 class Mat extends TransparentTile {}
-Tile.register("mat", Mat, "#C27BA0", null);
+Tile.register("mat", Mat, "#C27BA0");
 Tile.setLeftRightSprites(Mat,
   "tiles/mat/mat_left.png", "tiles/mat/mat_right.png");
 
 class Countertop extends TransparentTile {}
-Tile.register("countertop", Countertop, "#0000FF", null);
+Tile.register("countertop", Countertop, "#0000FF");
 Tile.setConnectingSprites(Countertop,
   "tiles/countertop/countertop_single.png",        "tiles/countertop/countertop_left.png",        "tiles/countertop/countertop_middle.png",        "tiles/countertop/countertop_right.png",
   "tiles/countertop/countertop_back_single.png",   "tiles/countertop/countertop_back_left.png",   "tiles/countertop/countertop_back_middle.png",   "tiles/countertop/countertop_back_right.png",
@@ -395,32 +436,32 @@ Tile.setConnectingSprites(Countertop,
   "tiles/countertop/countertop_front_single.png",  "tiles/countertop/countertop_front_left.png",  "tiles/countertop/countertop_front_middle.png",  "tiles/countertop/countertop_front_right.png");
 
 class StairTopAscending extends Tile {}
-Tile.register("stair_top_ascending", StairTopAscending, "#434343", null);
+Tile.register("stair_top_ascending", StairTopAscending, "#434343");
 Tile.setLeftRightSprites(StairTopAscending,
   "tiles/stair_top_ascending/stair_top_ascending_left.png", "tiles/stair_top_ascending/stair_top_ascending_right.png");
 
 class StairBottomAscending extends Tile {}
-Tile.register("stair_bottom_ascending", StairBottomAscending, "#666666", null);
+Tile.register("stair_bottom_ascending", StairBottomAscending, "#666666");
 Tile.setLeftRightSprites(StairBottomAscending,
   "tiles/stair_bottom_ascending/stair_bottom_ascending_left.png", "tiles/stair_bottom_ascending/stair_bottom_ascending_right.png");
 
 class StairTopDescending extends Tile {}
-Tile.register("stair_top_descending", StairTopDescending, "#434343", null);
+Tile.register("stair_top_descending", StairTopDescending, "#434343");
 Tile.setLeftRightSprites(StairTopDescending,
   "tiles/stair_top_descending/stair_top_descending_left.png", "tiles/stair_top_descending/stair_top_descending_right.png");
 
 class StairBottomDescending extends Tile {}
-Tile.register("stair_bottom_descending", StairBottomDescending, "#666666", null);
+Tile.register("stair_bottom_descending", StairBottomDescending, "#666666");
 Tile.setLeftRightSprites(StairBottomDescending,
   "tiles/stair_bottom_descending/stair_bottom_descending_left.png", "tiles/stair_bottom_descending/stair_bottom_descending_right.png");
 
 class Couch extends TransparentTile {}
-Tile.register("couch", Couch, "#00FFFF", null);
+Tile.register("couch", Couch, "#00FFFF");
 Tile.setLeftRightSprites(Couch,
   "tiles/couch/couch_left.png", "tiles/couch/couch_right.png");
 
 class Bed extends TransparentTile {}
-Tile.register("bed", Bed, "#FF0000", null);
+Tile.register("bed", Bed, "#FF0000");
 Tile.setConnectingSprites(Bed,
   "tiles/bed/bed_head_single.png",   "tiles/bed/bed_head_left.png",   "tiles/bed/bed_head_middle.png",   "tiles/bed/bed_head_right.png",
   "tiles/bed/bed_head_single.png",   "tiles/bed/bed_head_left.png",   "tiles/bed/bed_head_middle.png",   "tiles/bed/bed_head_right.png",
@@ -461,26 +502,24 @@ Tile.register("hung_up_clothes", HungUpClothes, "#A64D79");
 class PileOfClothes extends Tile {}
 Tile.register("pile_of_clothes", PileOfClothes, "#FF00FF");
 
-class PlayerRoof extends Tile {}
+class PlayerRoof extends TransparentTile {}
 Tile.register("player_roof", PlayerRoof, "#FF00FF");
 
-class ShopRoof extends Tile {}
+class ShopRoof extends TransparentTile {}
 Tile.register("shop_roof", ShopRoof, "#EEDD00");
 
-class ArmyRoof extends Tile {}
+class ArmyRoof extends TransparentTile {}
 Tile.register("army_roof", ArmyRoof, "#00FFFF");
 
-class UniversityRoof extends Tile {}
+class UniversityRoof extends TransparentTile {}
 Tile.register("university_roof", UniversityRoof, "#4285F4");
 
-class UniversityHospitalRoof extends Tile {}
-Tile.register("university_hospital_roof", UniversityHospitalRoof, "#0B5394");
-
-class Roof extends Tile {}
+class Roof extends TransparentTile {}
 Tile.register("roof", Roof, "#1111BB");
+Tile.setBlockSprites(Roof, "tiles/roof.png", 3, 3);
 
 class Well extends TransparentTile {}
-Tile.register("well", Well, "#4A86E8", null);
+Tile.register("well", Well, "#4A86E8");
 Tile.setTwoByTwoSprite(Well,
   "tiles/well/well_upper_left.png", "tiles/well/well_upper_right.png",
   "tiles/well/well_lower_left.png", "tiles/well/well_lower_right.png")
@@ -507,5 +546,4 @@ export {Tile, TilePlus, GroundData, TransparentTile,
         StairBottomDescending, Couch, Bed, LampNightstand,
         Desk, Bookcase, HungUpClothes, PileOfClothes,
         PlayerRoof, ShopRoof, ArmyRoof, UniversityRoof,
-        UniversityHospitalRoof, Roof, Well, Pavement,
-        Construction, Trees, Garden};
+        Roof, Well, Pavement, Construction, Trees, Garden};
