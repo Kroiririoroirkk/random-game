@@ -544,7 +544,7 @@ Tile.setBlockSprites(ArmyRoof, "tiles/army_roof.png",
 class UniversityRoof extends TransparentTile {}
 Tile.register("university_roof", UniversityRoof, "#4285F4");
 Tile.setBlockSprites(UniversityRoof, "tiles/university_roof.png",
-  [new Array(8).fill([BLOCK_WIDTH,BLOCK_WIDTH*7]),
+  [new Array(8).fill([BLOCK_WIDTH,BLOCK_WIDTH*5]),
    new Array(8).fill([BLOCK_WIDTH,BLOCK_WIDTH])]);
 
 class Roof extends TransparentTile {}
@@ -575,7 +575,7 @@ export {Tile, TilePlus, GroundData, TransparentTile,
         Empty, Grass, WildGrass, Wall, Portal, Sign,
         DeepWater, ShallowWater, Dirt, Desert, Lava,
         Floor, IndoorWall, Barrier, Carpet, Rug, Table, Chair,
-        KnickknackShelf, LeftDoor, RightDoor, MetalLeftDoor,
+        LeftDoor, RightDoor, MetalLeftDoor,
         MetalRightDoor, Countertop, StairTopAscending,
         StairBottomAscending, StairTopDescending,
         StairBottomDescending, Couch, Bed, LampNightstand,
