@@ -57,14 +57,14 @@ Cutscene.register("wait", WaitScene)
 class MoveScene extends Cutscene {
   constructor(obj) {
     super(obj);
-    this.uuid = obj["uuid"];
+    this.entityName = obj["entity_name"];
     this.moveDestination = Vec.fromJSON(obj["move_destination"]);
     this.moveDuration = obj["move_duration"];
     this.velocity = null;
   }
 
   update(game, dt) {
-    let ent = game.entities.find(e => e.uuid === this.uuid);
+    let ent = game.entities.find(e => e.name === this.entityName);
     if (!ent) {return;}
     if (!this.velocity) {
       let startPos     = ent.pos,
@@ -85,7 +85,7 @@ Cutscene.register("move", MoveScene)
 class DialogueScene extends Cutscene {
   constructor(obj) {
     super(obj);
-    this.uuid = obj["uuid"];
+    this.emtityName = obj["entity_name"];
     this.dialogue = obj["dialogue"];
     this.activated = false;
   }
@@ -97,7 +97,7 @@ class DialogueScene extends Cutscene {
       return false;
     }
     if (!this.activated) {
-      game.dialogueBox.setText(game, this.dialogue, this.uuid);
+      game.dialogueBox.setText(game, this.dialogue, this.entityName);
       this.activated = true;
     }
     return true;

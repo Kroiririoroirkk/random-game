@@ -7,8 +7,8 @@ import {Images, Render} from "./render.mjs";
 var entities = new Map();
 
 class Entity {
-  constructor(uuid, pos, velocity, facing) {
-    this.uuid = uuid;
+  constructor(name, pos, velocity, facing) {
+    this.name = name;
     this.pos = pos;
     this.velocity = velocity;
     this.facing = facing;
@@ -61,11 +61,11 @@ class Entity {
   static fromJSON(obj) {
     const entityId     = obj["entity_id"],
           entityClass  = Entity.getById(entityId),
-          entityUuid   = obj["uuid"],
+          entityName   = obj["name"],
           entityPos    = Vec.fromJSON(obj["pos"]),
           entityVel    = Vec.fromJSON(obj["velocity"]),
           entityFacing = Dir.strToDir(obj["facing"]);
-    return new entityClass(entityUuid, entityPos, entityVel, entityFacing);
+    return new entityClass(entityName, entityPos, entityVel, entityFacing);
   }
 }
 

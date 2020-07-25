@@ -102,8 +102,8 @@ class Game {
                    Math.floor(game.getScaledHeight()/2));
   }
 
-  getEntity(uuid) {
-    return this.entities.find(e => e.uuid === uuid);
+  getEntity(name) {
+    return this.entities.find(e => e.name === name);
   }
 }
 
@@ -156,7 +156,7 @@ function initialize() {
 
 function handleWSMessage(e) {
   if (e.data.startsWith("world|")) {
-    const VERSION = "0.2.0",
+    const VERSION = "0.3.0",
           parts   = e.data.split("|"),
           world   = JSON.parse(parts.slice(1)),
           tiles   = world["tiles"],
@@ -213,16 +213,16 @@ function handleWSMessage(e) {
                          .map(e => Entity.fromJSON(JSON.parse(e)));
   } else if (e.data.startsWith("dialogue|")) {
     let parts = e.data.split("|"),
-        uuid = parts[1],
+        entity_name = parts[1],
         text = parts.slice(2).join("|");
     game.contextMenu = ContextMenus.DIALOGUE;
-    game.dialogueBox.setText(game, text, uuid);
+    game.dialogueBox.setText(game, text, entity_name);
   } else if (e.data.startsWith("dialoguechoice|")) {
     let parts = e.data.split("|"),
-        uuid = parts[1],
+        entity_name = parts[1],
         textOptions = parts.slice(2);
     game.contextMenu = ContextMenus.DIALOGUE;
-    game.dialogueBox.setOptions(game, textOptions, uuid);
+    game.dialogueBox.setOptions(game, textOptions, entity_name);
   } else if (e.data.startsWith("dialogueend")) {
     game.contextMenu = ContextMenus.MAP;
     game.dialogueBox.endDialogue();
@@ -343,9 +343,9 @@ function update(dt) {
     }
     if (game.keyBinding.checkIfPressed("primarykey")) {
       if (game.dialogueBox.state === DialogueState.CHOOSE) {
-        let option = game.dialogueBox.getOptionSelected(),
-            uuid   = game.dialogueBox.entityUuid;
-        game.ws.send("dialoguechoose|"+uuid+"|"+option.toString());
+        let option     = game.dialogueBox.getOptionSelected(),
+            entityName = game.dialogueBox.entityName;
+        game.ws.send("dialoguechoose|"+entityName+"|"+option.toString());
       } else {
         game.ws.send("interact");
       }

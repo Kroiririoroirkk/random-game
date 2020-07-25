@@ -240,7 +240,7 @@ class DialogueBox {
     this.lineStart = 0;
     this.currentlySelected = 0;
     this.wrappedText = [];
-    this.entityUuid = null;
+    this.entityName = null;
   }
 
   getInstructionsText(game, dialogueState) {
@@ -253,11 +253,11 @@ class DialogueBox {
     }
   }
 
-  setText(game, text, entityUuid) {
+  setText(game, text, entityName) {
     this.options = null;
     this.text = text;
     this.state = DialogueState.TEXT;
-    this.entityUuid = entityUuid;
+    this.entityName = entityName;
     this.lineStart = 0;
     const ctx = game.canvasCtx;
     ctx.font = "20px sans-serif";
@@ -266,12 +266,12 @@ class DialogueBox {
       this.width);
   }
 
-  setOptions(game, options, entityUuid) {
+  setOptions(game, options, entityName) {
     this.text = null;
     this.options = options;
     this.lineStart = 0;
     this.state = DialogueState.CHOOSE;
-    this.entityUuid = entityUuid;
+    this.entityName = entityName;
     this.currentlySelected = 0;
     this.redrawOptions(game);
   }
