@@ -15,17 +15,24 @@ class Entity {
     this.height = BLOCK_WIDTH;
   }
 
+  getSpritePath(game) {
+    return this.spritePath;
+  }
+
+  getSprite(game) {
+    return Images.getImage(this.getSpritePath(game));
+  }
+
   render(game) {
     return [new Render((function() {
       const ctx = game.canvasCtx,
             pos = this.pos.relToPlayer(game),
-            spr = this.constructor._sprite,
-            img = spr ? Images.getImage(spr) : null;
-      if (img) {
-        ctx.drawImage(img, pos.x - (img.naturalWidth - BLOCK_WIDTH)/2,
-                           pos.y - (img.naturalHeight - BLOCK_WIDTH));
+            spr = this.getSprite(game);
+      if (spr) {
+        ctx.drawImage(spr, pos.x - (spr.naturalWidth - BLOCK_WIDTH)/2,
+                           pos.y - (spr.naturalHeight - BLOCK_WIDTH));
       } else {
-        Render.drawRect(ctx, pos, this.constructor._fillStyle);
+        Render.drawRect(ctx, pos, this.fillStyle);
       }
     }).bind(this), this.pos.y + this.height)];
   }
@@ -38,14 +45,13 @@ class Entity {
     this.pos = pos;
   }
 
-  static register(entityId, entityClass,
-                          sprite=null, fillStyle="rgb(50, 50, 50)") {
+  static register(entityId, entityClass, fillStyle, spritePath=undefined) {
     if (entities.has(entityId)) {
       throw new Error(`Entity ID ${entityId} is already in use.`);
     } else {
       entities.set(entityId, entityClass);
-      entityClass._sprite = sprite;
-      entityClass._fillStyle = fillStyle;
+      entityClass.prototype.spritePath = spritePath;
+      entityClass.prototype.fillStyle = fillStyle;
     }
   }
 
@@ -69,10 +75,18 @@ class Entity {
   }
 }
 
-class Walker extends Entity {}
-Entity.register("walker", Walker);
+class Walker extends Entity {
+  getSpritePath(game) {
+    return "";
+  }
+}
+Entity.register("walker", Walker, "#323232");
 
-class Stander extends Entity {}
-Entity.register("stander", Stander, "npc-2-still.png");
+class Stander extends Entity {
+  getSpritePath(game) {
+    return `npcs/${this.name}.png`;
+  }
+}
+Entity.register("stander", Stander, "#323232");
 
 export {Entity, Walker, Stander};
