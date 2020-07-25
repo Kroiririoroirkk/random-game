@@ -822,7 +822,7 @@ function makeOutput() {
   for (const [spawnId, spawnpointCoord] of map.spawnpoints) {
     jsonSpawnpoints[spawnId] = spawnpointCoord.toJSON();
   }
-  outputObj["version"] = "0.3.0";
+  outputObj["version"] = "0.4.0";
   outputObj["tiles"] = jsonTiles;
   outputObj["entities"] = [];
   outputObj["spawn_points"] = jsonSpawnpoints;
