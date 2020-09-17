@@ -483,8 +483,13 @@ Tile.setConnectingSprites(Bed,
 class LampNightstand extends TransparentTile {}
 Tile.register("lamp_nightstand", LampNightstand, "#FFF2CC");
 
-class Desk extends Tile {}
-Tile.register("desk", Desk, "#FFE599");
+class Desk extends TransparentTile {}
+Tile.register("desk", Desk, "#FFE599", null);
+Tile.setConnectingSprites(Desk,
+  "tiles/desk/desk_single.png",        "tiles/desk/desk_left.png",        "tiles/desk/desk_middle.png",        "tiles/desk/desk_right.png",
+  "tiles/desk/desk_back_single.png",   "tiles/desk/desk_back_left.png",   "tiles/desk/desk_back_middle.png",   "tiles/desk/desk_back_right.png",
+  "tiles/desk/desk_middle_single.png", "tiles/desk/desk_middle_left.png", "tiles/desk/desk_middle_middle.png", "tiles/desk/desk_middle_right.png",
+  "tiles/desk/desk_front_single.png",  "tiles/desk/desk_front_left.png",  "tiles/desk/desk_front_middle.png",  "tiles/desk/desk_front_right.png");
 
 class Bookcase extends TransparentTile {
   static dataFromJSON(obj, pos) {
