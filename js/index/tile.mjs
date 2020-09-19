@@ -516,8 +516,11 @@ Tile.register("bookcase", Bookcase, "#E6B8AF", null);
 class HungUpClothes extends Tile {}
 Tile.register("hung_up_clothes", HungUpClothes, "#A64D79");
 
-class PileOfClothes extends Tile {}
+class PileOfClothes extends TransparentTile {}
 Tile.register("pile_of_clothes", PileOfClothes, "#FF00FF");
+Tile.setTwoByTwoSprite(PileOfClothes,
+  "tiles/pile_of_clothes/pile_of_clothes_upper_left.png", "tiles/pile_of_clothes/pile_of_clothes_upper_right.png",
+  "tiles/pile_of_clothes/pile_of_clothes_lower_left.png", "tiles/pile_of_clothes/pile_of_clothes_lower_right.png")
 
 class PlayerRoof extends TransparentTile {}
 Tile.register("player_roof", PlayerRoof, "#FF00FF");
